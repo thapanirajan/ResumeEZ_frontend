@@ -53,7 +53,9 @@ export default function Header() {
 
 
                     <div className="hidden items-center gap-4 md:flex">
-                        <button className=" hidden md:flex text-sm text-black hover:bg-emerald-400 px-3.5 py-2 rounded cursor-pointer transition-all duration-300 ease-in-out">Login</button>
+                        <Link href="/login" className=" hidden md:flex text-sm text-black hover:bg-emerald-400 px-3.5 py-2 rounded cursor-pointer transition-all duration-300 ease-in-out">
+                            Login
+                        </Link>
                         <button className="hidden md:flex bg-blue-600 text-white text-sm font-bold px-4 py-2.5 rounded-[7px] hover:bg-blue-500 transition-colors duration-300 ease-in-out cursor-pointer">Get Started</button>
                     </div>
 

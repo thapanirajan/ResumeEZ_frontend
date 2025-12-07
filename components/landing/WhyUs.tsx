@@ -31,7 +31,7 @@ export default function WhyUs() {
                     {valueProps.map((prop) => (
                         <div key={prop.title} className="flex flex-col items-center text-center shadow-lg hover:shadow-blue-600/20 transition-shadow duration-300 
                         border border-slate-200 py-8 px-4 rounded-lg">
-                            <div>
+                            <div className='flex text-center justify-center flex-col items-center'>
                                 <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-100">
                                     {prop.icon}
                                 </div>

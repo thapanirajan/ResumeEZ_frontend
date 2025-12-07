@@ -1,10 +1,11 @@
+import CtaBanner from "@/components/landing/CtaBanner";
 import Features from "@/components/landing/Features";
 import Footer from "@/components/landing/Footer";
 import Header from "@/components/landing/Header";
 import Hero from "@/components/landing/Hero";
 import HowItWorks from "@/components/landing/HowItWorks";
-import Pricing from "@/components/landing/Pricing";
-import Testimonials from "@/components/landing/Testimonials";
+// import Pricing from "@/components/landing/Pricing";
+// import Testimonials from "@/components/landing/Testimonials";
 import WhyUs from "@/components/landing/WhyUs";
 
 export default function Home() {
@@ -15,8 +16,9 @@ export default function Home() {
             <WhyUs />
             <Features />
             <HowItWorks />
-            <Pricing />
-            <Testimonials />
+            {/* <Pricing />
+            <Testimonials /> */}
+            <CtaBanner />
             <Footer />
         </div>
     );
