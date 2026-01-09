@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { PlaceHolderImages } from "../lib/placeholder-images"
 import { CheckCircle2, PlayCircle } from 'lucide-react';
+import PrimaryButton from '../ui/PrimaryButton';
 
 export default function Hero() {
     const heroImage = PlaceHolderImages.find((img) => img.id === 'hero-image');
@@ -21,20 +22,20 @@ export default function Hero() {
                                 Build a stronger resume instantly and help HR teams shortlist the right candidates faster.
                             </p>
                             <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row">
-                                <button className="flex bg-blue-600 text-white text-sm font-bold px-4 py-2.5 rounded-[7px] hover:bg-blue-500 transition-colors duration-300 ease-in-out cursor-pointer">Try free</button>
-
-                                <button className="border border-slate-200 rounded flex px-8 py-2 items-center  hover:bg-emerald-400 cursor-pointer transition-colors duration-300 ease-in-out">
+                                <PrimaryButton href="/">Try free</PrimaryButton>
+                                <button className="border border-[#172E6B] rounded flex px-8 py-2 items-center  
+                                hover:bg-[#172E6B] hover:text-white cursor-pointer transition-colors duration-300 ease-in-out">
                                     <PlayCircle className="mr-2 h-5 w-5 " />
                                     <p>Watch demo</p>
                                 </button>
                             </div>
                             <div className="mt-8 space-y-2 text-sm text-muted-foreground">
                                 <div className="flex items-center gap-2">
-                                    <CheckCircle2 className="h-4 w-4 text-blue-500" />
+                                    <CheckCircle2 className="h-4 w-4 text-[#172E6B]" />
                                     <span>Trusted by job seekers and HR teams</span>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <CheckCircle2 className="h-4 w-4 text-blue-500" />
+                                    <CheckCircle2 className="h-4 w-4 text-[#172E6B]" />
                                     <span>Improves hiring workflows instantly</span>
                                 </div>
                             </div>
