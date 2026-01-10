@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { verifyOtpAction } from "../actions";
 import { useRouter } from "next/navigation";
 import Logo from "@/components/landing/Logo";
+import { getMe, verifyOtp } from "@/lib/auth.lib";
+import { UserRole } from '../../../lib/auth.lib';
 
 export default function OTPForm({ email }: { email: string }) {
     const [otp, setOtp] = useState<string[]>(Array(6).fill(""));
@@ -60,10 +61,20 @@ export default function OTPForm({ email }: { email: string }) {
         }
 
         try {
-            await verifyOtpAction(email, code);
-            setTimeout(() => {
-                router.push("/");
-            }, 1000);
+            const userData = await verifyOtp(email, code);
+            console.log(userData)
+
+            const me = await getMe();
+
+            console.log(me)
+
+            if (!me.role) {
+                router.push("/login/select-role")
+            } else if (me.role === "JOB_SEEKER") {
+                router.push("/candidate")
+            } else if (me.role === "RECRUITER") {
+                router.push("/recruiter")
+            }
         } catch (err) {
             console.log(err)
             setLoading(false);

@@ -1,6 +1,6 @@
 "use server"
 
-import { authenticateEmail, verifyOtp } from "@/lib/auth.lib"
+import { authenticateEmail, setUserRole, UserRole, verifyOtp } from "@/lib/auth.lib"
 
 export async function authenticateEmailAction(email: string) {
     await authenticateEmail(email);
@@ -8,7 +8,4 @@ export async function authenticateEmailAction(email: string) {
 }
 
 
-export async function verifyOtpAction(email: string, otp: string) {
-    const result = await verifyOtp(email, otp);
-    return result;
-}
+

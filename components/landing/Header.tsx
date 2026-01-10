@@ -5,6 +5,8 @@ import { useEffect, useState } from "react"
 import Link from "next/link";
 import PrimaryButton from "../ui/PrimaryButton";
 import Logo from "./Logo";
+import { useAuth } from "@/hooks/useAuth";
+import UserDropdown from "../common/UserDropDown";
 
 // Primary: #0D9488 (Teal)
 
@@ -20,9 +22,15 @@ const menuItems = [
     { label: 'Pricing', href: '#pricing' },
 ];
 
+function getEmailPrefix(email: string) {
+    return email.split("@")[0];
+}
+
+
 export default function Header() {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isSheetOpen, setIsSheetOpen] = useState(false)
+    const { user, loading } = useAuth()
 
     useEffect(() => {
         const handleScroll = () => {
@@ -59,8 +67,12 @@ export default function Header() {
                     </nav>
 
 
-                    <div className="hidden items-center gap-4 md:flex">
-                        <PrimaryButton href="/login">Login</PrimaryButton>
+                    <div className="hidden md:flex items-center gap-4">
+                        {!loading && !user && (
+                            <PrimaryButton href="/login">Login</PrimaryButton>
+                        )}
+
+                        {!loading && user && <UserDropdown />}
                     </div>
 
 
