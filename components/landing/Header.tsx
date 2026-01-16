@@ -22,10 +22,6 @@ const menuItems = [
     { label: 'Pricing', href: '#pricing' },
 ];
 
-function getEmailPrefix(email: string) {
-    return email.split("@")[0];
-}
-
 
 export default function Header() {
     const [isScrolled, setIsScrolled] = useState(false);
@@ -54,18 +50,17 @@ export default function Header() {
                 <div className="max-w-7xl mx-auto flex h-20 items-center justify-between px-4 md:px-6">
                     <Logo />
 
-                    <nav className="hidden items-center gap-6 md:flex">
+                    <nav className="hidden items-center gap-6 md:flex text-neutral-700 text-shadow-black/10 text-shadow-lg tracking-tight">
                         {menuItems.map((item) => (
                             <Link
                                 key={item.label}
                                 href={item.href}
-                                className="text-sm font-medium text-slate-600 transition-colors hover:text-blue-600"
+                                className="font-medium text-slate-600 transition-colors hover:text-blue-600"
                             >
                                 {item.label}
                             </Link>
                         ))}
                     </nav>
-
 
                     <div className="hidden md:flex items-center gap-4">
                         {!loading && !user && (
@@ -131,12 +126,13 @@ export default function Header() {
                         </Link>
                     ))}
 
-                    <button className="mt-4 text-sm border px-4 py-2 rounded hover:bg-gray-100">
-                        Login
-                    </button>
-                    <button className="mt-2 bg-blue-600 text-white text-sm px-4 py-2 rounded hover:bg-blue-500">
-                        Get Started
-                    </button>
+                    <div className="flex items-center gap-4">
+                        {!loading && !user && (
+                            <PrimaryButton href="/login">Login</PrimaryButton>
+                        )}
+
+                        {!loading && user && <UserDropdown />}
+                    </div>
                 </nav>
             </div>
 

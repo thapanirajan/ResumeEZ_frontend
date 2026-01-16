@@ -17,7 +17,7 @@ export default function PrimaryButton({
         <Link
             href={href}
             className={`
-            relative group overflow-hidden hidden md:flex text-sm
+            relative group overflow-hidden  md:flex text-sm
             bg-[#1E3A8A] text-white
             font-bold px-6 py-2.5 rounded
             cursor-pointer

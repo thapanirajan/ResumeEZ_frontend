@@ -32,14 +32,14 @@ export default function Hero() {
 
                     {/* left side container  */}
                     <div className="flex flex-col items-start text-left">
-                        <h1 className="font-headline text-4xl font-bold tracking-tighter text-foreground sm:text-5xl md:text-6xl">
+                        <h1 className="text-center sm:text-left text-4xl font-bold text-neutral-700 text-shadow-black/10 text-shadow-lg tracking-tight sm:text-5xl md:text-6xl">
                             AI-Powered Resume Improvement and Smart Candidate Screening
                         </h1>
-                        <p className="mt-6 max-w-2xl text-lg text-muted-foreground">
+                        <p className="text-center sm:text-left mt-6 max-w-2xl text-lg  text-neutral-950 text-shadow-black/10 text-shadow-lg tracking-tight">
                             Build a stronger resume instantly and help HR teams shortlist the
                             right candidates faster.
                         </p>
-                        <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row">
+                        <div className="mt-8 flex  items-center gap-4 flex-row">
                             <PrimaryButton href="/">Try free</PrimaryButton>
                             <button className="border border-[#172E6B] rounded flex px-8 py-2 items-center hover:bg-[#172E6B] hover:text-white cursor-pointer transition-colors duration-300 ease-in-out">
                                 <PlayCircle className="mr-2 h-5 w-5 " />

@@ -4,7 +4,6 @@ import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Logo from "@/components/landing/Logo";
 import { getMe, verifyOtp } from "@/lib/auth.lib";
-import { UserRole } from '../../../lib/auth.lib';
 
 export default function OTPForm({ email }: { email: string }) {
     const [otp, setOtp] = useState<string[]>(Array(6).fill(""));
@@ -21,8 +20,8 @@ export default function OTPForm({ email }: { email: string }) {
         const interval = setInterval(() => {
             setTimer((prev) => {
                 if (prev <= 1) {
-                    clearInterval(interval);      // stop interval
-                    setResendDisabled(false);     // enable resend safely here
+                    clearInterval(interval);
+                    setResendDisabled(false);     
                     return 0;
                 }
                 return prev - 1;

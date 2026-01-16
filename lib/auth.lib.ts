@@ -40,7 +40,7 @@ export async function verifyOtp(email: string, otp: string) {
         },
         body: JSON.stringify({
             email,
-            otp,
+            otp_code:otp,
         }),
         credentials: "include"
     });
@@ -67,7 +67,6 @@ export async function setUserRole(role: UserRole) {
 
     console.log(res)
 
-    // backend may return non-JSON on crash
     if (!res.ok) {
         let message = "Failed to set role";
 
@@ -79,7 +78,7 @@ export async function setUserRole(role: UserRole) {
             const data = await res.json();
             message = data.message ?? message;
         } catch {
-            // response was not JSON
+            // 
         }
 
         throw new Error(message);
