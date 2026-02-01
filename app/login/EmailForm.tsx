@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { authenticateEmailAction } from "./actions";
 import Logo from "@/components/landing/Logo";
+import { BASE_URL } from "@/lib/auth.lib";
 
 export default function EmailForm() {
     const [email, setEmail] = useState("");
@@ -95,6 +96,9 @@ export default function EmailForm() {
                     rounded-lg py-2.5 font-semibold text-[#1E3A8A] 
                     hover:bg-[#E0E7FF] transition-all duration-200
                     cursor-pointer"
+                    onClick={() => {
+                        window.location.href = `${BASE_URL}/api/user/auth/google/login`;
+                    }}
                 >
                     Continue with Google
                 </button>

@@ -1,6 +1,6 @@
 'use client';
 
-import Sidebar from '@/components/candidate/Sidebar';
+import CandidateSidebar from '@/components/candidate/CandidateSidebar';
 
 const roadmapData = [
     {
@@ -27,7 +27,7 @@ export default function LearningRoadmapPage() {
     return (
         <div className="flex min-h-screen bg-gray-50">
             {/* Sidebar */}
-            <Sidebar />
+            <CandidateSidebar />
 
             {/* Main Content */}
             <main className="flex-1 px-10 py-8">

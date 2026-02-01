@@ -1,5 +1,5 @@
-import Sidebar from "@/components/candidate/Sidebar";
 import RoleGuard from "@/components/common/RoleGuard";
+import RecruiterSidebar from "@/components/Recruiter/RecruiterSidebar";
 import { ReactNode } from "react";
 
 export default function HrLayout({ children }: { children: ReactNode }) {
@@ -8,7 +8,7 @@ export default function HrLayout({ children }: { children: ReactNode }) {
             <div className="flex min-h-screen bg-gray-50">
                 {/* Sidebar - fixed on left */}
                 <aside className="hidden lg:flex lg:flex-col w-64 bg-white border-r border-gray-200 fixed h-screen">
-                    <Sidebar />
+                    <RecruiterSidebar />
                 </aside>
 
                 {/* Main Content - add margin-left same as sidebar width */}

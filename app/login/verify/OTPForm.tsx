@@ -21,7 +21,7 @@ export default function OTPForm({ email }: { email: string }) {
             setTimer((prev) => {
                 if (prev <= 1) {
                     clearInterval(interval);
-                    setResendDisabled(false);     
+                    setResendDisabled(false);
                     return 0;
                 }
                 return prev - 1;
@@ -60,11 +60,11 @@ export default function OTPForm({ email }: { email: string }) {
         }
 
         try {
-            const userData = await verifyOtp(email, code);
-            console.log(userData)
+            await verifyOtp(email, code);
 
             const me = await getMe();
 
+            console.log("---------User detail---------")
             console.log(me)
 
             if (!me.role) {
@@ -87,7 +87,7 @@ export default function OTPForm({ email }: { email: string }) {
 
         // Call resend OTP action
         // try {
-        //     await verifyOtpAction(email, "resend"); // Adjust according to your API
+        //     await verifyOtpAction(email, "resend"); 
         // } catch (err) {
         //     console.log(err);
         // }

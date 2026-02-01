@@ -18,6 +18,7 @@ export default function SelectRolePage() {
         const loadingToast = toast.loading("Setting up your account...");
 
         try {
+            console.log(role)
             await setUserRole(role);
 
             toast.success("Role selected successfully", {

@@ -40,7 +40,7 @@ export async function verifyOtp(email: string, otp: string) {
         },
         body: JSON.stringify({
             email,
-            otp_code:otp,
+            otp_code: otp,
         }),
         credentials: "include"
     });
@@ -57,15 +57,15 @@ export async function setUserRole(role: UserRole) {
     const res = await fetch(`${BASE_URL}/api/user/auth/set-role`, {
         method: "PATCH",
         headers: {
-            "Content-Type": "application/json",
+            "Content-Type": "application/json"
         },
         body: JSON.stringify({
             role,
         }),
-        credentials: "include"
+        credentials: "include",
+
     });
 
-    console.log(res)
 
     if (!res.ok) {
         let message = "Failed to set role";
@@ -88,16 +88,16 @@ export async function setUserRole(role: UserRole) {
 }
 
 export async function getMe() {
+
     const res = await fetch(`${BASE_URL}/api/user/me`, {
         credentials: "include",
-        cache: "no-store"
-    })
+    });
 
     if (!res.ok) {
-        throw new Error("Not authenticated")
+        throw new Error("Not authenticated");
     }
 
-    return res.json()
+    return res.json();
 }
 
 export async function handleLogout() {
