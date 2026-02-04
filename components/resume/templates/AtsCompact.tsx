@@ -1,0 +1,117 @@
+import { ResumeData } from "@/app/(candidate)/candidate/resume/type";
+
+
+export default function AtsCompact({
+    resume,
+}: {
+    resume: ResumeData;
+}) {
+    return (
+        <div className="text-sm leading-snug text-black font-sans">
+            <header className="mb-3">
+                <h1 className="text-lg font-bold">{resume.name}</h1>
+
+                {resume.title && <p>{resume.title}</p>}
+
+                <p>
+                    {[resume.email, resume.phone, resume.location]
+                        .filter(Boolean)
+                        .join(" • ")}
+                </p>
+
+                {(resume.linkedin || resume.github) && (
+                    <p>
+                        {resume.linkedin && (
+                            <>
+                                LinkedIn:{" "}
+                                <span className="underline">
+                                    {resume.linkedin}
+                                </span>
+                            </>
+                        )}
+                        {resume.linkedin && resume.github && " • "}
+                        {resume.github && (
+                            <>
+                                GitHub:{" "}
+                                <span className="underline">
+                                    {resume.github}
+                                </span>
+                            </>
+                        )}
+                    </p>
+                )}
+            </header>
+
+            {resume.summary && (
+                <>
+                    <Section title="Summary">
+                        <p>{resume.summary}</p>
+                    </Section>
+                </>
+            )}
+
+            {resume.experience.length > 0 && (
+                <Section title="Experience">
+                    {resume.experience.map((e, i) => (
+                        <div key={i} className="mb-2">
+                            <p className="font-semibold">
+                                {e.role}
+                                {e.company && `, ${e.company}`}
+                            </p>
+
+                            {(e.startDate || e.endDate) && (
+                                <div className="italic text-xs">
+                                    {e.startDate} – {e.endDate}
+                                </div>
+                            )}
+
+                            {e.description && <p>{e.description}</p>}
+                        </div>
+                    ))}
+                </Section>
+            )}
+
+            {resume.education.length > 0 && (
+                <Section title="Education">
+                    {resume.education.map((e, i) => (
+                        <div key={i} className="mb-2">
+                            <p className="font-semibold">
+                                {e.degree}
+                                {e.fieldOfStudy && `, ${e.fieldOfStudy}`}
+                            </p>
+
+                            <p>{e.institution}</p>
+
+                            {(e.startDate || e.endDate) && (
+                                <div className="italic text-xs">
+                                    {e.startDate} – {e.endDate}
+                                </div>
+                            )}
+
+                            {e.gpa && <p>GPA: {e.gpa}</p>}
+                            {e.honors && <p>{e.honors}</p>}
+                        </div>
+                    ))}
+                </Section>
+            )}
+        </div>
+    );
+}
+
+
+
+function Section({
+    title,
+    children,
+}: {
+    title: string;
+    children: React.ReactNode;
+}) {
+    return (
+        <>
+            <h2 className="mt-3 font-bold uppercase">{title}</h2>
+            <hr className="my-1" />
+            {children}
+        </>
+    );
+}
