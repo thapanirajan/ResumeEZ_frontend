@@ -15,8 +15,6 @@ export function useRequireRole(requiredRole: "RECRUITER" | "JOB_SEEKER") {
             }
             try {
                 const me = await getMe();
-                console.log("---------My details----------")
-                console.log(me)
 
                 if (me.role !== requiredRole) {
                     router.replace(
