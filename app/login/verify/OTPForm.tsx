@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Logo from "@/components/landing/Logo";
 import { getMe, verifyOtp } from "@/lib/auth.lib";
@@ -12,6 +12,9 @@ export default function OTPForm({ email }: { email: string }) {
     const [resendDisabled, setResendDisabled] = useState(true);
     const inputsRef = useRef<HTMLInputElement[]>([]);
     const router = useRouter();
+
+
+
 
     // Countdown effect
     useEffect(() => {
@@ -51,6 +54,8 @@ export default function OTPForm({ email }: { email: string }) {
     }
 
     async function handleVerify() {
+        if (loading) return;
+
         setLoading(true);
 
         const code = otp.join("");
@@ -61,24 +66,28 @@ export default function OTPForm({ email }: { email: string }) {
 
         try {
             await verifyOtp(email, code);
-
             const me = await getMe();
 
-            console.log("---------User detail---------")
-            console.log(me)
-
             if (!me.role) {
-                router.push("/login/select-role")
+                router.push("/login/select-role");
             } else if (me.role === "JOB_SEEKER") {
-                router.push("/candidate")
+                router.push("/candidate");
             } else if (me.role === "RECRUITER") {
-                router.push("/recruiter")
+                router.push("/recruiter");
             }
         } catch (err) {
-            console.log(err)
+            console.log(err);
             setLoading(false);
         }
     }
+
+    useEffect(() => {
+        const code = otp.join("");
+
+        if (code.length === 6 && !otp.includes("") && !loading) {
+            handleVerify();
+        }
+    }, [otp]);
 
     async function handleResend() {
         if (resendDisabled) return;
@@ -91,6 +100,36 @@ export default function OTPForm({ email }: { email: string }) {
         // } catch (err) {
         //     console.log(err);
         // }
+    }
+
+    function handlePasteOTP(e: React.ClipboardEvent<HTMLInputElement>) {
+        e.preventDefault()
+        const pastedData = e.clipboardData.getData("text").trim();
+
+        if (!/^\d+$/.test(pastedData)) return;
+
+        const digits = pastedData.slice(0, 6).split("");
+
+        const newOtp = Array(6).fill("");
+        digits.forEach((digit, idx) => {
+            newOtp[idx] = digit;
+        });
+
+        setOtp(newOtp);
+
+        // Focus last filled input
+        const lastIndex = Math.min(digits.length, 6) - 1;
+        inputsRef.current[lastIndex]?.focus();
+    }
+
+
+    function handleKeyDown(
+        e: React.KeyboardEvent<HTMLInputElement>,
+        index: number
+    ) {
+        if (e.key === "Backspace" && !otp[index] && index > 0) {
+            inputsRef.current[index - 1]?.focus();
+        }
     }
 
     return (
@@ -121,6 +160,8 @@ export default function OTPForm({ email }: { email: string }) {
                             maxLength={1}
                             value={digit}
                             onChange={(e) => handleChange(e.target.value, index)}
+                            onPaste={handlePasteOTP}
+                            onKeyDown={(e) => handleKeyDown(e, index)}
                             className="w-14 h-14 text-center text-lg border border-[#CBD5E1] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1E3A8A] transition-all duration-200"
                         />
                     ))}
