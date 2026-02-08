@@ -15,6 +15,7 @@ import { ResumeData } from "@/app/(candidate)/candidate/resume/type";
 import AtsClassic from "./templates/AtsClassic";
 import AtsCompact from "./templates/AtsCompact";
 import AtsModern from "./templates/AtsModern";
+import ProjectsForm from "./forms/ProjectsForm";
 
 export type ResumeTemplate = "classic" | "compact" | "modern";
 
@@ -32,6 +33,7 @@ const steps = [
     "Links",
     "Summary",
     "Experience",
+    "Projects",
     "Education",
 ];
 
@@ -54,6 +56,7 @@ export default function ResumeBuilder() {
         summary: "",
         experience: [],
         education: [],
+        projects: [],
     });
 
     useEffect(() => {
@@ -61,7 +64,14 @@ export default function ResumeBuilder() {
         if (saved) {
             try {
                 const parsed = JSON.parse(saved);
-                if (parsed.resume) setResume(parsed.resume);
+                if (parsed.resume) {
+                    setResume({
+                        ...parsed.resume,
+                        experience: parsed.resume.experience ?? [],
+                        projects: parsed.resume.projects ?? [], 
+                        education: parsed.resume.education ?? [],
+                    });
+                }
                 if (parsed.template) setTemplate(parsed.template);
             } catch (err) {
                 console.error("Failed to restore resume", err);
@@ -115,6 +125,9 @@ export default function ResumeBuilder() {
                         <ExperienceForm resume={resume} setResume={setResume} />
                     )}
                     {step === 4 && (
+                        <ProjectsForm resume={resume} setResume={setResume} />
+                    )}
+                    {step === 5 && (
                         <EducationForm resume={resume} setResume={setResume} />
                     )}
                 </div>
@@ -161,8 +174,8 @@ export default function ResumeBuilder() {
                                     key={t}
                                     onClick={() => setTemplate(t)}
                                     className={`rounded-md px-3 py-1.5 text-sm ${template === t
-                                            ? "bg-[#1e3a8a] text-white"
-                                            : "border bg-white text-slate-700"
+                                        ? "bg-[#1e3a8a] text-white"
+                                        : "border bg-white text-slate-700"
                                         }`}
                                 >
                                     {TEMPLATE_LABELS[t]}

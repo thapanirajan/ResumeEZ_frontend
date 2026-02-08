@@ -40,4 +40,15 @@ export type ResumeData = {
     /* SECTIONS */
     experience: Experience[];
     education: Education[];
+    projects: Project[];
+};
+
+
+export type Project = {
+    name: string;
+    role?: string;
+    techStack: string;
+    description: string;
+    liveUrl?: string;
+    githubUrl?: string;
 };

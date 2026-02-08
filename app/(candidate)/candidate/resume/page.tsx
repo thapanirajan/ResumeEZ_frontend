@@ -1,5 +1,10 @@
+
+
+"use client"
+
 import { Plus, FileText, Clock } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation"
 
 type Resume = {
     id: string;
@@ -21,6 +26,7 @@ const resumes: Resume[] = [
 ];
 
 export default function ResumeDashboardPage() {
+    const router = useRouter()
     return (
         <main className="bg-slate-50 px-6 py-10">
             <div className="mx-auto max-w-7xl space-y-10">
@@ -44,8 +50,13 @@ export default function ResumeDashboardPage() {
                         "
                     >
                         <Link
-                        href="/candidate/resume/create"
-                         className="flex items-center gap-6 cursor-pointer">
+                            href="/candidate/resume/create"
+                            onClick={(e) => {
+                                e.preventDefault()
+                                localStorage.removeItem("resume-builder-data")
+                                router.push("/candidate/resume/create");
+                            }}
+                            className="flex items-center gap-6 cursor-pointer">
                             <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-[#1e3a8a] text-white">
                                 <Plus className="h-6 w-6" />
                             </div>

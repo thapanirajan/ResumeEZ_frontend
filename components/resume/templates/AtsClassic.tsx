@@ -64,6 +64,28 @@ export default function AtsClassic({ resume }: { resume: ResumeData }) {
                 </Section>
             )}
 
+            {resume.projects.length > 0 && (
+                <Section title="Projects">
+                    {resume.projects.map((p, i) => (
+                        <div key={i} className="mb-2">
+                            <p className="font-semibold">
+                                {p.name}
+                                {p.role && ` – ${p.role}`}
+                            </p>
+                            <p className="italic text-xs">{p.techStack}</p>
+                            <p>{p.description}</p>
+                            {(p.liveUrl || p.githubUrl) && (
+                                <p className="text-xs">
+                                    {p.liveUrl && `Live: ${p.liveUrl} `}
+                                    {p.githubUrl && `GitHub: ${p.githubUrl}`}
+                                </p>
+                            )}
+                        </div>
+                    ))}
+                </Section>
+            )}
+
+
             {resume.education.length > 0 && (
                 <Section title="Education">
                     {resume.education.map((e, i) => (
