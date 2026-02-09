@@ -7,5 +7,28 @@ html {
 
 
 [id] {
-  scroll-margin-top: 5rem;
+  scroll-margin-top: 2rem;
+}
+
+/* Custom scrollbar for specific builder sections */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px !important;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f5f9 !important;
+  /* Neutral background for the track */
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #1e3a8a !important;
+  border: 1px solid #f1f5f9 !important;
+  /* Creates a padding effect */
+  border-radius: 10px !important;
+}
+
+
+.custom-scrollbar {
+  scrollbar-width: thin !important;
+  scrollbar-color: #1e3a8a #f1f5f9 !important;
 }

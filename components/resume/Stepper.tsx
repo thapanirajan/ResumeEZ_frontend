@@ -13,7 +13,7 @@ export default function Stepper({
                 <button
                     key={step}
                     onClick={() => setStep(i)}
-                    className={`rounded-lg px-3 py-1 text-sm font-medium ${active === i
+                    className={`rounded-lg  cursor-pointer px-3 py-1 text-sm font-medium ${active === i
                             ? "bg-[#1e3a8a] text-white"
                             : "bg-slate-100 text-slate-700"
                         }`}

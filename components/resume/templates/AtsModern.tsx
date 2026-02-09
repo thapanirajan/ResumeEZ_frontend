@@ -1,97 +1,110 @@
 import { ResumeData } from "@/app/(candidate)/candidate/resume/type";
 
-
-export default function AtsModern({
-    resume,
-}: {
-    resume: ResumeData;
-}) {
+export default function AtsModern({ resume }: { resume: ResumeData }) {
     return (
-        <div className="text-sm leading-relaxed text-black font-sans">
-            <header className="mb-4">
-                <h1 className="text-2xl font-semibold">{resume.name}</h1>
+        <div className="font-sans text-[13.5px] leading-[1.65] text-black">
+            {/* HEADER */}
+            <header className="mb-6">
+                <h1 className="text-[24px] font-semibold tracking-tight">
+                    {resume.name}
+                </h1>
 
                 {resume.title && (
-                    <p className="font-medium text-[#1e3a8a]">
+                    <p className="text-[#1e3a8a] font-medium">
                         {resume.title}
                     </p>
                 )}
 
-                <p className="mt-1">
+                <p className="mt-1 text-[12.5px]">
                     {[resume.email, resume.phone, resume.location]
                         .filter(Boolean)
-                        .join(" | ")}
+                        .join(" • ")}
                 </p>
 
                 {(resume.linkedin || resume.github) && (
-                    <p className="mt-1">
-                        {resume.linkedin && (
-                            <>
-                                LinkedIn:{" "}
-                                <span className="underline">
-                                    {resume.linkedin}
-                                </span>
-                            </>
-                        )}
-                        {resume.linkedin && resume.github && " | "}
-                        {resume.github && (
-                            <>
-                                GitHub:{" "}
-                                <span className="underline">
-                                    {resume.github}
-                                </span>
-                            </>
-                        )}
+                    <p className="text-[12.5px]">
+                        {resume.linkedin && resume.linkedin}
+                        {resume.linkedin && resume.github && " • "}
+                        {resume.github && resume.github}
                     </p>
                 )}
             </header>
 
             {resume.summary && (
-                <Section title="Summary">
+                <Section title="Profile">
                     <p>{resume.summary}</p>
                 </Section>
             )}
 
-            {resume.experience.length > 0 && (
+            {resume.experience?.length > 0 && (
                 <Section title="Experience">
                     {resume.experience.map((e, i) => (
-                        <div key={i} className="mb-3">
-                            <p className="font-medium">
-                                {e.role}
-                                {e.company && ` – ${e.company}`}
-                            </p>
-
-                            {(e.startDate || e.endDate) && (
-                                <p className="italic text-xs">
+                        <div key={i} className="mb-4">
+                            <div className="flex justify-between">
+                                <p className="font-semibold">
+                                    {e.role}
+                                </p>
+                                <span className="text-[12px] italic">
                                     {e.startDate} – {e.endDate}
+                                </span>
+                            </div>
+
+                            {e.company && (
+                                <p className="text-[12.5px] font-medium">
+                                    {e.company}
                                 </p>
                             )}
 
-                            {e.description && <p>{e.description}</p>}
+                            <p className="mt-1">
+                                {e.description}
+                            </p>
                         </div>
                     ))}
                 </Section>
             )}
 
-            {resume.education.length > 0 && (
+            {resume.projects?.length > 0 && (
+                <Section title="Projects">
+                    {resume.projects.map((p, i) => (
+                        <div key={i} className="mb-3">
+                            <p className="font-semibold">
+                                {p.name}
+                            </p>
+
+                            <p className="italic text-[12px]">
+                                {p.techStack}
+                            </p>
+
+                            <p className="mt-0.5">
+                                {p.description}
+                            </p>
+
+                            {(p.liveUrl || p.githubUrl) && (
+                                <p className="mt-0.5 text-[12px]">
+                                    {p.liveUrl && `Live: ${p.liveUrl}`}
+                                    {p.liveUrl && p.githubUrl && " • "}
+                                    {p.githubUrl && `GitHub: ${p.githubUrl}`}
+                                </p>
+                            )}
+                        </div>
+                    ))}
+                </Section>
+            )}
+
+            {resume.education?.length > 0 && (
                 <Section title="Education">
                     {resume.education.map((e, i) => (
-                        <div key={i} className="mb-3">
-                            <p className="font-medium">
+                        <div key={i} className="mb-2">
+                            <p className="font-semibold">
                                 {e.degree}
                                 {e.fieldOfStudy && `, ${e.fieldOfStudy}`}
                             </p>
-
-                            <p>{e.institution}</p>
-
-                            {(e.startDate || e.endDate) && (
-                                <p className="italic text-xs">
-                                    {e.startDate} – {e.endDate}
-                                </p>
-                            )}
-
-                            {e.gpa && <p>GPA: {e.gpa}</p>}
-                            {e.honors && <p>{e.honors}</p>}
+                            <p className="text-[12.5px]">
+                                {e.institution}
+                            </p>
+                            <p className="text-[12px] italic">
+                                {e.startDate} – {e.endDate}
+                            </p>
                         </div>
                     ))}
                 </Section>
@@ -99,7 +112,6 @@ export default function AtsModern({
         </div>
     );
 }
-
 
 function Section({
     title,
@@ -109,12 +121,11 @@ function Section({
     children: React.ReactNode;
 }) {
     return (
-        <>
-            <h2 className="mt-4 font-bold uppercase text-[#1e3a8a]">
+        <section className="mb-6">
+            <h2 className="mb-1 border-b border-slate-300 text-[13px] font-bold uppercase tracking-wide">
                 {title}
             </h2>
-            <hr className="my-2" />
             {children}
-        </>
+        </section>
     );
 }

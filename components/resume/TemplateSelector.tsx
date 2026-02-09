@@ -17,12 +17,12 @@ export default function TemplateSelector({
                             key={t}
                             onClick={() => onChange(t)}
                             className={`
-                rounded-lg px-3 py-1.5 text-sm
-                ${value === t
+                                rounded-lg px-3 py-1.5 text-sm 
+                                ${value === t
                                     ? "bg-[#1e3a8a] text-white"
                                     : "border text-slate-700"
                                 }
-              `}
+                            `}
                         >
                             {TEMPLATE_LABELS[t]}
                         </button>

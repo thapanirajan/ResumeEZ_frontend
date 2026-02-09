@@ -24,7 +24,7 @@ export default function PersonalForm({
                 <Field
                     label="Full Name"
                     value={resume.name}
-                    placeholder="e.g. Ayush Sharma"
+                    placeholder="e.g. John Doe"
                     helper="Use the name recruiters know you by."
                     onChange={(v) => setResume({ ...resume, name: v })}
                 />

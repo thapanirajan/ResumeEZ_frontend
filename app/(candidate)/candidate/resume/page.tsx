@@ -12,21 +12,44 @@ type Resume = {
     lastUpdated: string;
 };
 
-const resumes: Resume[] = [
-    {
-        id: "1",
-        title: "Software Engineer Resume",
-        lastUpdated: "Updated 2 days ago",
-    },
-    {
-        id: "2",
-        title: "Internship Resume",
-        lastUpdated: "Updated 1 week ago",
-    },
-];
+import { useEffect, useState } from "react";
+import { resumeApi, ResumeResponse } from "@/services/resume.service";
+import { formatDistanceToNow } from "date-fns";
+import { Trash2 } from "lucide-react";
 
 export default function ResumeDashboardPage() {
-    const router = useRouter()
+    const router = useRouter();
+    const [resumes, setResumes] = useState<ResumeResponse[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        fetchResumes();
+    }, []);
+
+    const fetchResumes = async () => {
+        try {
+            setIsLoading(true);
+            const data = await resumeApi.getResumes();
+            setResumes(data);
+        } catch (error) {
+            console.error("Failed to fetch resumes:", error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleDelete = async (e: React.MouseEvent, id: string) => {
+        e.stopPropagation();
+        if (!confirm("Are you sure you want to delete this resume?")) return;
+
+        try {
+            await resumeApi.deleteResume(id);
+            setResumes((prev) => prev.filter((r) => r.id !== id));
+        } catch (error) {
+            console.error("Failed to delete resume:", error);
+            alert("Failed to delete resume");
+        }
+    };
     return (
         <main className="bg-slate-50 px-6 py-10">
             <div className="mx-auto max-w-7xl space-y-10">
@@ -79,7 +102,13 @@ export default function ResumeDashboardPage() {
                         Previously created
                     </h3>
 
-                    {resumes.length === 0 ? (
+                    {isLoading ? (
+                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                            {[1, 2, 3].map((i) => (
+                                <div key={i} className="h-32 animate-pulse rounded-xl bg-slate-200" />
+                            ))}
+                        </div>
+                    ) : resumes.length === 0 ? (
                         <div className="rounded-xl border border-dashed border-slate-300 bg-white p-10 text-center">
                             <p className="text-slate-500">
                                 You haven’t created any resumes yet.
@@ -88,10 +117,14 @@ export default function ResumeDashboardPage() {
                     ) : (
                         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                             {resumes.map((resume) => (
-                                <button
+                                <div
                                     key={resume.id}
+                                    onClick={() => {
+                                        localStorage.setItem("resume-builder-data", JSON.stringify({ resume: resume.resume_data, template: "classic" }));
+                                        router.push(`/candidate/resume/create?id=${resume.id}`);
+                                    }}
                                     className="
-                                    group rounded-xl border border-slate-200 bg-white p-5 
+                                    group relative rounded-xl border border-slate-200 bg-white p-5 
                                     text-left shadow-sm transition
                                     hover:shadow-md hover:border-[#1e3a8a]/30
                                     cursor-pointer
@@ -108,11 +141,18 @@ export default function ResumeDashboardPage() {
                                             </p>
                                             <div className="flex items-center gap-1 text-sm text-slate-500">
                                                 <Clock className="h-4 w-4" />
-                                                {resume.lastUpdated}
+                                                Updated {formatDistanceToNow(new Date(resume.updated_at || resume.created_at))} ago
                                             </div>
                                         </div>
+
+                                        <button
+                                            onClick={(e) => handleDelete(e, resume.id)}
+                                            className="opacity-0 group-hover:opacity-100 p-2 text-slate-400 hover:text-red-600 transition"
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                        </button>
                                     </div>
-                                </button>
+                                </div>
                             ))}
                         </div>
                     )}
