@@ -1,4 +1,4 @@
-import { Job } from "../types";
+import { Job } from "@/app/(hr)/recruiter/job/types";
 import StatusBadge from "./StatusBadge";
 
 export default function JobTable({
