@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Job } from "../types";
 
 export default function JobModal({
     type,
