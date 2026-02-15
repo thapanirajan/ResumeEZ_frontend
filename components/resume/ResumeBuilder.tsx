@@ -111,6 +111,8 @@ export default function ResumeBuilder() {
         );
     }, [resume, template, isHydrated]);
 
+    const { isSidebarVisible, toggleSidebar } = useSidebar();
+
     if (!isHydrated) {
         return (
             <div className="flex h-screen items-center justify-center text-sm text-slate-500">
@@ -149,8 +151,6 @@ export default function ResumeBuilder() {
             setIsSaving(false);
         }
     };
-
-    const { isSidebarVisible, toggleSidebar } = useSidebar();
 
     return (
         <div className={`grid ${isSidebarVisible ? 'h-[calc(100vh-50px)]' : 'h-screen'} grid-cols-12 bg-slate-100 overflow-hidden rounded-xl shadow-sm transition-all duration-300`}>
@@ -287,3 +287,4 @@ function ResumePreview({
     if (template === "modern") return <AtsModern resume={resume} />;
     return <AtsClassic resume={resume} />;
 }
+

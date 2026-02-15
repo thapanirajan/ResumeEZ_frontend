@@ -26,7 +26,7 @@ export default function AtsClassic({ resume }: { resume: ResumeData }) {
                         {resume.linkedin && (
                             <>
                                 LinkedIn:{" "}
-                                <span className="underline">
+                                <span>
                                     {resume.linkedin}
                                 </span>
                             </>
@@ -35,7 +35,7 @@ export default function AtsClassic({ resume }: { resume: ResumeData }) {
                         {resume.github && (
                             <>
                                 GitHub:{" "}
-                                <span className="underline">
+                                <span>
                                     {resume.github}
                                 </span>
                             </>

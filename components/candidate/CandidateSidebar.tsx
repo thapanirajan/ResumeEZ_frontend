@@ -2,48 +2,56 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import Logo from "@/components/landing/Logo";
+import {
+    LayoutDashboard,
+    ScanSearch,
+    Route,
+    FileText,
+    Settings,
+} from "lucide-react";
+import Logo from "../landing/Logo";
 
 const menuItems = [
-    { name: "Dashboard", href: "/candidate" },
-    { name: "Upload Resume & JD", href: "/candidate/upload" },
-    { name: "Skill Gap Analysis", href: "/candidate/skill-gap" },
-    { name: "Learning Roadmap", href: "/candidate/learning-roadmap" },
-    { name: "Resume Builder", href: "/candidate/resume" },
-    { name: "Resume Feedback", href: "#" },
-    { name: "Resume History", href: "#" },
-    { name: "Notifications", href: "#" },
+    { name: "Dashboard", href: "/candidate", icon: LayoutDashboard },
+    { name: "Resume Builder", href: "/candidate/resume", icon: FileText },
+    { name: "Skill Gap Analysis", href: "/candidate/upload", icon: ScanSearch },
+    { name: "Learning Roadmap", href: "/candidate/learning-roadmap", icon: Route },
+    { name: "Profile & Settings", href: "/candidate/profile", icon: Settings },
 ];
 
 export default function CandidateSidebar() {
-    const pathname = usePathname(); 
+    const pathname = usePathname();
 
     return (
-        <aside className="w-64 h-screen bg-white border-r border-gray-200 flex flex-col">
-            {/* Logo */}
-            <div className="flex items-center justify-center h-20 border-b border-gray-200">
-                <Logo />
+        <div className="flex h-screen w-full flex-col">
+            <div className="flex h-20 items-center border-b border-gray-200 px-3">
+                <Logo href="/" sidebarMode className="w-full" />
             </div>
 
-            {/* Menu Items */}
             <nav className="flex-1 overflow-y-auto py-6">
-                <ul className="flex flex-col space-y-4 px-4">
+                <ul className="flex flex-col gap-2 px-3">
                     {menuItems.map((item) => {
-                        const isActive = pathname === item.href;
+                        const Icon = item.icon;
+                        const isActive =
+                            pathname === item.href ||
+                            (item.href !== "/candidate" &&
+                                pathname.startsWith(item.href));
 
                         return (
                             <li key={item.name}>
                                 <Link
                                     href={item.href}
-                                    className={`
-                                    block px-4 py-2 rounded-lg
-                                    text-gray-700 font-medium
-                                    hover:bg-blue-50 hover:text-blue-700
-                                    transition-colors duration-200
-                                    ${isActive ? "bg-blue-100 text-blue-700 font-semibold" : ""}
-                                `}
+                                    className={`flex items-center rounded-xl p-3 transition-colors ${isActive
+                                            ? "bg-blue-100 text-blue-700"
+                                            : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                                        }`}
+                                    title={item.name}
+                                    aria-label={item.name}
                                 >
-                                    {item.name}
+                                    <Icon className="h-5 w-5 shrink-0" />
+                                    <span className="ml-3 w-0 overflow-hidden whitespace-nowrap text-sm font-medium opacity-0 transition-all duration-200 group-hover:w-40 group-hover:opacity-100">
+                                        {item.name}
+                                    </span>
                                 </Link>
                             </li>
                         );
@@ -51,10 +59,12 @@ export default function CandidateSidebar() {
                 </ul>
             </nav>
 
-            {/* Optional Footer */}
-            <div className="px-4 py-4 border-t border-gray-200 text-sm text-gray-500">
-                © 2026 ResumeEZ
+            <div className="border-t border-gray-200 px-3 py-4 text-[11px] text-slate-500">
+                <span className="block text-center group-hover:hidden">2026</span>
+                <span className="hidden text-center group-hover:block">
+                    Copyright 2026 ResumeEZ
+                </span>
             </div>
-        </aside>
+        </div>
     );
 }

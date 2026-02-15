@@ -29,7 +29,7 @@ export default function ResumeDashboardPage() {
     const fetchResumes = async () => {
         try {
             setIsLoading(true);
-            const data = await resumeApi.getResumes();
+            const data = await resumeApi.getCandidateResumes();
             setResumes(data);
         } catch (error) {
             console.error("Failed to fetch resumes:", error);
@@ -52,7 +52,7 @@ export default function ResumeDashboardPage() {
     };
     return (
         <main className="bg-slate-50 px-6 py-10">
-            <div className="mx-auto max-w-7xl space-y-10">
+            <div className="mx-auto max-w-full space-y-10">
                 {/* Header */}
                 <header className="space-y-2">
                     <h1 className="text-3xl font-semibold tracking-tight text-slate-900">

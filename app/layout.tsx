@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css"
-import { Toaster } from "react-hot-toast";
+import { Toaster as SileoToaster } from "sileo";
+import { Toaster as HotToaster } from "react-hot-toast";
 
 const geistSans = Geist({
     variable: "--font-geist-sans",
@@ -29,7 +30,22 @@ export default function RootLayout({
                 className={`${geistSans.variable} ${geistMono.variable} antialiased`}
             >
                 {children}
-                <Toaster position="top-right" reverseOrder={false} />
+                <SileoToaster
+                    position="top-right"
+                    offset={20}
+                    options={{
+                        fill: "#ffffff",
+                        roundness: 20,
+                        styles: {
+                            title: "font-semibold tracking-tight text-slate-900",
+                            description: "text-slate-600 leading-relaxed",
+                            badge: "shadow-sm",
+                            button:
+                                "bg-slate-900 text-white hover:bg-slate-700 transition-colors",
+                        },
+                    }}
+                />
+                <HotToaster position="top-right" reverseOrder={false} />
             </body>
         </html>
     );

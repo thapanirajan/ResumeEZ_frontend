@@ -10,6 +10,12 @@ export type ResumeResponse = {
     updated_at: string | null;
 };
 
+export type CandidateResumeListResponseSchema = {
+    success: boolean;
+    message: string;
+    data: ResumeResponse[];
+};
+
 export const resumeApi = {
     createResume: async (title: string, resume_data: ResumeData) => {
         const response = await api.post<ResumeResponse>("/api/resume", {
@@ -22,6 +28,18 @@ export const resumeApi = {
     getResumes: async () => {
         const response = await api.get<ResumeResponse[]>("/api/resume");
         return response.data;
+    },
+
+    getCandidateResumes: async () => {
+        const response = await api.get<CandidateResumeListResponseSchema | ResumeResponse[]>(
+            "/api/resume"
+        );
+
+        if (Array.isArray(response.data)) {
+            return response.data;
+        }
+
+        return response.data.data ?? [];
     },
 
     getResumeById: async (id: string) => {

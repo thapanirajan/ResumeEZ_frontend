@@ -1,8 +1,12 @@
-import { ResumeData } from "@/app/(candidate)/candidate/resume/type";
-import { useState } from "react";
+import { Experience, ResumeData } from "@/app/(candidate)/candidate/resume/type";
+import { useState, type ReactNode } from "react";
+import api from "@/util/api";
+import toast from "react-hot-toast";
+import { AxiosError } from "axios";
 import {
     DndContext,
     closestCenter,
+    type DragEndEvent,
 } from "@dnd-kit/core";
 import {
     SortableContext,
@@ -38,7 +42,7 @@ export default function ExperienceForm({
 
     const updateExperience = (
         index: number,
-        field: string,
+        field: keyof Experience,
         value: string
     ) => {
         const updated = [...resume.experience];
@@ -55,7 +59,7 @@ export default function ExperienceForm({
 
     /* ---------------- DRAG HANDLER ---------------- */
 
-    const handleDragEnd = (event: any) => {
+    const handleDragEnd = (event: DragEndEvent) => {
         const { active, over } = event;
         if (!over || active.id === over.id) return;
 
@@ -88,15 +92,31 @@ export default function ExperienceForm({
 
     const enhanceWithAI = async (index: number) => {
         const text = resume.experience[index].description;
-        if (!text.trim()) return;
+        if (!text.trim()) {
+            toast.error("Please add experience details before using AI.");
+            return;
+        }
 
-        setAiLoadingIndex(index);
+        try {
+            setAiLoadingIndex(index);
 
-        // 🔹 Replace with real API later
-        const improved = await fakeAI(text);
+            const response = await api.post<{ result: string }>(
+                "/api/ollama/generate",
+                { prompt: text }
+            );
+            const improved = response.data?.result?.trim();
 
-        updateExperience(index, "description", improved);
-        setAiLoadingIndex(null);
+            if (!improved) {
+                throw new Error("AI returned an empty response");
+            }
+
+            updateExperience(index, "description", improved);
+            toast.success("Experience improved");
+        } catch (error) {
+            toast.error(getErrorMessage(error));
+        } finally {
+            setAiLoadingIndex(null);
+        }
     };
 
     return (
@@ -134,7 +154,6 @@ export default function ExperienceForm({
                             <SortableCard key={index} id={index.toString()}>
                                 {({ setActivatorNodeRef, listeners, attributes }) => (
                                     <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-4">
-
                                         {/* HEADER */}
                                         <div className="flex items-center justify-between">
                                             {/* DRAG HANDLE */}
@@ -148,7 +167,7 @@ export default function ExperienceForm({
             text-sm font-medium
           "
                                             >
-                                                ⋮⋮ Drag
+                                                :: Drag
                                             </button>
 
                                             <button
@@ -159,7 +178,7 @@ export default function ExperienceForm({
                                             </button>
                                         </div>
 
-                                        {/* INPUTS (NOW WORKING) */}
+                                        {/* INPUTS */}
                                         <Field
                                             label="Job Title"
                                             value={exp.role}
@@ -232,7 +251,6 @@ export default function ExperienceForm({
                                             </div>
                                         </div>
 
-
                                         <div className="space-y-2">
                                             <label className="text-sm font-medium text-slate-700">
                                                 Responsibilities & Achievements
@@ -257,16 +275,21 @@ export default function ExperienceForm({
 
                                                 <button
                                                     onClick={() => enhanceWithAI(index)}
-                                                    className="text-[#1e3a8a] font-medium"
+                                                    disabled={
+                                                        aiLoadingIndex !== null ||
+                                                        !exp.description.trim()
+                                                    }
+                                                    className="text-[#1e3a8a] font-medium disabled:opacity-50 cursor-pointer"
                                                 >
-                                                    Enhance with AI
+                                                    {aiLoadingIndex === index
+                                                        ? "Enhancing..."
+                                                        : "Enhance with AI"}
                                                 </button>
                                             </div>
                                         </div>
                                     </div>
                                 )}
                             </SortableCard>
-
                         ))}
                     </div>
                 </SortableContext>
@@ -291,9 +314,9 @@ function SortableCard({
     id: string;
     children: (props: {
         setActivatorNodeRef: (el: HTMLElement | null) => void;
-        listeners: any;
-        attributes: any;
-    }) => React.ReactNode;
+        listeners: ReturnType<typeof useSortable>["listeners"];
+        attributes: ReturnType<typeof useSortable>["attributes"];
+    }) => ReactNode;
 }) {
     const {
         attributes,
@@ -317,10 +340,14 @@ function SortableCard({
     );
 }
 
-
 /* ---------------- FIELD ---------------- */
+type FieldProps = {
+    label: string;
+    value: string;
+    onChange: (value: string) => void;
+};
 
-function Field({ label, value, onChange }: any) {
+function Field({ label, value, onChange }: FieldProps) {
     return (
         <div className="space-y-1">
             <label className="text-sm font-medium">{label}</label>
@@ -333,19 +360,24 @@ function Field({ label, value, onChange }: any) {
     );
 }
 
-/* ---------------- MOCK AI ---------------- */
+function getErrorMessage(error: unknown): string {
+    if (error instanceof AxiosError) {
+        const responseData = error.response?.data as
+            | { message?: string; detail?: string; error?: string }
+            | undefined;
 
-async function fakeAI(text: string): Promise<string> {
-    return new Promise((resolve) =>
-        setTimeout(() => {
-            resolve(
-                text
-                    .split("\n")
-                    .map((line) =>
-                        line.startsWith("•") ? line : `• ${line}`
-                    )
-                    .join("\n")
-            );
-        }, 1200)
-    );
+        return (
+            responseData?.message ||
+            responseData?.detail ||
+            responseData?.error ||
+            error.message ||
+            "Failed to improve experience"
+        );
+    }
+
+    if (error instanceof Error) {
+        return error.message || "Failed to improve experience";
+    }
+
+    return "Failed to improve experience";
 }

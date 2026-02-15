@@ -6,13 +6,12 @@ export default function HrLayout({ children }: { children: ReactNode }) {
     return (
         <RoleGuard role="RECRUITER">
             <div className="flex min-h-screen bg-gray-50">
-                {/* Sidebar - fixed on left */}
-                <aside className="hidden lg:flex lg:flex-col w-64 bg-white border-r border-gray-200 fixed h-screen">
+                {/* Sidebar - expands on hover but stays in layout flow (no overlay) */}
+                <aside className="group hidden h-screen w-20 shrink-0 border-r border-gray-200 bg-white transition-all duration-300 hover:w-64 lg:flex lg:flex-col">
                     <RecruiterSidebar />
                 </aside>
 
-                {/* Main Content - add margin-left same as sidebar width */}
-                <main className="flex-1 p-6 ml-0 lg:ml-64 overflow-y-auto h-screen">
+                <main className="h-screen flex-1 overflow-y-auto p-6 min-w-0">
                     {children}
                 </main>
             </div>

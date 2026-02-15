@@ -1,5 +1,8 @@
 import { useState } from "react";
 import { ResumeData } from "@/app/(candidate)/candidate/resume/type";
+import api from "@/util/api";
+import toast from "react-hot-toast";
+import { AxiosError } from "axios";
 
 const MAX_CHARS = 600;
 const MIN_CHARS = 250;
@@ -15,18 +18,31 @@ export default function SummaryForm({
     const charCount = resume.summary.length;
 
     async function improveWithAI() {
-        if (!resume.summary.trim()) return;
+        if (!resume.summary.trim()) {
+            toast.error("Please add a summary before using AI.");
+            return;
+        }
 
         try {
             setIsImproving(true);
 
-            // 🔹 Replace this with your real AI API call
-            const improvedSummary = await fakeAiImprove(resume.summary);
+            const response = await api.post<{ result: string }>(
+                "/api/ollama/generate",
+                { prompt: resume.summary }
+            );
+            const improvedSummary = response.data?.result?.trim();
+
+            if (!improvedSummary) {
+                throw new Error("AI returned an empty response");
+            }
 
             setResume({
                 ...resume,
                 summary: improvedSummary,
             });
+            toast.success("Summary improved");
+        } catch (error) {
+            toast.error(getErrorMessage(error));
         } finally {
             setIsImproving(false);
         }
@@ -51,7 +67,7 @@ export default function SummaryForm({
                 </p>
                 <ul className="list-disc list-inside space-y-1">
                     <li>Start with your role or experience level</li>
-                    <li>Mention 2–3 core skills</li>
+                    <li>Mention 2-3 core skills</li>
                     <li>Highlight impact or results</li>
                 </ul>
             </div>
@@ -120,18 +136,23 @@ export default function SummaryForm({
     );
 }
 
+function getErrorMessage(error: unknown): string {
+    if (error instanceof AxiosError) {
+        const responseData = error.response?.data as
+            | { message?: string; detail?: string; error?: string }
+            | undefined;
+        return (
+            responseData?.message ||
+            responseData?.detail ||
+            responseData?.error ||
+            error.message ||
+            "Failed to improve summary"
+        );
+    }
 
-async function fakeAiImprove(text: string): Promise<string> {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            resolve(
-                text
-                    .replace(/\s+/g, " ")
-                    .replace(
-                        /^/,
-                        "Results-driven professional with experience in "
-                    )
-            );
-        }, 1200);
-    });
+    if (error instanceof Error) {
+        return error.message || "Failed to improve summary";
+    }
+
+    return "Failed to improve summary";
 }

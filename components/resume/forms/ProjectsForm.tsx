@@ -1,4 +1,8 @@
-import { ResumeData } from "@/app/(candidate)/candidate/resume/type";
+import { Project, ResumeData } from "@/app/(candidate)/candidate/resume/type";
+import { useState } from "react";
+import api from "@/util/api";
+import toast from "react-hot-toast";
+import { AxiosError } from "axios";
 
 export default function ProjectsForm({
     resume,
@@ -7,6 +11,8 @@ export default function ProjectsForm({
     resume: ResumeData;
     setResume: (r: ResumeData) => void;
 }) {
+    const [aiLoadingIndex, setAiLoadingIndex] = useState<number | null>(null);
+
     const addProject = () => {
         setResume({
             ...resume,
@@ -26,7 +32,7 @@ export default function ProjectsForm({
 
     const updateProject = (
         index: number,
-        field: string,
+        field: keyof Project,
         value: string
     ) => {
         const updated = [...resume.projects];
@@ -39,6 +45,35 @@ export default function ProjectsForm({
             ...resume,
             projects: resume.projects.filter((_, i) => i !== index),
         });
+    };
+
+    const enhanceProjectDescriptionWithAI = async (index: number) => {
+        const text = resume.projects[index].description;
+        if (!text.trim()) {
+            toast.error("Please add project details before using AI.");
+            return;
+        }
+
+        try {
+            setAiLoadingIndex(index);
+
+            const response = await api.post<{ result: string }>(
+                "/api/ollama/generate",
+                { prompt: text }
+            );
+            const improved = response.data?.result?.trim();
+
+            if (!improved) {
+                throw new Error("AI returned an empty response");
+            }
+
+            updateProject(index, "description", improved);
+            toast.success("Project description improved");
+        } catch (error) {
+            toast.error(getErrorMessage(error));
+        } finally {
+            setAiLoadingIndex(null);
+        }
     };
 
     return (
@@ -113,6 +148,22 @@ export default function ProjectsForm({
                                 }
                                 className="w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-[#1e3a8a] focus:ring-2 focus:ring-[#1e3a8a]/20"
                             />
+                            <div className="flex justify-end">
+                                <button
+                                    onClick={() =>
+                                        enhanceProjectDescriptionWithAI(index)
+                                    }
+                                    disabled={
+                                        aiLoadingIndex !== null ||
+                                        !project.description.trim()
+                                    }
+                                    className="text-xs font-medium text-[#1e3a8a] disabled:opacity-50"
+                                >
+                                    {aiLoadingIndex === index
+                                        ? "Enhancing..."
+                                        : "Enhance with AI"}
+                                </button>
+                            </div>
                         </div>
 
                         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -173,4 +224,26 @@ function Field({
             />
         </div>
     );
+}
+
+function getErrorMessage(error: unknown): string {
+    if (error instanceof AxiosError) {
+        const responseData = error.response?.data as
+            | { message?: string; detail?: string; error?: string }
+            | undefined;
+
+        return (
+            responseData?.message ||
+            responseData?.detail ||
+            responseData?.error ||
+            error.message ||
+            "Failed to improve project description"
+        );
+    }
+
+    if (error instanceof Error) {
+        return error.message || "Failed to improve project description";
+    }
+
+    return "Failed to improve project description";
 }
