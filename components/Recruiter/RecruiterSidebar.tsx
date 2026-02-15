@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+    House,
     BriefcaseBusiness,
     LayoutDashboard,
     Users,
@@ -13,6 +14,7 @@ import {
 import Logo from "../landing/Logo";
 
 const recruiterMenuItems = [
+    { name: "Website", href: "/", icon: House },
     { name: "Dashboard", href: "/recruiter", icon: LayoutDashboard },
     { name: "Jobs", href: "/recruiter/job", icon: BriefcaseBusiness },
     { name: "Screening", href: "/recruiter/screening", icon: ClipboardList },
@@ -34,10 +36,10 @@ export default function RecruiterSidebar() {
                 <ul className="flex flex-col gap-2 px-3">
                     {recruiterMenuItems.map((item) => {
                         const Icon = item.icon;
-                        const isActive =
-                            pathname === item.href ||
-                            (item.href !== "/recruiter" &&
-                                pathname.startsWith(item.href));
+                        const isActive = item.href === "/"
+                            ? pathname === "/"
+                            : pathname === item.href ||
+                            (item.href !== "/recruiter" && pathname.startsWith(item.href));
 
                         return (
                             <li key={item.name}>

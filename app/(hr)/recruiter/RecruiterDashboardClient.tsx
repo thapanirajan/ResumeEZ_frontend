@@ -11,6 +11,7 @@ import {
     LineChart,
     Line,
 } from "recharts";
+import UserDropdown from "@/components/common/UserDropDown";
 
 const stats = [
     { label: "Job Postings", value: 12, icon: Briefcase },
@@ -52,6 +53,7 @@ export default function RecruiterDashboard() {
                     <button className="p-2.5 rounded-xl bg-white shadow-sm hover:shadow-md transition">
                         <Bell className="h-5 w-5 text-gray-600" />
                     </button>
+                    <UserDropdown />
                 </div>
             </div>
 

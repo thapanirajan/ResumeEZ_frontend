@@ -2,6 +2,7 @@
 
 import { Bell, Search, FileText, Briefcase, TrendingUp, BarChart3 } from "lucide-react";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from "recharts";
+import UserDropdown from "@/components/common/UserDropDown";
 
 const stats = [
     { label: "Resumes Created", value: 3, icon: FileText },
@@ -37,6 +38,7 @@ export default function CandidateDashboard() {
                     <button className="p-2 rounded-full bg-white shadow-sm hover:shadow-md transition">
                         <Bell className="h-5 w-5 text-gray-600" />
                     </button>
+                    <UserDropdown />
                 </div>
             </div>
 
