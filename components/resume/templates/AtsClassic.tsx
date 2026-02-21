@@ -2,7 +2,7 @@ import { ResumeData } from "@/app/(candidate)/candidate/resume/type";
 
 export default function AtsClassic({ resume }: { resume: ResumeData }) {
     return (
-        <div className="font-serif text-[13.5px] leading-[1.55] text-black">
+        <div className="font-serif text-[14.5px] leading-[1.55] text-black">
             {/* ================= HEADER ================= */}
             <header className="mb-5 text-center">
                 <h1 className="text-[22px] font-bold tracking-tight">
@@ -26,18 +26,18 @@ export default function AtsClassic({ resume }: { resume: ResumeData }) {
                         {resume.linkedin && (
                             <>
                                 LinkedIn:{" "}
-                                <span>
+                                <a href={resume.linkedin} target="_blank" rel="noreferrer">
                                     {resume.linkedin}
-                                </span>
+                                </a>
                             </>
                         )}
                         {resume.linkedin && resume.github && " • "}
                         {resume.github && (
                             <>
                                 GitHub:{" "}
-                                <span>
+                                <a href={resume.github} target="_blank" rel="noreferrer">
                                     {resume.github}
-                                </span>
+                                </a>
                             </>
                         )}
                     </p>
@@ -47,7 +47,7 @@ export default function AtsClassic({ resume }: { resume: ResumeData }) {
             {/* ================= SUMMARY ================= */}
             {resume.summary && (
                 <Section title="Professional Summary">
-                    <p>{resume.summary}</p>
+                    <p className="text-justify">{resume.summary}</p>
                 </Section>
             )}
 
@@ -95,15 +95,15 @@ export default function AtsClassic({ resume }: { resume: ResumeData }) {
                                 </p>
                             )}
 
-                            <p className="mt-0.5">
+                            <p className="mt-0.5 text-justify">
                                 {p.description}
                             </p>
 
                             {(p.liveUrl || p.githubUrl) && (
                                 <p className="mt-0.5 text-[12px]">
-                                    {p.liveUrl && `Live: ${p.liveUrl}`}
+                                    {p.liveUrl && <a href={p.liveUrl} target="_blank" rel="noreferrer">Live: {p.liveUrl}</a>}
                                     {p.liveUrl && p.githubUrl && " • "}
-                                    {p.githubUrl && `GitHub: ${p.githubUrl}`}
+                                    {p.githubUrl && <a href={p.githubUrl} target="_blank" rel="noreferrer">GitHub: {p.githubUrl}</a>}
                                 </p>
                             )}
                         </div>
@@ -138,7 +138,7 @@ export default function AtsClassic({ resume }: { resume: ResumeData }) {
                             )}
 
                             {e.honors && (
-                                <p className="text-[12.5px]">
+                                <p className="text-[12.5px] text-justify">
                                     {e.honors}
                                 </p>
                             )}
@@ -161,7 +161,7 @@ function Section({
 }) {
     return (
         <section className="mb-4">
-            <h2 className="mb-1 border-b border-black text-[13px] font-bold uppercase tracking-wide">
+            <h2 className="mb-1 border-b border-black pb-1 text-[13px] font-bold uppercase tracking-wide">
                 {title}
             </h2>
             {children}

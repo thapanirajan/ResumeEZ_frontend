@@ -1,25 +1,25 @@
-import CtaBanner from "@/components/landing/CtaBanner";
-import Features from "@/components/landing/Features";
+
+import Navbar from "@/components/landing/Header";
 import Footer from "@/components/landing/Footer";
-import Header from "@/components/landing/Header";
-import Hero from "@/components/landing/Hero";
-import HowItWorks from "@/components/landing/HowItWorks";
-// import Pricing from "@/components/landing/Pricing";
-// import Testimonials from "@/components/landing/Testimonials";
-import WhyUs from "@/components/landing/WhyUs";
+import HeroSection from "@/components/landing/Hero";
+import SolutionsSection from "@/components/landing/SolutionSection";
+import JobBoardSection from "@/components/landing/JobBoardSection";
+import SkillGapSection from "@/components/landing/Skillgapsection";
+import HiringSection from "@/components/landing/HiringSection";
+import CTASection from "@/components/landing/CTASection";
+
 
 export default function Home() {
     return (
-        <div>
-            <Header />
-            <Hero />
-            <WhyUs />
-            <Features />
-            <HowItWorks />
-            {/* <Pricing />
-            <Testimonials /> */}
-            <CtaBanner />
+        <main className="bg-white text-slate-900 font-display">
+            <Navbar />
+            <HeroSection />
+            <SolutionsSection />
+            <JobBoardSection />
+            <SkillGapSection />
+            <HiringSection />
+            <CTASection />
             <Footer />
-        </div>
+        </main>
     );
 }

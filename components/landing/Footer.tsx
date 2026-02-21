@@ -1,70 +1,63 @@
-import Link from 'next/link';
-import Logo from './Logo';
+import Logo from "./Logo";
 
-const footerColumns = [
-    {
-        heading: 'Product',
-        links: [
-            { label: 'Features', href: '#features' },
-            { label: 'Pricing', href: '#pricing' },
-            { label: 'Demo', href: '#' },
-            { label: 'FAQ', href: '#' },
-        ],
-    },
-    {
-        heading: 'Users',
-        links: [
-            { label: 'Candidates', href: '#' },
-            { label: 'HR Teams', href: '#' },
-            { label: 'Support', href: '#' },
-        ],
-    },
-    {
-        heading: 'Company',
-        links: [
-            { label: 'About', href: '#' },
-            { label: 'Contact', href: '#' },
-            { label: 'Careers', href: '#' },
-        ],
-    },
-];
+const platformLinks = ["Resume Builder", "Skill Analysis", "Recruiter Tools", "Job Search"];
+const companyLinks = ["About Us", "Pricing", "Terms of Service", "Privacy Policy"];
 
 export default function Footer() {
     return (
-        <footer className="bg-white">
-            <div className="max-w-7xl mx-auto px-4 py-12 md:px-6 md:py-16">
-                <div className="grid gap-12 lg:grid-cols-4">
-                    <div className="lg:col-span-1">
-                        <Logo />
-                        <p className="mt-4 text-sm text-muted-foreground">
-                            AI-powered resume optimization and candidate screening.
+        <footer className="py-12 bg-white border-t border-slate-100">
+            <div className="max-w-7xl mx-auto px-6">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12 mb-12">
+                    {/* Brand */}
+                    <div className="col-span-2">
+                        <div className="mb-4">
+                            <Logo />
+                        </div>
+                        <p className="text-slate-500 max-w-sm text-sm leading-relaxed">
+                            The world&apos;s most advanced AI-powered recruitment platform
+                            designed to bring transparency and efficiency to the hiring process.
                         </p>
                     </div>
-                    <div className="grid gap-8 sm:grid-cols-3 lg:col-span-3">
-                        {footerColumns.map((column) => (
-                            <div key={column.heading}>
-                                <h3 className="font-headline text-sm font-semibold tracking-wider uppercase text-foreground">
-                                    {column.heading}
-                                </h3>
-                                <ul className="mt-4 space-y-3">
-                                    {column.links.map((link) => (
-                                        <li key={link.label}>
-                                            <Link
-                                                href={link.href}
-                                                className="text-sm text-muted-foreground transition-colors hover:text-primary"
-                                            >
-                                                {link.label}
-                                            </Link>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                        ))}
+
+                    {/* Platform Links */}
+                    <div>
+                        <h4 className="font-bold mb-4 text-sm uppercase tracking-widest text-slate-400">
+                            Platform
+                        </h4>
+                        <ul className="space-y-3 text-sm font-medium text-slate-600">
+                            {platformLinks.map((link) => (
+                                <li key={link}>
+                                    <a href="#" className="hover:text-primary transition-colors">
+                                        {link}
+                                    </a>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+
+                    {/* Company Links */}
+                    <div>
+                        <h4 className="font-bold mb-4 text-sm uppercase tracking-widest text-slate-400">
+                            Company
+                        </h4>
+                        <ul className="space-y-3 text-sm font-medium text-slate-600">
+                            {companyLinks.map((link) => (
+                                <li key={link}>
+                                    <a href="#" className="hover:text-primary transition-colors">
+                                        {link}
+                                    </a>
+                                </li>
+                            ))}
+                        </ul>
                     </div>
                 </div>
-                {/* <div className="text-center text-sm text-muted-foreground border-t">
-                    <p>© {new Date().getFullYear()} ResumeEZ. All Rights Reserved.</p>
-                </div> */}
+
+                {/* Bottom Bar */}
+                <div className="pt-8 border-t border-slate-100 text-center">
+                    <p className="text-slate-400 text-xs">
+                        © 2026 ResumeEZ AI. All rights reserved.
+                    </p>
+                </div>
             </div>
         </footer>
     );

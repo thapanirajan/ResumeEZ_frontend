@@ -50,14 +50,14 @@ export default function AtsResumePreview({
                     {resume.linkedin && (
                         <>
                             LinkedIn:{" "}
-                            <span className="underline">{resume.linkedin}</span>
+                            <a href={resume.linkedin} className="underline" target="_blank" rel="noreferrer">{resume.linkedin}</a>
                         </>
                     )}
                     {resume.github && resume.linkedin && " | "}
                     {resume.github && (
                         <>
                             GitHub:{" "}
-                            <span className="underline">{resume.github}</span>
+                            <a href={resume.github} className="underline" target="_blank" rel="noreferrer">{resume.github}</a>
                         </>
                     )}
                 </p>
@@ -67,7 +67,7 @@ export default function AtsResumePreview({
             {resume.summary && (
                 <>
                     <Section title="Summary">
-                        <p>{resume.summary}</p>
+                        <p className="text-justify">{resume.summary}</p>
                     </Section>
                 </>
             )}
@@ -119,7 +119,7 @@ export default function AtsResumePreview({
                             )}
 
                             {edu.gpa && <p>GPA: {edu.gpa}</p>}
-                            {edu.honors && <p>{edu.honors}</p>}
+                            {edu.honors && <p className="text-justify">{edu.honors}</p>}
                         </div>
                     ))}
                 </Section>
@@ -141,7 +141,7 @@ function Section({
 }) {
     return (
         <>
-            <h2 className="mt-4 font-bold uppercase">{title}</h2>
+            <h2 className="mb-1 mt-4 font-bold uppercase">{title}</h2>
             <hr className="my-2" />
             {children}
         </>

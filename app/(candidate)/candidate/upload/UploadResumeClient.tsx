@@ -1,10 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { ResumeResponse, resumeApi } from "@/services/resume.service";
+import { skillGapApi, saveAnalysisResult } from "@/services/skill-gap.service";
 import toast from "react-hot-toast";
 
 export default function UploadResumeClient() {
+    const router = useRouter();
     const [resumes, setResumes] = useState<ResumeResponse[]>([]);
     const [selectedResumeId, setSelectedResumeId] = useState("");
     const [jobTitle, setJobTitle] = useState("");
@@ -53,7 +56,23 @@ export default function UploadResumeClient() {
 
         try {
             setIsSubmitting(true);
-            toast.success("Ready for analysis. Backend integration comes next.");
+            const result = await skillGapApi.analyze(
+                selectedResumeId,
+                jobDescription.trim()
+            );
+            saveAnalysisResult(result);
+            toast.success("Analysis complete!");
+            router.push("/candidate/skill-gap");
+        } catch (error: unknown) {
+            console.error("Skill gap analysis failed:", error);
+            const axiosError = error as {
+                response?: { data?: { detail?: string; message?: string } };
+            };
+            const message =
+                axiosError?.response?.data?.detail ||
+                axiosError?.response?.data?.message ||
+                "Analysis failed. Please try again.";
+            toast.error(message);
         } finally {
             setIsSubmitting(false);
         }
@@ -198,11 +217,14 @@ export default function UploadResumeClient() {
 
                             <section className="rounded-2xl border border-blue-200 bg-blue-50 p-5">
                                 <h3 className="text-sm font-semibold text-blue-900">
-                                    Expected Output
+                                    What you&apos;ll get
                                 </h3>
-                                <p className="mt-2 text-sm text-blue-800">
-                                    Missing skills, match score, and roadmap suggestions will appear after backend analysis is wired.
-                                </p>
+                                <ul className="mt-2 space-y-1 text-sm text-blue-800">
+                                    <li>✓ Skill match percentage</li>
+                                    <li>✓ Matched &amp; missing skills</li>
+                                    <li>✓ Priority-ranked gap list</li>
+                                    <li>✓ 3-phase learning roadmap</li>
+                                </ul>
                             </section>
 
                             <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">

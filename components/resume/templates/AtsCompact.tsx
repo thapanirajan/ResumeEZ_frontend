@@ -17,16 +17,16 @@ export default function AtsCompact({ resume }: { resume: ResumeData }) {
 
                 {(resume.linkedin || resume.github) && (
                     <p className="text-[11.5px]">
-                        {resume.linkedin && resume.linkedin}
+                        {resume.linkedin && <a href={resume.linkedin} target="_blank" rel="noreferrer">{resume.linkedin}</a>}
                         {resume.linkedin && resume.github && " | "}
-                        {resume.github && resume.github}
+                        {resume.github && <a href={resume.github} target="_blank" rel="noreferrer">{resume.github}</a>}
                     </p>
                 )}
             </header>
 
             {resume.summary && (
                 <Section title="Summary">
-                    <p>{resume.summary}</p>
+                    <p className="text-justify">{resume.summary}</p>
                 </Section>
             )}
 
@@ -58,7 +58,7 @@ export default function AtsCompact({ resume }: { resume: ResumeData }) {
                             <p className="italic text-[11px]">
                                 {p.techStack}
                             </p>
-                            <p>{p.description}</p>
+                            <p className="text-justify">{p.description}</p>
                         </div>
                     ))}
                 </Section>

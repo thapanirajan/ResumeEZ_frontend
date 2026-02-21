@@ -23,16 +23,16 @@ export default function AtsModern({ resume }: { resume: ResumeData }) {
 
                 {(resume.linkedin || resume.github) && (
                     <p className="text-[12.5px]">
-                        {resume.linkedin && resume.linkedin}
+                        {resume.linkedin && <a href={resume.linkedin} target="_blank" rel="noreferrer">{resume.linkedin}</a>}
                         {resume.linkedin && resume.github && " • "}
-                        {resume.github && resume.github}
+                        {resume.github && <a href={resume.github} target="_blank" rel="noreferrer">{resume.github}</a>}
                     </p>
                 )}
             </header>
 
             {resume.summary && (
                 <Section title="Profile">
-                    <p>{resume.summary}</p>
+                    <p className="text-justify">{resume.summary}</p>
                 </Section>
             )}
 
@@ -75,15 +75,15 @@ export default function AtsModern({ resume }: { resume: ResumeData }) {
                                 {p.techStack}
                             </p>
 
-                            <p className="mt-0.5">
+                            <p className="mt-0.5 text-justify">
                                 {p.description}
                             </p>
 
                             {(p.liveUrl || p.githubUrl) && (
                                 <p className="mt-0.5 text-[12px]">
-                                    {p.liveUrl && `Live: ${p.liveUrl}`}
+                                    {p.liveUrl && <a href={p.liveUrl} target="_blank" rel="noreferrer">Live: {p.liveUrl}</a>}
                                     {p.liveUrl && p.githubUrl && " • "}
-                                    {p.githubUrl && `GitHub: ${p.githubUrl}`}
+                                    {p.githubUrl && <a href={p.githubUrl} target="_blank" rel="noreferrer">GitHub: {p.githubUrl}</a>}
                                 </p>
                             )}
                         </div>
@@ -122,7 +122,7 @@ function Section({
 }) {
     return (
         <section className="mb-6">
-            <h2 className="mb-1 border-b border-slate-300 text-[13px] font-bold uppercase tracking-wide">
+            <h2 className="mb-1 border-b border-slate-300 pb-1 text-[13px] font-bold uppercase tracking-wide">
                 {title}
             </h2>
             {children}
