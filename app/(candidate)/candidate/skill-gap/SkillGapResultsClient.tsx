@@ -149,7 +149,7 @@ function NoResults() {
                 Run a skill gap analysis first by selecting a resume and pasting a job description.
             </p>
             <Link href="/candidate/upload">
-                <button className="mt-6 rounded-lg bg-[#1e3a8a] px-5 py-2.5 text-sm font-medium text-white">
+                <button className="mt-6 rounded-lg bg-[#1e3a8a] px-5 py-2.5 text-sm font-medium text-white cursor-pointer">
                     Go to Skill Gap Analyzer
                 </button>
             </Link>
