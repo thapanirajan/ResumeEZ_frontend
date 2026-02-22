@@ -15,17 +15,6 @@ function formatDate(value?: string) {
     });
 }
 
-function renderBullets(text?: string) {
-    if (!text) return null;
-
-    return text
-        .split("\n")
-        .filter(Boolean)
-        .map((line, i) => (
-            <li key={i}>{line.replace(/^•\s*/, "")}</li>
-        ));
-}
-
 
 export default function AtsResumePreview({
     resume,
@@ -90,9 +79,7 @@ export default function AtsResumePreview({
                             )}
 
                             {exp.description && (
-                                <ul className="ml-5 list-disc">
-                                    {renderBullets(exp.description)}
-                                </ul>
+                                <p className="text-justify">{exp.description}</p>
                             )}
                         </div>
                     ))}

@@ -70,7 +70,7 @@ export default function AtsClassic({ resume }: { resume: ResumeData }) {
                             </div>
 
                             {e.description && (
-                                <p className="mt-0.5">
+                                <p className="mt-0.5 text-justify">
                                     {e.description}
                                 </p>
                             )}
@@ -108,6 +108,20 @@ export default function AtsClassic({ resume }: { resume: ResumeData }) {
                             )}
                         </div>
                     ))}
+                </Section>
+            )}
+
+            {/* ================= SKILLS ================= */}
+            {resume.skills?.length > 0 && (
+                <Section title="Skills">
+                    <div className="space-y-1">
+                        {resume.skills.map((s, i) => (
+                            <p key={i}>
+                                <span className="font-semibold">{s.category}:</span>{" "}
+                                {s.items}
+                            </p>
+                        ))}
+                    </div>
                 </Section>
             )}
 

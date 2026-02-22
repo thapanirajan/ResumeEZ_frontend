@@ -55,7 +55,7 @@ export default function AtsModern({ resume }: { resume: ResumeData }) {
                                 </p>
                             )}
 
-                            <p className="mt-1">
+                            <p className="mt-1 text-justify">
                                 {e.description}
                             </p>
                         </div>
@@ -88,6 +88,19 @@ export default function AtsModern({ resume }: { resume: ResumeData }) {
                             )}
                         </div>
                     ))}
+                </Section>
+            )}
+
+            {resume.skills?.length > 0 && (
+                <Section title="Skills">
+                    <div className="space-y-1">
+                        {resume.skills.map((s, i) => (
+                            <p key={i}>
+                                <span className="font-semibold">{s.category}:</span>{" "}
+                                {s.items}
+                            </p>
+                        ))}
+                    </div>
                 </Section>
             )}
 

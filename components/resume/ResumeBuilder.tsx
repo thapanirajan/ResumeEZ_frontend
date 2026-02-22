@@ -16,6 +16,7 @@ import AtsClassic from "./templates/AtsClassic";
 import AtsCompact from "./templates/AtsCompact";
 import AtsModern from "./templates/AtsModern";
 import ProjectsForm from "./forms/ProjectsForm";
+import SkillsForm from "./forms/SkillsForm";
 import { resumeApi } from "@/services/resume.service";
 import { useSearchParams, useRouter } from "next/navigation";
 import toast from "react-hot-toast";
@@ -40,6 +41,7 @@ const steps = [
     "Experience",
     "Projects",
     "Education",
+    "Skills",
 ];
 
 
@@ -67,6 +69,7 @@ export default function ResumeBuilder() {
         experience: [],
         education: [],
         projects: [],
+        skills: [],
     });
 
     useEffect(() => {
@@ -90,6 +93,7 @@ export default function ResumeBuilder() {
                                 experience: parsed.resume.experience ?? [],
                                 projects: parsed.resume.projects ?? [],
                                 education: parsed.resume.education ?? [],
+                                skills: parsed.resume.skills ?? [],
                             });
                         }
                         if (parsed.template) setTemplate(parsed.template);
@@ -182,6 +186,9 @@ export default function ResumeBuilder() {
                     )}
                     {step === 5 && (
                         <EducationForm resume={resume} setResume={setResume} />
+                    )}
+                    {step === 6 && (
+                        <SkillsForm resume={resume} setResume={setResume} />
                     )}
                 </div>
 

@@ -16,6 +16,7 @@ import AtsClassic from "./templates/AtsClassic";
 import AtsCompact from "./templates/AtsCompact";
 import AtsModern from "./templates/AtsModern";
 import ProjectsForm from "./forms/ProjectsForm";
+import SkillsForm from "./forms/SkillsForm";
 import { Maximize, Minimize } from "lucide-react";
 import Link from "next/link";
 import Navbar from "../landing/Header";
@@ -38,6 +39,7 @@ const steps = [
     "Experience",
     "Projects",
     "Education",
+    "Skills",
 ];
 
 export default function PublicResumeBuilder() {
@@ -59,6 +61,7 @@ export default function PublicResumeBuilder() {
         experience: [],
         education: [],
         projects: [],
+        skills: [],
     });
 
     useEffect(() => {
@@ -72,6 +75,7 @@ export default function PublicResumeBuilder() {
                         experience: parsed.resume.experience ?? [],
                         projects: parsed.resume.projects ?? [],
                         education: parsed.resume.education ?? [],
+                        skills: parsed.resume.skills ?? [],
                     });
                 }
                 if (parsed.template) setTemplate(parsed.template);
@@ -145,6 +149,9 @@ export default function PublicResumeBuilder() {
                             )}
                             {step === 5 && (
                                 <EducationForm resume={resume} setResume={setResume} />
+                            )}
+                            {step === 6 && (
+                                <SkillsForm resume={resume} setResume={setResume} />
                             )}
                         </div>
 

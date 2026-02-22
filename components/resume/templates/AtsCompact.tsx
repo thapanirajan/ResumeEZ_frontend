@@ -41,7 +41,7 @@ export default function AtsCompact({ resume }: { resume: ResumeData }) {
                                     ({e.startDate}–{e.endDate})
                                 </span>
                             </p>
-                            <p>{e.description}</p>
+                            <p className="text-justify">{e.description}</p>
                         </div>
                     ))}
                 </Section>
@@ -60,6 +60,17 @@ export default function AtsCompact({ resume }: { resume: ResumeData }) {
                             </p>
                             <p className="text-justify">{p.description}</p>
                         </div>
+                    ))}
+                </Section>
+            )}
+
+            {resume.skills?.length > 0 && (
+                <Section title="Skills">
+                    {resume.skills.map((s, i) => (
+                        <p key={i}>
+                            <span className="font-semibold">{s.category}:</span>{" "}
+                            {s.items}
+                        </p>
                     ))}
                 </Section>
             )}

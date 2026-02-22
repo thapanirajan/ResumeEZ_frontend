@@ -20,6 +20,13 @@ export type Education = {
     honors?: string;
 };
 
+/* ================= SKILLS ================= */
+
+export type SkillCategory = {
+    category: string;
+    items: string; // comma-separated
+};
+
 /* ================= RESUME ================= */
 
 export type ResumeData = {
@@ -41,6 +48,7 @@ export type ResumeData = {
     experience: Experience[];
     education: Education[];
     projects: Project[];
+    skills: SkillCategory[];
 };
 
 
