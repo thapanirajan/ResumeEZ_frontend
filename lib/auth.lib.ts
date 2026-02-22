@@ -99,9 +99,8 @@ export async function authenticateEmail(email: string) {
         if (!res.ok) {
             let message = "Failed to authenticate";
             try {
-
                 const data = await res.json();
-                message = data.message ?? message
+                message = data.message ?? data.detail ?? message
             } catch { }
             throw new Error(message)
         }
