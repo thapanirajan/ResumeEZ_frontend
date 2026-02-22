@@ -1,6 +1,6 @@
 
 
-export const BASE_URL = "http://localhost:8000"
+export const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:8000"
 export type UserRole = "JOB_SEEKER" | "RECRUITER";
 
 export type CandidateProfile = {
