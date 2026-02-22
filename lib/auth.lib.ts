@@ -95,6 +95,7 @@ export async function authenticateEmail(email: string) {
             },
             body: JSON.stringify({ email }),
             cache: "no-store",
+            signal: controller.signal,
         })
         if (!res.ok) {
             let message = "Failed to authenticate";
