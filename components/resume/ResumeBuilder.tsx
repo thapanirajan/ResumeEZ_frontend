@@ -19,7 +19,7 @@ import ProjectsForm from "./forms/ProjectsForm";
 import SkillsForm from "./forms/SkillsForm";
 import { resumeApi } from "@/services/resume.service";
 import { useSearchParams, useRouter } from "next/navigation";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 import { useSidebar } from "@/context/SidebarContext";
 import { Maximize, Minimize } from "lucide-react";
 

@@ -1,7 +1,7 @@
 import { Experience, ResumeData } from "@/app/(candidate)/candidate/resume/type";
 import { useState, type ReactNode } from "react";
 import api from "@/util/api";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 import { AxiosError } from "axios";
 import {
     DndContext,

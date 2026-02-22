@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { getProfile, updateProfile, UserProfileData, UserRole } from "@/lib/auth.lib";
-import { sileo } from "sileo";
+import { toast } from "sonner";
 
 type Props = {
     expectedRole: UserRole;
@@ -54,10 +54,7 @@ export default function ProfileSettingsPage({ expectedRole, title, subtitle }: P
             } catch (err) {
                 const message = err instanceof Error ? err.message : "Failed to load profile";
                 setError(message);
-                sileo.error({
-                    title: "Could not load profile",
-                    description: message,
-                });
+                toast.error(message);
             } finally {
                 setLoading(false);
             }
@@ -90,26 +87,13 @@ export default function ProfileSettingsPage({ expectedRole, title, subtitle }: P
                     experienceYears.trim() === "" ? null : Number(experienceYears);
             }
 
-            const updated = await sileo.promise(updateProfile(payload), {
-                loading: { title: "Saving profile..." },
-                success: {
-                    title: "Profile saved",
-                    description: "Your profile settings were updated successfully.",
-                },
-                error: (err) => ({
-                    title: "Save failed",
-                    description: err instanceof Error ? err.message : "Failed to update profile.",
-                }),
-            });
-
+            const updated = await updateProfile(payload);
+            toast.success("Profile saved successfully.");
             setProfile(updated);
         } catch (err) {
             const message = err instanceof Error ? err.message : "Failed to update profile";
             setError(message);
-            sileo.error({
-                title: "Validation error",
-                description: message,
-            });
+            toast.error(message);
         } finally {
             setSaving(false);
         }

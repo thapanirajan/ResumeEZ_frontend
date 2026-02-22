@@ -127,8 +127,12 @@ export async function verifyOtp(email: string, otp: string) {
     });
 
     if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.message || "Invalid or expired OTP");
+        try {
+            const data = await res.json();
+            throw new Error(data.message ?? data.detail ?? "Invalid or expired OTP");
+        } catch {
+            throw new Error("Invalid or expired OTP");
+        }
     }
 
     return res.json();

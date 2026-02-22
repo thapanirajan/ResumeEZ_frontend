@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { authenticateEmailAction } from "./actions";
 import Logo from "@/components/landing/Logo";
 import { BASE_URL } from "@/lib/auth.lib";
+import { toast } from "sonner";
 
 export default function EmailForm() {
     const [email, setEmail] = useState("");
@@ -15,16 +16,16 @@ export default function EmailForm() {
         e.preventDefault();
         setLoading(true);
 
-        try {
-            await authenticateEmailAction(email);
-            setTimeout(() => {
-                setLoading(false);
-                router.push(`/login/verify?email=${encodeURIComponent(email)}`);
-            }, 1000);
-        } catch (error) {
-            console.log(error);
+        const result = await authenticateEmailAction(email);
+        if (!result.success) {
+            toast.error(result.error ?? "Login failed");
             setLoading(false);
+            return;
         }
+        setTimeout(() => {
+            setLoading(false);
+            router.push(`/login/verify?email=${encodeURIComponent(email)}`);
+        }, 1000);
     }
 
     return (
@@ -35,15 +36,15 @@ export default function EmailForm() {
                     <Logo />
                     {/* Premium Tooltip */}
                     <span className="
-    absolute bottom-full left-1/2 -translate-x-1/2 mb-3
-    opacity-0 scale-90
-    group-hover:opacity-100 group-hover:scale-100
-    transition-all duration-200 ease-out
-    bg-[#1E3A8A] text-white text-xs font-medium
-    rounded-md px-3 py-1 whitespace-nowrap shadow-xl
-    pointer-events-none
-    after:content-[''] after:absolute after:top-full after:left-1/2 after:-translate-x-1/2 after:border-4 after:border-t-[#1E3A8A] after:border-x-transparent after:border-b-transparent
-  ">
+                        absolute bottom-full left-1/2 -translate-x-1/2 mb-3
+                        opacity-0 scale-90
+                        group-hover:opacity-100 group-hover:scale-100
+                        transition-all duration-200 ease-out
+                        bg-[#1E3A8A] text-white text-xs font-medium
+                        rounded-md px-3 py-1 whitespace-nowrap shadow-xl
+                        pointer-events-none
+                        after:content-[''] after:absolute after:top-full after:left-1/2 after:-translate-x-1/2 after:border-4 after:border-t-[#1E3A8A] after:border-x-transparent after:border-b-transparent
+                    ">
                         Go back to home page
                     </span>
                 </div>

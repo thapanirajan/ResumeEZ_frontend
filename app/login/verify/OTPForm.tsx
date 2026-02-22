@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Logo from "@/components/landing/Logo";
 import { getMe, verifyOtp } from "@/lib/auth.lib";
+import { toast } from "sonner";
 
 export default function OTPForm({ email }: { email: string }) {
     const [otp, setOtp] = useState<string[]>(Array(6).fill(""));
@@ -51,18 +52,16 @@ export default function OTPForm({ email }: { email: string }) {
         if (value && index < 5) {
             inputsRef.current[index + 1].focus();
         }
+
+        const code = newOtp.join("");
+        if (code.length === 6 && !newOtp.includes("")) {
+            handleVerifyWithCode(code);
+        }
     }
 
-    async function handleVerify() {
+    async function handleVerifyWithCode(code: string) {
         if (loading) return;
-
         setLoading(true);
-
-        const code = otp.join("");
-        if (code.length !== 6) {
-            setLoading(false);
-            return;
-        }
 
         try {
             await verifyOtp(email, code);
@@ -76,18 +75,19 @@ export default function OTPForm({ email }: { email: string }) {
                 router.push("/recruiter");
             }
         } catch (err) {
-            console.log(err);
+            const message = err instanceof Error ? err.message : "Invalid or expired OTP";
+            toast.error(message);
+            setOtp(Array(6).fill(""));
             setLoading(false);
+            setTimeout(() => inputsRef.current[0]?.focus(), 0);
         }
     }
 
-    useEffect(() => {
+    async function handleVerify() {
         const code = otp.join("");
-
-        if (code.length === 6 && !otp.includes("") && !loading) {
-            handleVerify();
-        }
-    }, [otp]);
+        if (code.length !== 6 || otp.includes("")) return;
+        await handleVerifyWithCode(code);
+    }
 
     async function handleResend() {
         if (resendDisabled) return;
@@ -120,6 +120,11 @@ export default function OTPForm({ email }: { email: string }) {
         // Focus last filled input
         const lastIndex = Math.min(digits.length, 6) - 1;
         inputsRef.current[lastIndex]?.focus();
+
+        const code = newOtp.join("");
+        if (code.length === 6 && !newOtp.includes("")) {
+            handleVerifyWithCode(code);
+        }
     }
 
 

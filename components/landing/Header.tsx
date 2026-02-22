@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import Link from "next/link";
 import Logo from "./Logo";
+import { toast } from "sonner";
 
 const navItems = [
     { label: "Home", href: "/" },
@@ -19,7 +20,12 @@ export default function Navbar() {
         <nav className="sticky top-0 z-50 w-full border-b border-primary/10 bg-white/80 backdrop-blur-md">
             <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
                 <Logo />
-
+                <button
+                    onClick={() => {
+                        toast.success("Toast applied")
+                    }}>
+                    Trigger toast
+                </button>
                 {/* Desktop Nav */}
                 <div className="hidden md:flex items-center gap-8">
                     {navItems.map(({ label, href }) => (

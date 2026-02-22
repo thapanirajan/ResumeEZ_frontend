@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ResumeResponse, resumeApi } from "@/services/resume.service";
 import { skillGapApi, saveAnalysisResult } from "@/services/skill-gap.service";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 
 export default function UploadResumeClient() {
     const router = useRouter();

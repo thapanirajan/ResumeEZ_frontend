@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Logo from "@/components/landing/Logo";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 import { setUserRole } from "@/lib/auth.lib";
 
 export default function SelectRolePage() {
