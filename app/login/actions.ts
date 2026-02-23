@@ -1,6 +1,6 @@
 "use server"
 
-import { authenticateEmail, setUserRole, UserRole, verifyOtp } from "@/lib/auth.lib"
+import { authenticateEmail } from "@/lib/auth.lib"
 
 export async function authenticateEmailAction(email: string) {
     try {

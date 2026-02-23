@@ -33,7 +33,7 @@ export default function Navbar() {
                 </div>
 
                 {/* Desktop: UserDropdown or Sign In */}
-                <div className="hidden md:flex items-center gap-3">
+                <div className="hidden md:flex items-center gap-3 cursor-pointer">
                     {loading ? (
                         <div className="h-9 w-9 animate-pulse rounded-full bg-gray-200" />
                     ) : user ? (

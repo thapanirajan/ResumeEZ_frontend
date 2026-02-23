@@ -38,7 +38,7 @@ export default function UserDropdown() {
     const initials = emailPrefix.slice(0, 1).toUpperCase();
 
     return (
-        <div ref={ref} className="relative">
+        <div ref={ref} className="relative cursor-pointer">
             <button
                 onClick={() => setOpen((v) => !v)}
                 className="flex items-center gap-3 rounded-full border border-transparent px-2 py-1.5 transition hover:border-slate-200 hover:bg-white"
