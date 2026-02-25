@@ -26,15 +26,18 @@ function formatSalary(min: number | null, max: number | null): string {
 export default function JobFeed({ jobs }: { jobs: JobResponse[] }) {
     if (jobs.length === 0) {
         return (
-            <div className="flex flex-col items-center justify-center py-20 text-slate-400 gap-2">
-                <span className="text-4xl">💼</span>
-                <p className="text-sm">No jobs available right now.</p>
+            <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-white py-16 sm:py-24 text-slate-500 gap-2 text-center">
+                <span className="text-3xl">💼</span>
+                <p className="text-sm font-medium text-slate-700">No jobs available right now</p>
+                <p className="text-sm text-slate-500 max-w-sm">
+                    Try checking back later as new roles are posted.
+                </p>
             </div>
         )
     }
 
     return (
-        <div className="space-y-3">
+        <div className="flex flex-col space-y-4">
             {jobs.map((job) => (
                 <JobCard
                     key={job.id}

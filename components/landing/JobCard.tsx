@@ -44,8 +44,8 @@ export default function JobCard({
     const TypeIcon = TYPE_ICONS[type] ?? Briefcase
 
     return (
-        <div className="group bg-white border border-slate-200 rounded-xl p-5 hover:border-primary/40 hover:shadow-md transition-all duration-200">
-            <div className="flex items-start justify-between gap-3 mb-3">
+        <div className="group border border-slate-200/70 bg-white shadow-sm rounded-2xl p-5 sm:p-7 hover:border-primary/40 hover:shadow-md transition-all duration-200">
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-3">
                 {/* Icon + Title */}
                 <div className="flex items-start gap-3">
                     <div className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center shrink-0 mt-0.5">
@@ -63,7 +63,7 @@ export default function JobCard({
                 </div>
 
                 {/* Status badge */}
-                <span className={`shrink-0 text-xs font-semibold px-2.5 py-1 rounded-full ${statusColor}`}>
+                <span className={`self-start sm:self-auto shrink-0 text-xs font-semibold px-2.5 py-1 rounded-full ${statusColor}`}>
                     {status}
                 </span>
             </div>
@@ -74,7 +74,7 @@ export default function JobCard({
             </p>
 
             {/* Meta row */}
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div className="flex items-center gap-4 flex-wrap">
                     <span className="flex items-center gap-1.5 text-xs text-slate-500">
                         <Banknote className="w-3.5 h-3.5 text-slate-400" />
@@ -92,7 +92,7 @@ export default function JobCard({
 
                 <a
                     href={`/job/${id}`}
-                    className="flex items-center gap-1 text-xs font-semibold text-primary hover:underline shrink-0"
+                    className="inline-flex items-center justify-center gap-1 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-xs font-semibold text-primary hover:bg-primary/10 transition-colors sm:w-auto w-full"
                 >
                     View
                     <ChevronRight className="w-3.5 h-3.5" />

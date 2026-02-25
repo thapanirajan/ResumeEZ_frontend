@@ -11,7 +11,7 @@ import UserDropdown from "@/components/common/UserDropDown";
 const navItems = [
     { label: "Home", href: "/" },
     { label: "Resume Builder", href: "/resume-builder" },
-    { label: "Jobs", href: "/job" },
+    { label: "Job Listings", href: "/job" },
 ];
 
 export default function Navbar() {
