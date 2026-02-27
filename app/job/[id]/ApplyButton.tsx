@@ -22,14 +22,31 @@ type Resume = {
     updated_at: string | null
 }
 
+type ApplicationStatus = "PENDING" | "REVIEWING" | "ACCEPTED" | "REJECTED"
+
+type Application = {
+    id: string
+    status: ApplicationStatus
+}
+
 export default function ApplyButton({ jobId }: { jobId: string }) {
     const [open, setOpen] = useState(false)
     const [resumes, setResumes] = useState<Resume[]>([])
     const [loading, setLoading] = useState(false)
     const [selectedId, setSelectedId] = useState<string | null>(null)
     const [submitting, setSubmitting] = useState(false)
+    // undefined = still checking, null = not applied, Application = applied
+    const [application, setApplication] = useState<Application | null | undefined>(undefined)
     const backdropRef = useRef<HTMLDivElement>(null)
 
+    // Check on mount if the candidate already applied
+    useEffect(() => {
+        api.get<Application>(`/api/applications/check/${jobId}`)
+            .then((res) => setApplication(res.data))
+            .catch(() => setApplication(null))
+    }, [jobId])
+
+    // Load resumes when modal opens
     useEffect(() => {
         if (!open) return
         setLoading(true)
@@ -56,14 +73,52 @@ export default function ApplyButton({ jobId }: { jobId: string }) {
         const selected = resumes.find((r) => r.id === selectedId)
         setSubmitting(true)
         try {
-            await new Promise((r) => setTimeout(r, 600)) 
+            const res = await api.post<Application>("/api/applications/", {
+                job_id: jobId,
+                resume_id: selectedId,
+            })
+            setApplication(res.data)
             toast.success(`Applied with "${selected?.title}"`)
             setOpen(false)
-        } catch {
-            toast.error("Failed to submit application")
+        } catch (err) {
+            const axiosErr = err as { response?: { data?: { message?: string } } }
+            const msg = axiosErr?.response?.data?.message ?? "Failed to submit application"
+            toast.error(msg)
         } finally {
             setSubmitting(false)
         }
+    }
+
+    // Still checking
+    if (application === undefined) {
+        return (
+            <div className="w-full flex items-center justify-center py-3 rounded-xl bg-slate-50 border border-slate-200">
+                <Loader2 className="w-4 h-4 animate-spin text-slate-400" />
+            </div>
+        )
+    }
+
+    // Already applied — show status badge
+    if (application !== null) {
+        const statusStyles: Record<ApplicationStatus, string> = {
+            PENDING: "bg-blue-50 text-blue-600 border-blue-200",
+            REVIEWING: "bg-yellow-50 text-yellow-700 border-yellow-200",
+            ACCEPTED: "bg-green-50 text-green-700 border-green-200",
+            REJECTED: "bg-red-50 text-red-600 border-red-200",
+        }
+        const statusLabels: Record<ApplicationStatus, string> = {
+            PENDING: "Application Pending",
+            REVIEWING: "Under Review",
+            ACCEPTED: "Application Accepted",
+            REJECTED: "Application Rejected",
+        }
+
+        return (
+            <div className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl border text-sm font-semibold ${statusStyles[application.status]}`}>
+                <CheckCircle2 className="w-4 h-4" />
+                {statusLabels[application.status]}
+            </div>
+        )
     }
 
     return (
