@@ -18,7 +18,6 @@ const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:8000"
 type ApiErrorShape = {
     message?: string
     detail?: string | { message?: string } | Array<{ msg?: string }>
-    // AppException format: { success: false, error: { code, message, details } }
     error?: string | { message?: string; code?: string }
 }
 
@@ -26,10 +25,8 @@ function parseErrorMessage(raw: string, fallback: string): string {
     try {
         const parsed = JSON.parse(raw) as ApiErrorShape
 
-        // top-level message
         if (typeof parsed.message === "string" && parsed.message.trim()) return parsed.message
 
-        // FastAPI default: { detail: "..." }  or validation errors
         if (typeof parsed.detail === "string" && parsed.detail.trim()) return parsed.detail
         if (parsed.detail && typeof parsed.detail === "object" && !Array.isArray(parsed.detail)) {
             const msg = (parsed.detail as { message?: string }).message
@@ -43,12 +40,10 @@ function parseErrorMessage(raw: string, fallback: string): string {
             if (combined) return combined
         }
 
-        // AppException format: { success: false, error: { code, message } }
         if (parsed.error && typeof parsed.error === "object" && typeof parsed.error.message === "string") {
             return parsed.error.message.trim() || fallback
         }
 
-        // plain string error
         if (typeof parsed.error === "string" && parsed.error.trim()) return parsed.error
     } catch {
         if (raw.trim()) return raw.trim()
@@ -58,7 +53,6 @@ function parseErrorMessage(raw: string, fallback: string): string {
 
 /**
  * Returns the current authenticated user from the server, or null if not logged in.
- * Use this in Server Components to gate content behind auth.
  */
 export async function getServerUser(): Promise<{ id: string; email: string; role: string } | null> {
     try {

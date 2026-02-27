@@ -1,3 +1,4 @@
+import { Suspense } from "react"
 import { serverFetch, getServerUser } from "@/lib/serverFetch"
 import { JobResponse } from "@/types/job"
 import Header from "@/components/landing/Header"
@@ -7,7 +8,9 @@ import Link from "next/link"
 import { LockKeyhole } from "lucide-react"
 import JobFilter from "@/components/job/JobFilters"
 
-export default async function JobsPage() {
+type SearchParams = Promise<Record<string, string | string[] | undefined>>
+
+export default async function JobsPage({ searchParams }: { searchParams: SearchParams }) {
     const user = await getServerUser()
 
     if (!user) {
@@ -36,12 +39,26 @@ export default async function JobsPage() {
         )
     }
 
+    const params = await searchParams
+    const query = new URLSearchParams()
+    for (const [key, value] of Object.entries(params)) {
+        if (!value) continue
+        if (Array.isArray(value)) {
+            value.forEach((v) => query.append(key, v))
+        } else {
+            query.append(key, value)
+        }
+    }
+    const qs = query.toString()
+
     let jobs: JobResponse[] = []
     try {
-        jobs = await serverFetch<JobResponse[]>("/api/jobs/")
+        jobs = await serverFetch<JobResponse[]>(`/api/jobs/${qs ? `?${qs}` : ""}`)
     } catch (e) {
         console.error("[JobsPage] failed to fetch jobs:", e)
     }
+
+    const isFiltered = qs.length > 0
 
     return (
         <div className="text-slate-900 min-h-screen bg-background">
@@ -59,7 +76,9 @@ export default async function JobsPage() {
                 <section className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6 lg:gap-8 items-start">
                     {/* Filters */}
                     <aside className="border border-slate-200/70 bg-white shadow-sm rounded-2xl p-4 sm:p-6 lg:sticky lg:top-24">
-                        <JobFilter />
+                        <Suspense fallback={<div className="h-96 animate-pulse bg-slate-100 rounded-xl" />}>
+                            <JobFilter />
+                        </Suspense>
                     </aside>
 
                     {/* Job Listings */}
@@ -67,6 +86,11 @@ export default async function JobsPage() {
                         <div className="mb-4 sm:mb-6 flex flex-col gap-1">
                             <h2 className="text-lg sm:text-xl font-semibold text-slate-900">
                                 {jobs.length} job{jobs.length === 1 ? "" : "s"} found
+                                {isFiltered && (
+                                    <span className="ml-2 text-sm font-normal text-slate-500">
+                                        (filtered)
+                                    </span>
+                                )}
                             </h2>
                             <p className="text-sm text-slate-600">
                                 Updated listings based on the latest postings.

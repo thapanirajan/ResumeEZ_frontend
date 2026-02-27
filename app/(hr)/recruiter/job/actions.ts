@@ -9,7 +9,7 @@ export async function createJobAction(payload: JobCreatePayload) {
         method: "POST",
         body: JSON.stringify(payload),
     })
-    revalidatePath("/recruiter/job")   // re-fetches the Server Component list
+    revalidatePath("/recruiter/job")
     return job
 }
 

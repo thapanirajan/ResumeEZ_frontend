@@ -15,6 +15,7 @@ import {
     BadgeCheck,
     GraduationCap,
 } from "lucide-react"
+import ApplyButton from "./ApplyButton"
 
 const EMPLOYMENT_LABELS: Record<string, string> = {
     FULL_TIME: "Full Time",
@@ -137,9 +138,13 @@ export default async function JobDetailPage({
                     {/* Apply CTA */}
                     {job.status === "OPEN" && (
                         <div className="px-8 pb-8">
-                            <button className="w-full bg-primary text-white py-3 rounded-xl font-bold text-sm hover:bg-primary/90 transition-colors">
-                                Apply Now
-                            </button>
+                            {user.role === "JOB_SEEKER" ? (
+                                <ApplyButton jobId={job.id} />
+                            ) : (
+                                <div className="w-full text-center py-3 rounded-xl text-sm font-semibold text-slate-400 bg-slate-50 border border-slate-200">
+                                    Only candidates can apply for jobs
+                                </div>
+                            )}
                         </div>
                     )}
 
