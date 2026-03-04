@@ -13,6 +13,7 @@ import Logo from "../landing/Logo";
 
 const menuItems = [
     { name: "Dashboard", href: "/candidate", icon: LayoutDashboard },
+    { name: "Browse Jobs", href: "/candidate/job", icon: LayoutDashboard },
     { name: "Resume Builder", href: "/candidate/resume", icon: FileText },
     { name: "Skill Gap Analysis", href: "/candidate/upload", icon: ScanSearch },
     { name: "Learning Roadmap", href: "/candidate/learning-roadmap", icon: Route },

@@ -16,7 +16,6 @@ export default async function JobsPage({ searchParams }: { searchParams: SearchP
     if (!user) {
         return (
             <div className="bg-slate-50 text-slate-900 min-h-screen">
-                <Header />
                 <main className="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
                     <div className="flex flex-col items-center justify-center py-20 sm:py-24 text-center gap-4">
                         <div className="w-14 h-14 rounded-full bg-slate-100 flex items-center justify-center">
@@ -61,9 +60,8 @@ export default async function JobsPage({ searchParams }: { searchParams: SearchP
     const isFiltered = qs.length > 0
 
     return (
-        <div className="text-slate-900 min-h-screen bg-background">
-            <Header />
-            <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+        <div className="text-slate-900 min-h-scree">
+            <main className=" px-4 sm:px-6 py-6 sm:py-10">
                 <div className="mb-6 sm:mb-8">
                     <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
                         Jobs
@@ -100,7 +98,6 @@ export default async function JobsPage({ searchParams }: { searchParams: SearchP
                     </div>
                 </section>
             </main>
-            <Footer />
         </div>
     )
 }

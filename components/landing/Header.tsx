@@ -8,11 +8,6 @@ import Logo from "./Logo";
 import { useAuth } from "@/hooks/useAuth";
 import UserDropdown from "@/components/common/UserDropDown";
 
-const navItems = [
-    { label: "Home", href: "/" },
-    { label: "Resume Builder", href: "/resume-builder" },
-    { label: "Job Listings", href: "/job" },
-];
 
 export default function Navbar() {
     const [isOpen, setIsOpen] = useState(false);
@@ -23,14 +18,6 @@ export default function Navbar() {
             <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
                 <Logo />
 
-                {/* Desktop Nav */}
-                <div className="hidden md:flex items-center gap-8">
-                    {navItems.map(({ label, href }) => (
-                        <Link key={label} href={href} className="text-sm text-primary font-medium hover:text-primary/70 transition-colors">
-                            {label}
-                        </Link>
-                    ))}
-                </div>
 
                 {/* Desktop: UserDropdown or Sign In */}
                 <div className="hidden md:flex items-center gap-3 cursor-pointer">
@@ -63,16 +50,6 @@ export default function Navbar() {
             {/* Mobile Menu */}
             {isOpen && (
                 <div className="md:hidden border-t border-slate-100 bg-white px-6 py-4 flex flex-col gap-3">
-                    {navItems.map(({ label, href }) => (
-                        <Link
-                            key={label}
-                            href={href}
-                            className="text-sm font-medium text-slate-700 hover:text-primary py-2 transition-colors"
-                            onClick={() => setIsOpen(false)}
-                        >
-                            {label}
-                        </Link>
-                    ))}
                     <div className="pt-3 border-t border-slate-100 flex flex-col gap-2">
                         {user ? (
                             <div onClick={() => setIsOpen(false)}>
