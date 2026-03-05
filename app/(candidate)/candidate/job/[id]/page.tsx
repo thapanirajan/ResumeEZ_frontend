@@ -140,11 +140,7 @@ export default async function JobDetailPage({
 
                             {job.status === "OPEN" && (
                                 <div className="px-5 sm:px-7 lg:px-8 pb-5 sm:pb-7 lg:pb-8">
-                                    {user.role === "JOB_SEEKER" ? (
-                                        <div className="rounded-xl border border-blue-200/80 bg-gradient-to-r from-blue-50 to-indigo-50 p-3 sm:p-4">
-                                            <ApplyButton jobId={job.id} />
-                                        </div>
-                                    ) : (
+                                    {user.role !== "JOB_SEEKER" && (
                                         <div className="w-full text-center py-3 rounded-xl text-sm font-semibold text-slate-400 bg-slate-50 border border-slate-200">
                                             Only candidates can apply for jobs
                                         </div>
@@ -163,8 +159,15 @@ export default async function JobDetailPage({
                     </div>
 
                     {user.role === "JOB_SEEKER" && (
-                        <aside className="lg:col-span-4 lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto rounded-2xl border border-slate-200/80 bg-white/70 p-1.5 shadow-[0_6px_22px_rgba(15,23,42,0.06)]">
-                            <ResumeMatchSection jobDescription={job.description} />
+                        <aside className="lg:col-span-4 lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto rounded-2xl  p-1.5 shadow-[0_6px_22px_rgba(15,23,42,0.06)]">
+                            <div className="space-y-3 sm:space-y-4">
+                                <ResumeMatchSection jobDescription={job.description} />
+                                {job.status === "OPEN" && (
+                                    <div className="border border-slate-200 rounded-xl overflow-hidden shadow-sm bg-white p-3 sm:p-4">
+                                        <ApplyButton jobId={job.id} />
+                                    </div>
+                                )}
+                            </div>
                         </aside>
                     )}
                 </div>

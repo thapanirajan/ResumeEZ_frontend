@@ -53,7 +53,7 @@ export default function RecruiterSidebar() {
                                     aria-label={item.name}
                                 >
                                     <Icon className="h-5 w-5 shrink-0" />
-                                    <span className="ml-3 w-0 overflow-hidden whitespace-nowrap text-sm font-medium opacity-0 transition-all duration-200 group-hover:w-40 group-hover:opacity-100">
+                                    <span className="ml-3 w-0 overflow-hidden whitespace-nowrap text-sm font-medium opacity-0 transition-all duration-200 group-data-[expanded=true]:w-40 group-data-[expanded=true]:opacity-100">
                                         {item.name}
                                     </span>
                                 </Link>
@@ -64,11 +64,12 @@ export default function RecruiterSidebar() {
             </nav>
 
             <div className="border-t border-gray-200 px-3 py-4 text-[11px] text-slate-500">
-                <span className="block text-center group-hover:hidden">2026</span>
-                <span className="hidden text-center group-hover:block">
+                <span className="block text-center group-data-[expanded=true]:hidden">2026</span>
+                <span className="hidden text-center group-data-[expanded=true]:block">
                     Copyright 2026 ResumeEZ
                 </span>
             </div>
         </div>
     );
 }
+
