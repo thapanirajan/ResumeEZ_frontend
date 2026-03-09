@@ -11,7 +11,6 @@ import { JobFeedSkeleton } from "@/components/job/JobCardSkeleton"
 
 const BATCH = 12
 
-// Labels for active filter tags displayed above the list
 const FILTER_LABELS: Record<string, string> = {
     title:            "Title",
     location:         "Location",

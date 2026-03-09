@@ -1,8 +1,7 @@
 "use client"
 
-import { useQuery } from "@tanstack/react-query"
+import { useEffect, useState } from "react"
 import { getMe } from "@/lib/auth.lib"
-import { queryKeys } from "@/lib/queryKeys"
 
 export type User = {
     id: string;
@@ -11,11 +10,15 @@ export type User = {
 }
 
 export function useAuth() {
-    const { data: user, isLoading: loading } = useQuery<User | null>({
-        queryKey: queryKeys.user,
-        queryFn: getMe,
-        retry: false,
-    })
+    const [user, setUser] = useState<User | null>(null)
+    const [loading, setLoading] = useState(true)
 
-    return { user: user ?? null, loading }
+    useEffect(() => {
+        getMe()
+            .then((data) => setUser(data ?? null))
+            .catch(() => setUser(null))
+            .finally(() => setLoading(false))
+    }, [])
+
+    return { user, loading }
 }

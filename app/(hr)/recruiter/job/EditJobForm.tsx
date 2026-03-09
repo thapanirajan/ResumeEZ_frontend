@@ -145,14 +145,14 @@ export default function EditJobForm({ job, onSuccess, onCancel }: Props) {
                 <button
                     type="submit"
                     disabled={pending}
-                    className="flex-1 bg-primary text-white py-2.5 rounded-lg font-bold text-sm hover:bg-primary/90 transition-colors disabled:opacity-60"
+                    className="flex-1 bg-primary cursor-pointer text-white py-2.5 rounded-lg font-bold text-sm hover:bg-primary/90 transition-colors disabled:opacity-60"
                 >
                     {pending ? "Saving..." : "Save Changes"}
                 </button>
                 <button
                     type="button"
                     onClick={onCancel}
-                    className="flex-1 bg-slate-100 text-slate-700 py-2.5 rounded-lg font-bold text-sm hover:bg-slate-200 transition-colors"
+                    className="flex-1 bg-slate-100 cursor-pointer text-slate-700 py-2.5 rounded-lg font-bold text-sm hover:bg-slate-200 transition-colors"
                 >
                     Cancel
                 </button>

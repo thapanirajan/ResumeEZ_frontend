@@ -129,7 +129,7 @@ export default function CreateJobForm({ onSuccess }: Props) {
             <button
                 type="submit"
                 disabled={pending}
-                className="w-full bg-primary text-white py-2.5 rounded-lg font-bold text-sm hover:bg-primary/90 transition-colors disabled:opacity-60"
+                className="w-full bg-primary cursor-pointer text-white py-2.5 rounded-lg font-bold text-sm hover:bg-primary/90 transition-colors disabled:opacity-60"
             >
                 {pending ? "Posting..." : "Post Job"}
             </button>
