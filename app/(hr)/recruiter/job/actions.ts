@@ -118,3 +118,42 @@ export async function updateExternalApplicationStatusAction(
         body: JSON.stringify({ status }),
     })
 }
+
+export interface BulkUploadResultItem {
+    filename: string
+    success: boolean
+    data: ExternalApplicationResponse | null
+    error: string | null
+}
+
+export interface BulkUploadResponse {
+    results: BulkUploadResultItem[]
+    uploaded_count: number
+    failed_count: number
+}
+
+export async function bulkUploadExternalResumesAction(
+    jobId: string,
+    formData: FormData,
+): Promise<BulkUploadResponse> {
+    const cookieStore = await cookies()
+    const res = await fetch(`${BACKEND_URL}/api/applications/job/${jobId}/external/bulk`, {
+        method: "POST",
+        headers: {
+            Cookie: cookieStore.toString(),
+        },
+        body: formData,
+        cache: "no-store",
+    })
+    if (!res.ok) {
+        const raw = await res.text()
+        let message = `Bulk upload failed (${res.status})`
+        try {
+            const parsed = JSON.parse(raw)
+            if (parsed?.detail) message = typeof parsed.detail === "string" ? parsed.detail : message
+            else if (parsed?.message) message = parsed.message
+        } catch { /* ignore */ }
+        throw new Error(message)
+    }
+    return res.json() as Promise<BulkUploadResponse>
+}

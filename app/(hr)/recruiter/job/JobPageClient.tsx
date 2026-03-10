@@ -5,7 +5,6 @@ import {
     Plus,
     X,
     Pencil,
-    Trash2,
     Briefcase,
     MapPin,
     DollarSign,
@@ -25,6 +24,9 @@ import {
     Linkedin,
     Link,
     Paperclip,
+    CheckCircle2,
+    XCircle,
+    Trash2,
 } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 import { JobResponse } from "@/types/job"
@@ -38,11 +40,13 @@ import {
     getApplicationResumeAction,
     scoreJobApplicationsAction,
     uploadExternalResumeAction,
+    bulkUploadExternalResumesAction,
     getExternalApplicationsAction,
     updateExternalApplicationStatusAction,
     type ExternalApplicationResponse,
     type ExternalApplicationSource,
     type ExternalApplicationStatus,
+    type BulkUploadResultItem,
 } from "./actions"
 import { toast } from "sonner"
 import CreateJobForm from "./CreateJobForm"
@@ -355,6 +359,247 @@ const SOURCE_OPTIONS: { value: ExternalApplicationSource; label: string }[] = [
     { value: "OFFLINE", label: "Offline / Walk-in" },
     { value: "OTHER", label: "Other" },
 ]
+
+// ─── Bulk Upload Modal ────────────────────────────────────────────────────────
+
+type FileEntry = { id: string; file: File; candidateName: string }
+
+function BulkUploadModal({
+    job,
+    onClose,
+    onUploaded,
+}: {
+    job: JobResponse
+    onClose: () => void
+    onUploaded: (apps: ExternalApplicationResponse[]) => void
+}) {
+    const [entries, setEntries] = useState<FileEntry[]>([])
+    const [source, setSource] = useState<ExternalApplicationSource>("OTHER")
+    const [notes, setNotes] = useState("")
+    const [uploading, setUploading] = useState(false)
+    const [results, setResults] = useState<BulkUploadResultItem[] | null>(null)
+    const [isDragOver, setIsDragOver] = useState(false)
+
+    function addFiles(newFiles: FileList | File[]) {
+        const accepted = Array.from(newFiles).filter((f) =>
+            /\.(pdf|doc|docx)$/i.test(f.name)
+        )
+        setEntries((prev) => [
+            ...prev,
+            ...accepted.map((f) => ({
+                id: `${f.name}-${f.size}-${Date.now()}-${Math.random()}`,
+                file: f,
+                candidateName: f.name.replace(/\.[^.]+$/, ""),
+            })),
+        ])
+    }
+
+    function removeEntry(id: string) {
+        setEntries((prev) => prev.filter((e) => e.id !== id))
+    }
+
+    function updateName(id: string, name: string) {
+        setEntries((prev) => prev.map((e) => (e.id === id ? { ...e, candidateName: name } : e)))
+    }
+
+    async function handleUpload() {
+        if (entries.length === 0) { toast.error("Add at least one file"); return }
+        setUploading(true)
+        try {
+            const formData = new FormData()
+            entries.forEach((e) => formData.append("files", e.file))
+            formData.append("candidate_names", JSON.stringify(entries.map((e) => e.candidateName)))
+            formData.append("source", source)
+            if (notes.trim()) formData.append("notes", notes.trim())
+
+            const res = await bulkUploadExternalResumesAction(job.id, formData)
+            setResults(res.results)
+
+            const succeeded = res.results.filter((r) => r.success && r.data).map((r) => r.data!)
+            if (succeeded.length > 0) onUploaded(succeeded)
+
+            if (res.failed_count === 0) {
+                toast.success(`${res.uploaded_count} resume${res.uploaded_count !== 1 ? "s" : ""} uploaded`)
+            } else {
+                toast.warning(`${res.uploaded_count} uploaded, ${res.failed_count} failed`)
+            }
+        } catch (e: unknown) {
+            toast.error(e instanceof Error ? e.message : "Bulk upload failed")
+        } finally {
+            setUploading(false)
+        }
+    }
+
+    const isDone = results !== null
+
+    return (
+        <Modal title="Bulk Upload Resumes" subtitle={job.title} icon={Upload} onClose={onClose} maxWidth="max-w-2xl">
+            {isDone ? (
+                /* ── Results view ── */
+                <div className="space-y-4">
+                    <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-1.5 text-sm font-semibold text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-xl">
+                            <CheckCircle2 className="w-4 h-4" />
+                            {results.filter((r) => r.success).length} uploaded
+                        </div>
+                        {results.some((r) => !r.success) && (
+                            <div className="flex items-center gap-1.5 text-sm font-semibold text-red-600 bg-red-50 px-3 py-1.5 rounded-xl">
+                                <XCircle className="w-4 h-4" />
+                                {results.filter((r) => !r.success).length} failed
+                            </div>
+                        )}
+                    </div>
+                    <div className="divide-y divide-slate-100 border border-slate-200 rounded-xl overflow-hidden">
+                        {results.map((r, i) => (
+                            <div key={i} className="flex items-center gap-3 px-4 py-2.5">
+                                {r.success ? (
+                                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                                ) : (
+                                    <XCircle className="w-4 h-4 text-red-500 shrink-0" />
+                                )}
+                                <span className="flex-1 text-sm text-slate-700 truncate">{r.filename}</span>
+                                {!r.success && r.error && (
+                                    <span className="text-xs text-red-500 truncate max-w-[200px]">{r.error}</span>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                    <div className="flex justify-end">
+                        <button
+                            onClick={onClose}
+                            className="px-4 py-2 text-sm font-semibold text-white bg-primary rounded-xl hover:bg-primary/90 transition-colors cursor-pointer"
+                        >
+                            Done
+                        </button>
+                    </div>
+                </div>
+            ) : (
+                /* ── Upload form ── */
+                <div className="space-y-4">
+                    {/* Drop zone */}
+                    <label
+                        className={`flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-xl py-8 cursor-pointer transition-colors ${
+                            isDragOver
+                                ? "border-primary bg-primary/5"
+                                : "border-slate-200 hover:border-primary/40 hover:bg-primary/5"
+                        }`}
+                        onDragOver={(e) => { e.preventDefault(); setIsDragOver(true) }}
+                        onDragLeave={() => setIsDragOver(false)}
+                        onDrop={(e) => { e.preventDefault(); setIsDragOver(false); addFiles(e.dataTransfer.files) }}
+                    >
+                        <Upload className="w-6 h-6 text-slate-400" />
+                        <p className="text-sm font-medium text-slate-600">
+                            Drop files here or <span className="text-primary">browse</span>
+                        </p>
+                        <p className="text-xs text-slate-400">PDF, DOC, DOCX — multiple files supported</p>
+                        <input
+                            type="file"
+                            accept=".pdf,.doc,.docx"
+                            multiple
+                            className="sr-only"
+                            onChange={(e) => { if (e.target.files) addFiles(e.target.files) }}
+                        />
+                    </label>
+
+                    {/* File list with editable names */}
+                    {entries.length > 0 && (
+                        <div className="border border-slate-200 rounded-xl overflow-hidden">
+                            <div className="grid grid-cols-[1fr_1fr_auto] gap-0 bg-slate-50 px-3 py-2 border-b border-slate-200">
+                                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">File</span>
+                                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Candidate Name</span>
+                                <span />
+                            </div>
+                            <div className="divide-y divide-slate-100 max-h-52 overflow-y-auto">
+                                {entries.map((e) => (
+                                    <div key={e.id} className="grid grid-cols-[1fr_1fr_auto] gap-2 items-center px-3 py-2">
+                                        <span className="text-xs text-slate-600 truncate" title={e.file.name}>
+                                            {e.file.name}
+                                        </span>
+                                        <input
+                                            type="text"
+                                            value={e.candidateName}
+                                            onChange={(ev) => updateName(e.id, ev.target.value)}
+                                            className="text-xs px-2 py-1 border border-slate-200 rounded-lg bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50"
+                                        />
+                                        <button
+                                            onClick={() => removeEntry(e.id)}
+                                            className="p-1 text-slate-400 hover:text-red-500 transition-colors cursor-pointer"
+                                        >
+                                            <Trash2 className="w-3.5 h-3.5" />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="px-3 py-2 bg-slate-50 border-t border-slate-100 text-xs text-slate-400">
+                                {entries.length} file{entries.length !== 1 ? "s" : ""} selected
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Shared source & notes */}
+                    <div className="grid grid-cols-2 gap-3">
+                        <div>
+                            <label className="block text-xs font-semibold text-slate-700 mb-1.5">Source</label>
+                            <div className="relative">
+                                <select
+                                    value={source}
+                                    onChange={(e) => setSource(e.target.value as ExternalApplicationSource)}
+                                    className="appearance-none w-full pl-3 pr-8 py-2 text-sm border border-slate-200 rounded-xl bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer"
+                                >
+                                    {SOURCE_OPTIONS.map((o) => (
+                                        <option key={o.value} value={o.value}>{o.label}</option>
+                                    ))}
+                                </select>
+                                <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
+                            </div>
+                        </div>
+                        <div>
+                            <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                                Notes <span className="text-slate-400 font-normal">(optional, shared)</span>
+                            </label>
+                            <input
+                                type="text"
+                                value={notes}
+                                onChange={(e) => setNotes(e.target.value)}
+                                placeholder="e.g. Campus drive batch"
+                                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl bg-slate-50 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/30"
+                            />
+                        </div>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex items-center justify-between pt-1">
+                        <span className="text-xs text-slate-400">
+                            {entries.length === 0 ? "No files selected" : `${entries.length} file${entries.length !== 1 ? "s" : ""} ready`}
+                        </span>
+                        <div className="flex items-center gap-3">
+                            <button
+                                type="button"
+                                onClick={onClose}
+                                disabled={uploading}
+                                className="px-4 py-2 text-sm font-semibold text-slate-700 bg-slate-100 rounded-xl hover:bg-slate-200 transition-colors disabled:opacity-50 cursor-pointer"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleUpload}
+                                disabled={uploading || entries.length === 0}
+                                className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-primary rounded-xl hover:bg-primary/90 transition-colors disabled:opacity-50 cursor-pointer"
+                            >
+                                {uploading ? (
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : (
+                                    <Upload className="w-4 h-4" />
+                                )}
+                                {uploading ? "Uploading…" : `Upload ${entries.length > 0 ? entries.length : ""} Resume${entries.length !== 1 ? "s" : ""}`}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </Modal>
+    )
+}
 
 // ─── Upload Resume Modal ───────────────────────────────────────────────────────
 
@@ -847,6 +1092,7 @@ function ApplicantsSheet({
     const [cvApplicant, setCvApplicant] = useState<ApplicationResponse | null>(null)
     const [cvExternalApplicant, setCvExternalApplicant] = useState<ExternalApplicationResponse | null>(null)
     const [uploadModalOpen, setUploadModalOpen] = useState(false)
+    const [bulkUploadModalOpen, setBulkUploadModalOpen] = useState(false)
     // Resizable panel state
     const [panelWidth, setPanelWidth] = useState(580)
     const isDragging = useRef(false)
@@ -1065,13 +1311,22 @@ function ApplicantsSheet({
                         <p className="text-xs text-slate-500 mt-0.5 truncate max-w-[300px]">{job.title}</p>
                     </div>
                     <div className="flex items-center gap-2">
-                        {/* Upload external resume */}
+                        {/* Upload external resumes */}
                         <button
                             onClick={() => setUploadModalOpen(true)}
                             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-colors cursor-pointer"
+                            title="Upload a single resume"
                         >
                             <Upload className="w-3.5 h-3.5" />
-                            Upload Resume
+                            Upload
+                        </button>
+                        <button
+                            onClick={() => setBulkUploadModalOpen(true)}
+                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg bg-indigo-100 text-indigo-700 hover:bg-indigo-200 transition-colors cursor-pointer"
+                            title="Upload multiple resumes at once"
+                        >
+                            <Upload className="w-3.5 h-3.5" />
+                            Bulk Upload
                         </button>
                         {/* ✨ AI magic button */}
                         {applicants !== null && applicants.length > 0 && (
@@ -1345,6 +1600,15 @@ function ApplicantsSheet({
                     job={job}
                     onClose={() => setUploadModalOpen(false)}
                     onUploaded={(app) => setExternalApplicants((prev) => [app, ...prev])}
+                />
+            )}
+
+            {/* Bulk Upload Modal */}
+            {bulkUploadModalOpen && (
+                <BulkUploadModal
+                    job={job}
+                    onClose={() => setBulkUploadModalOpen(false)}
+                    onUploaded={(apps) => setExternalApplicants((prev) => [...apps, ...prev])}
                 />
             )}
         </>
