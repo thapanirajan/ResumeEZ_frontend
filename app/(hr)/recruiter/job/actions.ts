@@ -4,6 +4,24 @@ import { serverFetch } from "@/lib/serverFetch"
 import { revalidatePath } from "next/cache"
 import { JobCreatePayload, JobResponse, JobUpdatePayload } from "@/types/job"
 import { ApplicationResponse, ApplicationStatus } from "@/types/application"
+import { cookies } from "next/headers"
+
+export type ExternalApplicationSource = "EMAIL" | "LINKEDIN" | "REFERRAL" | "OFFLINE" | "OTHER"
+export type ExternalApplicationStatus = "PENDING" | "REVIEWING" | "ACCEPTED" | "REJECTED"
+
+export interface ExternalApplicationResponse {
+    id: string
+    job_id: string
+    candidate_name: string
+    candidate_email: string | null
+    source: ExternalApplicationSource
+    resume_file_url: string
+    resume_filename: string
+    status: ExternalApplicationStatus
+    notes: string | null
+    uploaded_at: string
+    updated_at: string
+}
 
 export async function createJobAction(payload: JobCreatePayload) {
     const job = await serverFetch<JobResponse>("/api/jobs/", {
@@ -34,7 +52,10 @@ export async function getJobApplicationsAction(jobId: string): Promise<Applicati
 
 export async function scoreJobApplicationsAction(
     jobId: string,
-): Promise<{ scores: { application_id: string; score: number }[] }> {
+): Promise<{
+    scores: { application_id: string; score: number }[]
+    external_scores: { external_application_id: string; score: number }[]
+}> {
     return serverFetch(`/api/applications/job/${jobId}/ai-scores`)
 }
 
@@ -49,6 +70,50 @@ export async function updateApplicationStatusAction(
     status: ApplicationStatus,
 ): Promise<void> {
     await serverFetch(`/api/applications/${applicationId}/status`, {
+        method: "PATCH",
+        body: JSON.stringify({ status }),
+    })
+}
+
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:8000"
+
+export async function uploadExternalResumeAction(
+    jobId: string,
+    formData: FormData,
+): Promise<ExternalApplicationResponse> {
+    const cookieStore = await cookies()
+    const res = await fetch(`${BACKEND_URL}/api/applications/job/${jobId}/external`, {
+        method: "POST",
+        headers: {
+            Cookie: cookieStore.toString(),
+        },
+        body: formData,
+        cache: "no-store",
+    })
+    if (!res.ok) {
+        const raw = await res.text()
+        let message = `Upload failed (${res.status})`
+        try {
+            const parsed = JSON.parse(raw)
+            if (parsed?.detail) message = typeof parsed.detail === "string" ? parsed.detail : message
+            else if (parsed?.message) message = parsed.message
+        } catch { /* ignore */ }
+        throw new Error(message)
+    }
+    return res.json() as Promise<ExternalApplicationResponse>
+}
+
+export async function getExternalApplicationsAction(
+    jobId: string,
+): Promise<ExternalApplicationResponse[]> {
+    return serverFetch<ExternalApplicationResponse[]>(`/api/applications/job/${jobId}/external`)
+}
+
+export async function updateExternalApplicationStatusAction(
+    externalId: string,
+    status: ExternalApplicationStatus,
+): Promise<ExternalApplicationResponse> {
+    return serverFetch<ExternalApplicationResponse>(`/api/applications/external/${externalId}/status`, {
         method: "PATCH",
         body: JSON.stringify({ status }),
     })

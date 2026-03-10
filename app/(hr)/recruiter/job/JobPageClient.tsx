@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo, useEffect } from "react"
+import { useState, useMemo, useEffect, useCallback, useRef } from "react"
 import {
     Plus,
     X,
@@ -19,13 +19,31 @@ import {
     Star,
     FileText,
     Sparkles,
+    Upload,
+    ExternalLink,
+    Mail,
+    Linkedin,
+    Link,
+    Paperclip,
 } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 import { JobResponse } from "@/types/job"
 import { ApplicationResponse, ApplicationStatus } from "@/types/application"
 import { ResumeData } from "@/app/(candidate)/candidate/resume/type"
 import AtsModern from "@/components/resume/templates/AtsModern"
-import { deleteJobAction, getJobApplicationsAction, updateApplicationStatusAction, getApplicationResumeAction, scoreJobApplicationsAction } from "./actions"
+import {
+    deleteJobAction,
+    getJobApplicationsAction,
+    updateApplicationStatusAction,
+    getApplicationResumeAction,
+    scoreJobApplicationsAction,
+    uploadExternalResumeAction,
+    getExternalApplicationsAction,
+    updateExternalApplicationStatusAction,
+    type ExternalApplicationResponse,
+    type ExternalApplicationSource,
+    type ExternalApplicationStatus,
+} from "./actions"
 import { toast } from "sonner"
 import CreateJobForm from "./CreateJobForm"
 import EditJobForm from "./EditJobForm"
@@ -312,6 +330,398 @@ function CvModal({
     )
 }
 
+// ─── Source label helpers ─────────────────────────────────────────────────────
+
+const SOURCE_LABEL: Record<ExternalApplicationSource, string> = {
+    EMAIL: "Email",
+    LINKEDIN: "LinkedIn",
+    REFERRAL: "Referral",
+    OFFLINE: "Offline",
+    OTHER: "Other",
+}
+
+const SOURCE_ICON: Record<ExternalApplicationSource, React.ElementType> = {
+    EMAIL: Mail,
+    LINKEDIN: Linkedin,
+    REFERRAL: Link,
+    OFFLINE: Paperclip,
+    OTHER: Paperclip,
+}
+
+const SOURCE_OPTIONS: { value: ExternalApplicationSource; label: string }[] = [
+    { value: "EMAIL", label: "Email" },
+    { value: "LINKEDIN", label: "LinkedIn" },
+    { value: "REFERRAL", label: "Referral" },
+    { value: "OFFLINE", label: "Offline / Walk-in" },
+    { value: "OTHER", label: "Other" },
+]
+
+// ─── Upload Resume Modal ───────────────────────────────────────────────────────
+
+function UploadResumeModal({
+    job,
+    onClose,
+    onUploaded,
+}: {
+    job: JobResponse
+    onClose: () => void
+    onUploaded: (app: ExternalApplicationResponse) => void
+}) {
+    const [candidateName, setCandidateName] = useState("")
+    const [candidateEmail, setCandidateEmail] = useState("")
+    const [source, setSource] = useState<ExternalApplicationSource>("OTHER")
+    const [notes, setNotes] = useState("")
+    const [file, setFile] = useState<File | null>(null)
+    const [uploading, setUploading] = useState(false)
+
+    async function handleSubmit(e: React.FormEvent) {
+        e.preventDefault()
+        if (!file) { toast.error("Please select a resume file"); return }
+        if (!candidateName.trim()) { toast.error("Candidate name is required"); return }
+
+        setUploading(true)
+        try {
+            const formData = new FormData()
+            formData.append("file", file)
+            formData.append("candidate_name", candidateName.trim())
+            if (candidateEmail.trim()) formData.append("candidate_email", candidateEmail.trim())
+            formData.append("source", source)
+            if (notes.trim()) formData.append("notes", notes.trim())
+
+            const result = await uploadExternalResumeAction(job.id, formData)
+            toast.success(`Resume uploaded for ${result.candidate_name}`)
+            onUploaded(result)
+            onClose()
+        } catch (e: unknown) {
+            toast.error(e instanceof Error ? e.message : "Upload failed")
+        } finally {
+            setUploading(false)
+        }
+    }
+
+    return (
+        <Modal title="Upload External Resume" subtitle={job.title} icon={Upload} onClose={onClose} maxWidth="max-w-lg">
+            <form onSubmit={handleSubmit} className="space-y-4">
+                {/* Candidate Name */}
+                <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                        Candidate Name <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                        type="text"
+                        value={candidateName}
+                        onChange={(e) => setCandidateName(e.target.value)}
+                        placeholder="Full name"
+                        required
+                        className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl bg-slate-50 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50"
+                    />
+                </div>
+
+                {/* Candidate Email */}
+                <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                        Candidate Email <span className="text-slate-400 font-normal">(optional)</span>
+                    </label>
+                    <input
+                        type="email"
+                        value={candidateEmail}
+                        onChange={(e) => setCandidateEmail(e.target.value)}
+                        placeholder="candidate@example.com"
+                        className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl bg-slate-50 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50"
+                    />
+                </div>
+
+                {/* Source */}
+                <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">Source</label>
+                    <div className="relative">
+                        <select
+                            value={source}
+                            onChange={(e) => setSource(e.target.value as ExternalApplicationSource)}
+                            className="appearance-none w-full pl-3 pr-8 py-2 text-sm border border-slate-200 rounded-xl bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 cursor-pointer"
+                        >
+                            {SOURCE_OPTIONS.map((o) => (
+                                <option key={o.value} value={o.value}>{o.label}</option>
+                            ))}
+                        </select>
+                        <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
+                    </div>
+                </div>
+
+                {/* Notes */}
+                <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                        Notes <span className="text-slate-400 font-normal">(optional)</span>
+                    </label>
+                    <textarea
+                        value={notes}
+                        onChange={(e) => setNotes(e.target.value)}
+                        placeholder="e.g. Referred by John Smith, strong background in React…"
+                        rows={2}
+                        className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl bg-slate-50 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 resize-none"
+                    />
+                </div>
+
+                {/* File Upload */}
+                <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                        Resume File <span className="text-red-500">*</span>
+                    </label>
+                    <label className="flex items-center gap-3 px-4 py-3 border-2 border-dashed border-slate-200 rounded-xl cursor-pointer hover:border-primary/40 hover:bg-primary/5 transition-colors group">
+                        <FileText className="w-5 h-5 text-slate-400 group-hover:text-primary shrink-0 transition-colors" />
+                        <div className="flex-1 min-w-0">
+                            {file ? (
+                                <p className="text-sm font-medium text-slate-800 truncate">{file.name}</p>
+                            ) : (
+                                <>
+                                    <p className="text-sm font-medium text-slate-600">Click to select file</p>
+                                    <p className="text-xs text-slate-400">PDF, DOC, DOCX — max 10MB</p>
+                                </>
+                            )}
+                        </div>
+                        <input
+                            type="file"
+                            accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                            className="sr-only"
+                            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+                        />
+                    </label>
+                </div>
+
+                {/* Actions */}
+                <div className="flex items-center justify-end gap-3 pt-1">
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        disabled={uploading}
+                        className="px-4 py-2 text-sm font-semibold text-slate-700 bg-slate-100 rounded-xl hover:bg-slate-200 transition-colors disabled:opacity-50 cursor-pointer"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        type="submit"
+                        disabled={uploading || !file || !candidateName.trim()}
+                        className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-primary rounded-xl hover:bg-primary/90 transition-colors disabled:opacity-50 cursor-pointer"
+                    >
+                        {uploading ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                            <Upload className="w-4 h-4" />
+                        )}
+                        {uploading ? "Uploading…" : "Upload Resume"}
+                    </button>
+                </div>
+            </form>
+        </Modal>
+    )
+}
+
+// ─── External CV Modal ────────────────────────────────────────────────────────
+
+function ExternalCvModal({
+    applicant,
+    onClose,
+}: {
+    applicant: ExternalApplicationResponse
+    onClose: () => void
+}) {
+    const filename = applicant.resume_filename.toLowerCase()
+    const isSupported = filename.endsWith(".pdf") || filename.endsWith(".doc") || filename.endsWith(".docx")
+
+    // Supabase sets Content-Disposition: attachment, so direct iframe embedding fails for all types.
+    // Route everything through Google Docs Viewer which fetches and renders server-side.
+    const embedUrl = isSupported
+        ? `https://docs.google.com/gview?url=${encodeURIComponent(applicant.resume_file_url)}&embedded=true`
+        : null
+
+    useEffect(() => {
+        const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose() }
+        window.addEventListener("keydown", onKey)
+        return () => window.removeEventListener("keydown", onKey)
+    }, [onClose])
+
+    return (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" aria-hidden="true" />
+            <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-4xl h-[90vh] flex flex-col">
+                {/* Header */}
+                <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 shrink-0">
+                    <div>
+                        <h2 className="text-base font-bold text-slate-900">
+                            {applicant.candidate_name}&apos;s Resume
+                        </h2>
+                        <p className="text-xs text-slate-500 mt-0.5 flex items-center gap-1.5">
+                            <span className="inline-flex items-center gap-1 bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded-full text-xs font-semibold">
+                                {SOURCE_LABEL[applicant.source]}
+                            </span>
+                            {applicant.resume_filename}
+                        </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <a
+                            href={applicant.resume_file_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
+                        >
+                            <ExternalLink className="w-3.5 h-3.5" />
+                            Open in new tab
+                        </a>
+                        <button
+                            onClick={onClose}
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+                            aria-label="Close"
+                        >
+                            <X className="w-4 h-4" />
+                        </button>
+                    </div>
+                </div>
+
+                {/* Body */}
+                <div className="flex-1 overflow-hidden rounded-b-2xl">
+                    {embedUrl ? (
+                        <iframe
+                            src={embedUrl}
+                            className="w-full h-full border-0"
+                            title={`${applicant.candidate_name} resume`}
+                        />
+                    ) : (
+                        <div className="flex flex-col items-center justify-center h-full gap-4 text-center px-8">
+                            <FileText className="w-10 h-10 text-slate-300" />
+                            <div>
+                                <p className="text-sm font-semibold text-slate-600">Preview not available</p>
+                                <p className="text-xs text-slate-400 mt-1">
+                                    This file type cannot be previewed in the browser.
+                                </p>
+                            </div>
+                            <a
+                                href={applicant.resume_file_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-primary rounded-xl hover:bg-primary/90 transition-colors"
+                            >
+                                <ExternalLink className="w-4 h-4" />
+                                Open File
+                            </a>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    )
+}
+
+// ─── External Applicant Card ───────────────────────────────────────────────────
+
+function ExternalApplicantCard({
+    applicant,
+    isShortlisting,
+    onToggleShortlist,
+    onViewCv,
+    aiScore,
+    threshold,
+}: {
+    applicant: ExternalApplicationResponse
+    isShortlisting: boolean
+    onToggleShortlist: () => void
+    onViewCv: () => void
+    aiScore?: number
+    threshold?: number
+}) {
+    const isShortlisted = applicant.status === "REVIEWING"
+    const initials = getInitials(applicant.candidate_name)
+    const SourceIcon = SOURCE_ICON[applicant.source]
+    const hasScore = aiScore !== undefined
+    const aboveThreshold = hasScore && threshold !== undefined && aiScore >= threshold
+
+    const scoreBadgeClass = !hasScore
+        ? ""
+        : aboveThreshold
+        ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200"
+        : aiScore >= (threshold ?? 0) * 0.75
+        ? "bg-amber-50 text-amber-700 ring-1 ring-amber-200"
+        : "bg-red-50 text-red-600 ring-1 ring-red-200"
+
+    return (
+        <div className={`border rounded-xl p-4 bg-indigo-50/30 transition-colors ${
+            hasScore && !aboveThreshold
+                ? "border-slate-200 opacity-60 hover:opacity-100"
+                : hasScore && aboveThreshold
+                ? "border-emerald-200 hover:border-emerald-300"
+                : "border-indigo-100 hover:border-indigo-200"
+        }`}>
+            <div className="flex items-start gap-3">
+                {/* Avatar */}
+                <div className="w-9 h-9 rounded-full bg-indigo-100 flex items-center justify-center shrink-0 text-xs font-bold text-indigo-700 select-none">
+                    {initials}
+                </div>
+
+                {/* Info */}
+                <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-2 flex-wrap">
+                        <p className="font-semibold text-slate-900 truncate text-sm">
+                            {applicant.candidate_name}
+                        </p>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                            {hasScore && (
+                                <span className={`inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full ${scoreBadgeClass}`}>
+                                    <Sparkles className="w-2.5 h-2.5" />
+                                    {aiScore}%
+                                </span>
+                            )}
+                            <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700">
+                                <SourceIcon className="w-2.5 h-2.5" />
+                                {SOURCE_LABEL[applicant.source]}
+                            </span>
+                            <span className={`inline-flex items-center text-xs font-semibold px-2 py-0.5 rounded-full ${APP_STATUS_STYLE[applicant.status as ApplicationStatus]}`}>
+                                {APP_STATUS_LABEL[applicant.status as ApplicationStatus]}
+                            </span>
+                        </div>
+                    </div>
+                    {applicant.candidate_email && (
+                        <p className="text-xs text-slate-500 mt-0.5 truncate">{applicant.candidate_email}</p>
+                    )}
+                    {applicant.notes && (
+                        <p className="text-xs text-slate-400 mt-0.5 truncate italic">{applicant.notes}</p>
+                    )}
+                    <p className="text-xs text-slate-400 mt-1">
+                        Uploaded{" "}
+                        {formatDistanceToNow(new Date(applicant.uploaded_at), { addSuffix: true })}
+                    </p>
+                </div>
+            </div>
+
+            {/* Action row */}
+            <div className="flex items-center gap-2 mt-3 pt-3 border-t border-indigo-100">
+                <button
+                    onClick={onViewCv}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer"
+                >
+                    <FileText className="w-3.5 h-3.5" />
+                    View CV
+                </button>
+
+                <button
+                    onClick={onToggleShortlist}
+                    disabled={isShortlisting}
+                    className={`ml-auto flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer disabled:opacity-50 ${
+                        isShortlisted
+                            ? "text-amber-700 bg-amber-50 hover:bg-amber-100"
+                            : "text-slate-600 bg-white border border-slate-200 hover:bg-slate-50"
+                    }`}
+                >
+                    {isShortlisting ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                        <Star className={`w-3.5 h-3.5 ${isShortlisted ? "fill-amber-500 text-amber-500" : ""}`} />
+                    )}
+                    {isShortlisted ? "Shortlisted" : "Shortlist"}
+                </button>
+            </div>
+        </div>
+    )
+}
+
 // ─── Applicant Card ───────────────────────────────────────────────────────────
 
 function ApplicantCard({
@@ -427,12 +837,55 @@ function ApplicantsSheet({
     onClose: () => void
 }) {
     const [applicants, setApplicants] = useState<ApplicationResponse[] | null>(null)
+    const [externalApplicants, setExternalApplicants] = useState<ExternalApplicationResponse[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const [tab, setTab] = useState<ApplicationStatus | "ALL">("ALL")
     const [search, setSearch] = useState("")
     const [shortlisting, setShortlisting] = useState<string | null>(null)
+    const [shortlistingExternal, setShortlistingExternal] = useState<string | null>(null)
     const [cvApplicant, setCvApplicant] = useState<ApplicationResponse | null>(null)
+    const [cvExternalApplicant, setCvExternalApplicant] = useState<ExternalApplicationResponse | null>(null)
+    const [uploadModalOpen, setUploadModalOpen] = useState(false)
+    // Resizable panel state
+    const [panelWidth, setPanelWidth] = useState(580)
+    const isDragging = useRef(false)
+    const dragStartX = useRef(0)
+    const dragStartWidth = useRef(580)
+
+    const MIN_WIDTH = 380
+    const MAX_WIDTH = typeof window !== "undefined" ? Math.round(window.innerWidth * 0.9) : 1200
+
+    const startResize = useCallback((e: React.MouseEvent) => {
+        e.preventDefault()
+        isDragging.current = true
+        dragStartX.current = e.clientX
+        dragStartWidth.current = panelWidth
+        document.body.style.cursor = "col-resize"
+        document.body.style.userSelect = "none"
+    }, [panelWidth])
+
+    useEffect(() => {
+        function onMouseMove(e: MouseEvent) {
+            if (!isDragging.current) return
+            const delta = dragStartX.current - e.clientX   // panel anchored right: drag left = wider
+            const next = Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, dragStartWidth.current + delta))
+            setPanelWidth(next)
+        }
+        function onMouseUp() {
+            if (!isDragging.current) return
+            isDragging.current = false
+            document.body.style.cursor = ""
+            document.body.style.userSelect = ""
+        }
+        window.addEventListener("mousemove", onMouseMove)
+        window.addEventListener("mouseup", onMouseUp)
+        return () => {
+            window.removeEventListener("mousemove", onMouseMove)
+            window.removeEventListener("mouseup", onMouseUp)
+        }
+    }, [MAX_WIDTH])
+
     // AI shortlisting state
     const [aiOpen, setAiOpen] = useState(false)
     const [threshold, setThreshold] = useState(70)
@@ -443,8 +896,14 @@ function ApplicantsSheet({
     useEffect(() => {
         setLoading(true)
         setError(null)
-        getJobApplicationsAction(job.id)
-            .then(setApplicants)
+        Promise.all([
+            getJobApplicationsAction(job.id),
+            getExternalApplicationsAction(job.id),
+        ])
+            .then(([platform, external]) => {
+                setApplicants(platform)
+                setExternalApplicants(external)
+            })
             .catch((e: Error) => setError(e.message ?? "Failed to load applicants"))
             .finally(() => setLoading(false))
     }, [job.id])
@@ -481,12 +940,30 @@ function ApplicantsSheet({
             const res = await scoreJobApplicationsAction(job.id)
             const map: Record<string, number> = {}
             res.scores.forEach(({ application_id, score }) => { map[application_id] = score })
+            res.external_scores.forEach(({ external_application_id, score }) => { map[external_application_id] = score })
             setAiScores(map)
             toast.success("AI analysis complete")
         } catch (e: unknown) {
             toast.error(e instanceof Error ? e.message : "AI analysis failed")
         } finally {
             setAiAnalyzing(false)
+        }
+    }
+
+    async function toggleShortlistExternal(applicant: ExternalApplicationResponse) {
+        const newStatus: ExternalApplicationStatus =
+            applicant.status === "REVIEWING" ? "PENDING" : "REVIEWING"
+        setShortlistingExternal(applicant.id)
+        try {
+            await updateExternalApplicationStatusAction(applicant.id, newStatus)
+            setExternalApplicants((prev) =>
+                prev.map((a) => (a.id === applicant.id ? { ...a, status: newStatus } : a)),
+            )
+            toast.success(newStatus === "REVIEWING" ? "Candidate shortlisted" : "Removed from shortlist")
+        } catch (e: unknown) {
+            toast.error(e instanceof Error ? e.message : "Failed to update status")
+        } finally {
+            setShortlistingExternal(null)
         }
     }
 
@@ -529,9 +1006,11 @@ function ApplicantsSheet({
     }, [applicants])
 
     const aboveThresholdCount = useMemo(() => {
-        if (!applicants || !aiScores) return 0
-        return applicants.filter((a) => (aiScores[a.id] ?? 0) >= threshold).length
-    }, [applicants, aiScores, threshold])
+        if (!aiScores) return 0
+        const platformCount = (applicants ?? []).filter((a) => (aiScores[a.id] ?? 0) >= threshold).length
+        const externalCount = externalApplicants.filter((a) => (aiScores[a.id] ?? 0) >= threshold).length
+        return platformCount + externalCount
+    }, [applicants, externalApplicants, aiScores, threshold])
 
     const filtered = useMemo(() => {
         if (!applicants) return []
@@ -558,10 +1037,19 @@ function ApplicantsSheet({
 
             {/* Sheet panel */}
             <div
-                className="fixed inset-y-0 right-0 z-50 w-full sm:w-[580px] bg-white shadow-2xl flex flex-col"
+                className="fixed inset-y-0 right-0 z-50 bg-white shadow-2xl flex flex-col w-full"
+                style={{ width: typeof window !== "undefined" && window.innerWidth < 640 ? "100%" : panelWidth }}
                 role="complementary"
                 aria-label="Applicants panel"
             >
+                {/* Drag handle */}
+                <div
+                    onMouseDown={startResize}
+                    className="absolute left-0 inset-y-0 w-1.5 cursor-col-resize group hidden sm:flex items-center justify-center z-10 hover:bg-primary/20 active:bg-primary/30 transition-colors"
+                    title="Drag to resize"
+                >
+                    <div className="w-0.5 h-10 rounded-full bg-slate-300 group-hover:bg-primary group-active:bg-primary transition-colors" />
+                </div>
                 {/* Header */}
                 <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 shrink-0">
                     <div>
@@ -577,6 +1065,14 @@ function ApplicantsSheet({
                         <p className="text-xs text-slate-500 mt-0.5 truncate max-w-[300px]">{job.title}</p>
                     </div>
                     <div className="flex items-center gap-2">
+                        {/* Upload external resume */}
+                        <button
+                            onClick={() => setUploadModalOpen(true)}
+                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-colors cursor-pointer"
+                        >
+                            <Upload className="w-3.5 h-3.5" />
+                            Upload Resume
+                        </button>
                         {/* ✨ AI magic button */}
                         {applicants !== null && applicants.length > 0 && (
                             <button
@@ -610,7 +1106,7 @@ function ApplicantsSheet({
                                 <span className="text-sm font-bold text-violet-900">AI Shortlisting</span>
                                 {aiScores && (
                                     <span className="text-xs font-semibold bg-violet-200 text-violet-800 px-2 py-0.5 rounded-full">
-                                        {aboveThresholdCount} / {applicants?.length ?? 0} above {threshold}%
+                                        {aboveThresholdCount} / {(applicants?.length ?? 0) + externalApplicants.length} above {threshold}%
                                     </span>
                                 )}
                             </div>
@@ -726,8 +1222,14 @@ function ApplicantsSheet({
                                 onClick={() => {
                                     setLoading(true)
                                     setError(null)
-                                    getJobApplicationsAction(job.id)
-                                        .then(setApplicants)
+                                    Promise.all([
+                                        getJobApplicationsAction(job.id),
+                                        getExternalApplicationsAction(job.id),
+                                    ])
+                                        .then(([platform, external]) => {
+                                            setApplicants(platform)
+                                            setExternalApplicants(external)
+                                        })
                                         .catch((e: Error) => setError(e.message))
                                         .finally(() => setLoading(false))
                                 }}
@@ -736,35 +1238,80 @@ function ApplicantsSheet({
                                 Retry
                             </button>
                         </div>
-                    ) : filtered.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center py-20 gap-3 text-center">
-                            <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center">
-                                <Users className="w-5 h-5 text-slate-400" />
-                            </div>
-                            <div>
-                                <p className="text-sm font-semibold text-slate-600">No applicants</p>
-                                <p className="text-xs text-slate-400 mt-0.5">
-                                    {tab === "ALL" ? "No one has applied yet." : "No applicants in this category."}
-                                </p>
-                            </div>
-                            {tab !== "ALL" && (
-                                <button onClick={() => setTab("ALL")} className="text-sm text-primary hover:underline cursor-pointer">
-                                    View all
-                                </button>
-                            )}
-                        </div>
                     ) : (
-                        filtered.map((applicant) => (
-                            <ApplicantCard
-                                key={applicant.id}
-                                applicant={applicant}
-                                isShortlisting={shortlisting === applicant.id}
-                                onToggleShortlist={() => toggleShortlist(applicant)}
-                                onViewCv={() => setCvApplicant(applicant)}
-                                aiScore={aiScores ? aiScores[applicant.id] : undefined}
-                                threshold={aiScores ? threshold : undefined}
-                            />
-                        ))
+                        <>
+                            {/* Platform applicants */}
+                            {filtered.length === 0 && externalApplicants.length === 0 ? (
+                                <div className="flex flex-col items-center justify-center py-20 gap-3 text-center">
+                                    <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center">
+                                        <Users className="w-5 h-5 text-slate-400" />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-semibold text-slate-600">No applicants yet</p>
+                                        <p className="text-xs text-slate-400 mt-0.5">
+                                            No one has applied yet. You can upload external resumes using the button above.
+                                        </p>
+                                    </div>
+                                </div>
+                            ) : (
+                                <>
+                                    {filtered.length > 0 && (
+                                        <>
+                                            {externalApplicants.length > 0 && (
+                                                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide pb-1">
+                                                    Platform Applications
+                                                </p>
+                                            )}
+                                            {filtered.map((applicant) => (
+                                                <ApplicantCard
+                                                    key={applicant.id}
+                                                    applicant={applicant}
+                                                    isShortlisting={shortlisting === applicant.id}
+                                                    onToggleShortlist={() => toggleShortlist(applicant)}
+                                                    onViewCv={() => setCvApplicant(applicant)}
+                                                    aiScore={aiScores ? aiScores[applicant.id] : undefined}
+                                                    threshold={aiScores ? threshold : undefined}
+                                                />
+                                            ))}
+                                        </>
+                                    )}
+
+                                    {filtered.length === 0 && tab !== "ALL" && (
+                                        <div className="flex flex-col items-center py-6 gap-2 text-center">
+                                            <p className="text-sm text-slate-400">No platform applicants in this category.</p>
+                                            <button onClick={() => setTab("ALL")} className="text-sm text-primary hover:underline cursor-pointer">
+                                                View all
+                                            </button>
+                                        </div>
+                                    )}
+
+                                    {/* External applicants */}
+                                    {externalApplicants.length > 0 && (
+                                        <>
+                                            <div className="flex items-center gap-2 pt-2 pb-1">
+                                                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide">
+                                                    Externally Uploaded
+                                                </p>
+                                                <span className="text-xs font-semibold bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded-full">
+                                                    {externalApplicants.length}
+                                                </span>
+                                            </div>
+                                            {externalApplicants.map((applicant) => (
+                                                <ExternalApplicantCard
+                                                    key={applicant.id}
+                                                    applicant={applicant}
+                                                    isShortlisting={shortlistingExternal === applicant.id}
+                                                    onToggleShortlist={() => toggleShortlistExternal(applicant)}
+                                                    onViewCv={() => setCvExternalApplicant(applicant)}
+                                                    aiScore={aiScores ? aiScores[applicant.id] : undefined}
+                                                    threshold={aiScores ? threshold : undefined}
+                                                />
+                                            ))}
+                                        </>
+                                    )}
+                                </>
+                            )}
+                        </>
                     )}
                 </div>
 
@@ -785,6 +1332,20 @@ function ApplicantsSheet({
             {/* CV Modal — sits above the sheet */}
             {cvApplicant && (
                 <CvModal applicant={cvApplicant} onClose={() => setCvApplicant(null)} />
+            )}
+
+            {/* External CV Modal */}
+            {cvExternalApplicant && (
+                <ExternalCvModal applicant={cvExternalApplicant} onClose={() => setCvExternalApplicant(null)} />
+            )}
+
+            {/* Upload External Resume Modal */}
+            {uploadModalOpen && (
+                <UploadResumeModal
+                    job={job}
+                    onClose={() => setUploadModalOpen(false)}
+                    onUploaded={(app) => setExternalApplicants((prev) => [app, ...prev])}
+                />
             )}
         </>
     )
