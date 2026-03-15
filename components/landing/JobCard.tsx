@@ -8,6 +8,7 @@ import {
     FileText,
     Laptop,
     ChevronRight,
+    CalendarClock,
 } from "lucide-react"
 
 const TYPE_ICONS: Record<string, React.ElementType> = {
@@ -22,6 +23,13 @@ function isNewJob(createdAt: string): boolean {
     return Date.now() - new Date(createdAt).getTime() < 3 * 24 * 60 * 60 * 1000
 }
 
+function getDaysRemaining(deadline: string | null | undefined): number | null {
+    if (!deadline) return null
+    const ms = new Date(deadline).getTime() - Date.now()
+    if (ms <= 0) return 0
+    return Math.ceil(ms / (1000 * 60 * 60 * 24))
+}
+
 export type JobCardProps = {
     id: string
     title: string
@@ -33,6 +41,7 @@ export type JobCardProps = {
     statusColor: string
     description: string
     createdAt: string
+    applicationDeadline?: string | null
     isSaved: boolean
     onToggleSave: () => void
 }
@@ -48,9 +57,17 @@ export default function JobCard({
     statusColor,
     description,
     createdAt,
+    applicationDeadline,
 }: JobCardProps) {
-    const TypeIcon = TYPE_ICONS[type] ?? Briefcase
-    const showNew  = isNewJob(createdAt)
+    const TypeIcon    = TYPE_ICONS[type] ?? Briefcase
+    const showNew     = isNewJob(createdAt)
+    const daysLeft    = getDaysRemaining(applicationDeadline)
+    const deadlineColor =
+        daysLeft === null  ? ""
+        : daysLeft === 0   ? "text-red-600 bg-red-50 border-red-200"
+        : daysLeft <= 3    ? "text-red-500 bg-red-50 border-red-200"
+        : daysLeft <= 7    ? "text-amber-600 bg-amber-50 border-amber-200"
+        : "text-slate-500 bg-slate-50 border-slate-200"
 
     return (
         <div className="group border border-slate-200/70 bg-white shadow-sm rounded-2xl p-5 sm:p-6 hover:border-primary/40 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
@@ -79,11 +96,17 @@ export default function JobCard({
                     </div>
                 </div>
 
-                {/* Right side: status badge + bookmark */}
-                <div className="flex items-center gap-2 shrink-0">
+                {/* Right side: status badge + deadline */}
+                <div className="flex flex-col items-end gap-1.5 shrink-0">
                     <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${statusColor}`}>
                         {status}
                     </span>
+                    {daysLeft !== null && (
+                        <span className={`inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full border ${deadlineColor}`}>
+                            <CalendarClock className="w-3 h-3 shrink-0" />
+                            {daysLeft === 0 ? "Deadline today" : `${daysLeft}d left`}
+                        </span>
+                    )}
                 </div>
             </div>
 

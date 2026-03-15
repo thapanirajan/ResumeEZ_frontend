@@ -13,13 +13,6 @@ const EMPLOYMENT_TYPES: { value: EmploymentType; label: string }[] = [
     { value: "REMOTE",      label: "Remote" },
 ];
 
-const SORT_OPTIONS = [
-    { value: "created_at",         label: "Date Posted" },
-    { value: "salary_min",         label: "Min Salary" },
-    { value: "salary_max",         label: "Max Salary" },
-    { value: "experience_required", label: "Experience" },
-];
-
 type Props = {
     onApply?: () => void
 }
@@ -76,8 +69,6 @@ export default function JobFilter({ onApply }: Props) {
     const [maxSalary, setMaxSalary]         = useState(searchParams.get("max_salary") ?? "");
     const [minExperience, setMinExperience] = useState(searchParams.get("min_experience") ?? "");
     const [maxExperience, setMaxExperience] = useState(searchParams.get("max_experience") ?? "");
-    const [sortBy, setSortBy]               = useState(searchParams.get("sort_by") ?? "created_at");
-    const [order, setOrder]                 = useState(searchParams.get("order") ?? "desc");
 
     const toggleEmploymentType = (type: EmploymentType) => {
         setEmploymentTypes((prev) =>
@@ -94,8 +85,6 @@ export default function JobFilter({ onApply }: Props) {
         if (maxSalary)                          params.set("max_salary", maxSalary);
         if (minExperience)                      params.set("min_experience", minExperience);
         if (maxExperience)                      params.set("max_experience", maxExperience);
-        if (sortBy !== "created_at")            params.set("sort_by", sortBy);
-        if (order !== "desc")                   params.set("order", order);
         router.push(`${pathname}?${params.toString()}`);
         onApply?.();
     };
@@ -103,7 +92,6 @@ export default function JobFilter({ onApply }: Props) {
     const clearAll = () => {
         setTitle(""); setLocation(""); setEmploymentTypes([]);
         setMinSalary(""); setMaxSalary(""); setMinExperience(""); setMaxExperience("");
-        setSortBy("created_at"); setOrder("desc");
         router.push(pathname);
         onApply?.();
     };
@@ -215,31 +203,6 @@ export default function JobFilter({ onApply }: Props) {
                         className={inputClass}
                         aria-label="Maximum experience"
                     />
-                </div>
-            </FilterSection>
-
-            {/* Sort */}
-            <FilterSection label="Sort By">
-                <div className="flex gap-2">
-                    <select
-                        value={sortBy}
-                        onChange={(e) => setSortBy(e.target.value)}
-                        className="flex-1 rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40"
-                        aria-label="Sort by"
-                    >
-                        {SORT_OPTIONS.map(({ value, label }) => (
-                            <option key={value} value={value}>{label}</option>
-                        ))}
-                    </select>
-                    <button
-                        type="button"
-                        onClick={() => setOrder((o) => (o === "asc" ? "desc" : "asc"))}
-                        title={order === "asc" ? "Ascending order" : "Descending order"}
-                        aria-label={order === "asc" ? "Switch to descending order" : "Switch to ascending order"}
-                        className="rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-50 transition-colors"
-                    >
-                        {order === "asc" ? "↑" : "↓"}
-                    </button>
                 </div>
             </FilterSection>
 

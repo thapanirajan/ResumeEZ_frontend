@@ -27,11 +27,12 @@ type Props = {
     jobs: JobResponse[]
     savedJobs: Set<string>
     onToggleSave: (id: string) => void
+    layout?: "list" | "grid"
 }
 
-export default function JobFeed({ jobs, savedJobs, onToggleSave }: Props) {
+export default function JobFeed({ jobs, savedJobs, onToggleSave, layout = "list" }: Props) {
     return (
-        <div className="flex flex-col space-y-4">
+        <div className={layout === "grid" ? "grid grid-cols-1 sm:grid-cols-2 gap-4" : "flex flex-col space-y-4"}>
             {jobs.map((job) => (
                 <JobCard
                     key={job.id}
@@ -45,6 +46,7 @@ export default function JobFeed({ jobs, savedJobs, onToggleSave }: Props) {
                     statusColor={STATUS_COLOR[job.status] ?? "bg-slate-100 text-slate-500"}
                     description={job.description}
                     createdAt={job.created_at}
+                    applicationDeadline={job.application_deadline}
                     isSaved={savedJobs.has(job.id)}
                     onToggleSave={() => onToggleSave(job.id)}
                 />

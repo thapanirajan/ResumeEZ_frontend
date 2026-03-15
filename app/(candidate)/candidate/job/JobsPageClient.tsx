@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import { useRouter, useSearchParams, usePathname } from "next/navigation"
-import { SlidersHorizontal, X, AlertCircle, Briefcase, Search } from "lucide-react"
+import { SlidersHorizontal, X, AlertCircle, Briefcase, Search, LayoutList, LayoutGrid, ChevronDown } from "lucide-react"
 import { JobResponse } from "@/types/job"
 import JobFeed from "@/components/landing/JobFeed"
 import JobFilter from "@/components/job/JobFilters"
@@ -10,6 +10,15 @@ import MobileFilterDrawer from "@/components/job/MobileFilterDrawer"
 import { JobFeedSkeleton } from "@/components/job/JobCardSkeleton"
 
 const BATCH = 12
+
+const SORT_PRESETS: { key: string; label: string; sortBy: string; order: string }[] = [
+    { key: "created_at|desc",          label: "Newest first",        sortBy: "created_at",          order: "desc" },
+    { key: "created_at|asc",           label: "Oldest first",        sortBy: "created_at",          order: "asc"  },
+    { key: "salary_max|desc",          label: "Highest salary",      sortBy: "salary_max",          order: "desc" },
+    { key: "salary_min|asc",           label: "Lowest salary",       sortBy: "salary_min",          order: "asc"  },
+    { key: "experience_required|desc", label: "Most experienced",    sortBy: "experience_required", order: "desc" },
+    { key: "experience_required|asc",  label: "Least experienced",   sortBy: "experience_required", order: "asc"  },
+]
 
 const FILTER_LABELS: Record<string, string> = {
     title:            "Title",
@@ -42,6 +51,15 @@ export default function JobsPageClient({ initialJobs, isFiltered, error }: Props
     // Mobile drawer
     const [drawerOpen, setDrawerOpen] = useState(false)
 
+    // Layout toggle
+    const [layout, setLayout] = useState<"list" | "grid">("list")
+
+    // Sort — single key encodes both field and direction
+    const urlSortKey = `${searchParams.get("sort_by") ?? "created_at"}|${searchParams.get("order") ?? "desc"}`
+    const [sortKey, setSortKey] = useState(
+        SORT_PRESETS.some((p) => p.key === urlSortKey) ? urlSortKey : "created_at|desc"
+    )
+
     // Title search
     const [titleInput, setTitleInput] = useState(searchParams.get("title") ?? "")
 
@@ -55,8 +73,23 @@ export default function JobsPageClient({ initialJobs, isFiltered, error }: Props
         router.push(`${pathname}?${params.toString()}`)
     }
 
-    // Reset visible count whenever the job list changes (new filter applied)
-    useEffect(() => { setVisibleCount(BATCH) }, [initialJobs])
+    const applySort = (key: string) => {
+        const preset = SORT_PRESETS.find((p) => p.key === key)
+        if (!preset) return
+        const params = new URLSearchParams(searchParams.toString())
+        if (preset.sortBy !== "created_at") params.set("sort_by", preset.sortBy)
+        else params.delete("sort_by")
+        if (preset.order !== "desc") params.set("order", preset.order)
+        else params.delete("order")
+        router.push(`${pathname}?${params.toString()}`)
+    }
+
+    // Reset visible count when jobs change (React-recommended render-phase state pattern)
+    const [prevInitialJobs, setPrevInitialJobs] = useState(initialJobs)
+    if (prevInitialJobs !== initialJobs) {
+        setPrevInitialJobs(initialJobs)
+        setVisibleCount(BATCH)
+    }
 
     // IntersectionObserver for infinite scroll
     useEffect(() => {
@@ -160,18 +193,42 @@ export default function JobsPageClient({ initialJobs, isFiltered, error }: Props
 
                 {/* Job list */}
                 <div className="min-w-0">
-                    {/* Title search */}
-                    <div className="relative mb-4">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
-                        <input
-                            type="text"
-                            placeholder="Search job title..."
-                            value={titleInput}
-                            onChange={(e) => setTitleInput(e.target.value)}
-                            onKeyDown={(e) => e.key === "Enter" && applyTitleSearch()}
-                            className="w-full rounded-xl border border-slate-200 bg-white pl-9 pr-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 shadow-sm transition"
-                            aria-label="Search job title"
-                        />
+                    {/* Title search + sort */}
+                    <div className="mb-4">
+                        <div className="flex items-center gap-2">
+                            <div className="relative flex-1">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
+                                <input
+                                    type="text"
+                                    placeholder="Search job title..."
+                                    value={titleInput}
+                                    onChange={(e) => setTitleInput(e.target.value)}
+                                    onKeyDown={(e) => e.key === "Enter" && applyTitleSearch()}
+                                    className="w-full rounded-xl border border-slate-200 bg-white pl-9 pr-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 shadow-sm transition"
+                                    aria-label="Search job title"
+                                />
+                            </div>
+                            {/* Sort control */}
+                            <div className="relative shrink-0">
+                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 pointer-events-none select-none">
+                                    Sort:
+                                </span>
+                                <select
+                                    value={sortKey}
+                                    onChange={(e) => {
+                                        setSortKey(e.target.value)
+                                        applySort(e.target.value)
+                                    }}
+                                    className="appearance-none rounded-xl border border-slate-200 bg-white pl-12 pr-8 py-2.5 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 shadow-sm transition cursor-pointer"
+                                    aria-label="Sort jobs"
+                                >
+                                    {SORT_PRESETS.map(({ key, label }) => (
+                                        <option key={key} value={key}>{label}</option>
+                                    ))}
+                                </select>
+                                <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
+                            </div>
+                        </div>
                         {titleInput.trim().length > 0 && titleInput.trim().length < 3 && (
                             <p className="mt-1 text-xs text-amber-500 pl-1">Enter at least 3 characters</p>
                         )}
@@ -186,11 +243,32 @@ export default function JobsPageClient({ initialJobs, isFiltered, error }: Props
                                 <span className="ml-1.5 text-slate-400 font-normal">(filtered)</span>
                             )}
                         </p>
-                        {savedJobs.size > 0 && (
-                            <span className="text-xs text-slate-400">
-                                {savedJobs.size} saved
-                            </span>
-                        )}
+                        <div className="flex items-center gap-2">
+                            {savedJobs.size > 0 && (
+                                <span className="text-xs text-slate-400">
+                                    {savedJobs.size} saved
+                                </span>
+                            )}
+                            {/* Layout toggle */}
+                            <div className="flex items-center rounded-lg border border-slate-200 bg-white shadow-sm overflow-hidden">
+                                <button
+                                    type="button"
+                                    onClick={() => setLayout("list")}
+                                    aria-label="Single column layout"
+                                    className={`p-2 transition-colors ${layout === "list" ? "bg-primary text-white" : "text-slate-400 hover:bg-slate-50"}`}
+                                >
+                                    <LayoutList className="h-4 w-4" />
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setLayout("grid")}
+                                    aria-label="Two column layout"
+                                    className={`p-2 transition-colors ${layout === "grid" ? "bg-primary text-white" : "text-slate-400 hover:bg-slate-50"}`}
+                                >
+                                    <LayoutGrid className="h-4 w-4" />
+                                </button>
+                            </div>
+                        </div>
                     </div>
 
                     {/* Error state */}
@@ -239,6 +317,7 @@ export default function JobsPageClient({ initialJobs, isFiltered, error }: Props
                                 jobs={visibleJobs}
                                 savedJobs={savedJobs}
                                 onToggleSave={toggleSave}
+                                layout={layout}
                             />
 
                             {/* Load-more sentinel */}
