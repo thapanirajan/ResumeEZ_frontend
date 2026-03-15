@@ -8,8 +8,6 @@ import {
     FileText,
     Laptop,
     ChevronRight,
-    Bookmark,
-    BookmarkCheck,
 } from "lucide-react"
 
 const TYPE_ICONS: Record<string, React.ElementType> = {
@@ -50,8 +48,6 @@ export default function JobCard({
     statusColor,
     description,
     createdAt,
-    isSaved,
-    onToggleSave,
 }: JobCardProps) {
     const TypeIcon = TYPE_ICONS[type] ?? Briefcase
     const showNew  = isNewJob(createdAt)
@@ -88,22 +84,6 @@ export default function JobCard({
                     <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${statusColor}`}>
                         {status}
                     </span>
-                    <button
-                        type="button"
-                        onClick={(e) => { e.preventDefault(); onToggleSave(); }}
-                        aria-label={isSaved ? "Remove from saved" : "Save job"}
-                        title={isSaved ? "Remove from saved" : "Save job"}
-                        className={`p-1.5 rounded-lg transition-colors ${
-                            isSaved
-                                ? "text-primary bg-primary/10 hover:bg-primary/20"
-                                : "text-slate-400 hover:text-primary hover:bg-slate-100"
-                        }`}
-                    >
-                        {isSaved
-                            ? <BookmarkCheck className="w-4 h-4" />
-                            : <Bookmark className="w-4 h-4" />
-                        }
-                    </button>
                 </div>
             </div>
 

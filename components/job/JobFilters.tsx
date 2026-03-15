@@ -140,22 +140,6 @@ export default function JobFilter({ onApply }: Props) {
                 )}
             </div>
 
-            {/* Job Title */}
-            <FilterSection label="Job Title">
-                <input
-                    type="text"
-                    placeholder="e.g. Software Engineer"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && applyFilters()}
-                    className={inputClass}
-                    aria-label="Filter by job title"
-                />
-                {title.trim().length > 0 && title.trim().length < 3 && (
-                    <p className="mt-1.5 text-xs text-amber-500">Enter at least 3 characters</p>
-                )}
-            </FilterSection>
-
             {/* Location */}
             <FilterSection label="Location">
                 <input
@@ -171,17 +155,17 @@ export default function JobFilter({ onApply }: Props) {
 
             {/* Job Type */}
             <FilterSection label="Job Type">
-                <div className="space-y-2.5">
+                <div className="grid grid-cols-2 gap-x-3 gap-y-2">
                     {EMPLOYMENT_TYPES.map(({ value, label }) => (
                         <label
                             key={value}
-                            className="flex items-center gap-2.5 cursor-pointer select-none group"
+                            className="flex items-center gap-2 cursor-pointer select-none group"
                         >
                             <input
                                 type="checkbox"
                                 checked={employmentTypes.includes(value)}
                                 onChange={() => toggleEmploymentType(value)}
-                                className="h-4 w-4 rounded border-slate-300 accent-primary"
+                                className="h-4 w-4 rounded border-slate-300 accent-primary shrink-0"
                                 aria-label={`Filter by ${label}`}
                             />
                             <span className="text-sm text-slate-600 group-hover:text-slate-900 transition-colors">

@@ -33,3 +33,25 @@ html {
   scrollbar-width: thin !important;
   scrollbar-color: #1e3a8a #f1f5f9 !important;
 }
+
+
+/* width */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+/* track */
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+/* thumb */
+::-webkit-scrollbar-thumb {
+  background: #1e3a8a;
+  border-radius: 10px;
+}
+
+/* hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #2b4fb3;
+}

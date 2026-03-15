@@ -1,22 +1,40 @@
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 
 interface SidebarContextType {
-    isSidebarVisible: boolean;
-    setSidebarVisible: (visible: boolean) => void;
-    toggleSidebar: () => void;
+    isPinned: boolean;
+    isExpanded: boolean;
+    togglePin: () => void;
+    setHovered: (hovered: boolean) => void;
 }
 
 const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
 
 export function SidebarProvider({ children }: { children: ReactNode }) {
-    const [isSidebarVisible, setSidebarVisible] = useState(true);
+    const [isPinned, setIsPinned] = useState(false);
+    const [isHovered, setIsHovered] = useState(false);
 
-    const toggleSidebar = () => setSidebarVisible((prev) => !prev);
+    useEffect(() => {
+        const stored = localStorage.getItem("candidate-sidebar-pinned");
+        if (stored === "true") setIsPinned(true);
+    }, []);
+
+    const togglePin = () => {
+        setIsPinned((prev) => {
+            const next = !prev;
+            localStorage.setItem("candidate-sidebar-pinned", String(next));
+            return next;
+        });
+    };
 
     return (
-        <SidebarContext.Provider value={{ isSidebarVisible, setSidebarVisible, toggleSidebar }}>
+        <SidebarContext.Provider value={{
+            isPinned,
+            isExpanded: isPinned || isHovered,
+            togglePin,
+            setHovered: setIsHovered,
+        }}>
             {children}
         </SidebarContext.Provider>
     );

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import { useRouter, useSearchParams, usePathname } from "next/navigation"
-import { SlidersHorizontal, X, AlertCircle, Briefcase } from "lucide-react"
+import { SlidersHorizontal, X, AlertCircle, Briefcase, Search } from "lucide-react"
 import { JobResponse } from "@/types/job"
 import JobFeed from "@/components/landing/JobFeed"
 import JobFilter from "@/components/job/JobFilters"
@@ -41,6 +41,19 @@ export default function JobsPageClient({ initialJobs, isFiltered, error }: Props
 
     // Mobile drawer
     const [drawerOpen, setDrawerOpen] = useState(false)
+
+    // Title search
+    const [titleInput, setTitleInput] = useState(searchParams.get("title") ?? "")
+
+    const applyTitleSearch = () => {
+        const params = new URLSearchParams(searchParams.toString())
+        if (titleInput.trim().length >= 3) {
+            params.set("title", titleInput.trim())
+        } else {
+            params.delete("title")
+        }
+        router.push(`${pathname}?${params.toString()}`)
+    }
 
     // Reset visible count whenever the job list changes (new filter applied)
     useEffect(() => { setVisibleCount(BATCH) }, [initialJobs])
@@ -90,7 +103,7 @@ export default function JobsPageClient({ initialJobs, isFiltered, error }: Props
     const clearAllFilters = () => router.push(pathname)
 
     return (
-        <div className="h-[200vh] bg-slate-50">
+        <div className="bg-slate-50">
             {/* Page header */}
             <div className="mb-5">
                 <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
@@ -147,6 +160,23 @@ export default function JobsPageClient({ initialJobs, isFiltered, error }: Props
 
                 {/* Job list */}
                 <div className="min-w-0">
+                    {/* Title search */}
+                    <div className="relative mb-4">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
+                        <input
+                            type="text"
+                            placeholder="Search job title..."
+                            value={titleInput}
+                            onChange={(e) => setTitleInput(e.target.value)}
+                            onKeyDown={(e) => e.key === "Enter" && applyTitleSearch()}
+                            className="w-full rounded-xl border border-slate-200 bg-white pl-9 pr-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 shadow-sm transition"
+                            aria-label="Search job title"
+                        />
+                        {titleInput.trim().length > 0 && titleInput.trim().length < 3 && (
+                            <p className="mt-1 text-xs text-amber-500 pl-1">Enter at least 3 characters</p>
+                        )}
+                    </div>
+
                     {/* Result header */}
                     <div className="mb-4 flex items-center justify-between gap-2">
                         <p className="text-sm font-medium text-slate-600">

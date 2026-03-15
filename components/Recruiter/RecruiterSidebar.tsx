@@ -6,9 +6,9 @@ import {
     House,
     BriefcaseBusiness,
     LayoutDashboard,
-    Users,
-    UserCheck,
-    ClipboardList,
+    // Users,
+    // UserCheck,
+    // ClipboardList,
     Settings,
 } from "lucide-react";
 import Logo from "../landing/Logo";
@@ -17,9 +17,6 @@ const recruiterMenuItems = [
     { name: "Website", href: "/", icon: House },
     { name: "Dashboard", href: "/recruiter", icon: LayoutDashboard },
     { name: "Jobs", href: "/recruiter/job", icon: BriefcaseBusiness },
-    { name: "Screening", href: "/recruiter/screening", icon: ClipboardList },
-    { name: "Candidates", href: "/recruiter/candidates", icon: Users },
-    { name: "Shortlists", href: "/recruiter/shortlists", icon: UserCheck },
     { name: "Profile & Settings", href: "/recruiter/profile", icon: Settings },
 ];
 
