@@ -1,10 +1,16 @@
-import RecruiterDashboard from './RecruiterDashboardClient'
+import RecruiterDashboard from "./RecruiterDashboardClient"
+import { getDashboardDataAction } from "./actions"
+import { RecruiterDashboardData } from "@/types/recruiter_dashboard"
 
-const page = () => {
-    // fetch data fron backend and passs it to Recruiter Dashboard to render the data
-    return (
-        <RecruiterDashboard />
-    )
+export default async function RecruiterDashboardPage() {
+    let data: RecruiterDashboardData | null = null
+    let error: string | null = null
+    try {
+        data = await getDashboardDataAction()
+    } catch (e) {
+        error = e instanceof Error ? e.message : "Failed to load dashboard data"
+        console.error("[RecruiterDashboardPage]", error)
+    }
+
+    return <RecruiterDashboard data={data} error={error} />
 }
-
-export default page

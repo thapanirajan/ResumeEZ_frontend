@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 export default function proxy(req: NextRequest) {
+    console.log("------------Middleware hit -------------------")
     const token = req.cookies.get("token");
     const pathname = req.nextUrl.pathname;
 
@@ -12,5 +13,4 @@ export default function proxy(req: NextRequest) {
 }
 
 export const config = {
-    matcher: ["/candidate/:path*", "/recruiter"]
-}
+matcher: ["/candidate/:path*", "/recruiter/:path*"]}
