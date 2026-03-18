@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useMemo, useEffect, useCallback, useRef } from "react"
+import { useRouter } from "next/navigation"
 import {
     Plus,
     X,
@@ -1632,6 +1633,7 @@ function StatCard({ label, value, color }: { label: string; value: number; color
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function JobPageClient({ jobs }: { jobs: JobResponse[] }) {
+    const router = useRouter()
     type ModalType = "create" | "edit" | "delete" | null
     const [modal, setModal] = useState<ModalType>(null)
     const [selectedJob, setSelectedJob] = useState<JobResponse | null>(null)
@@ -1938,7 +1940,7 @@ export default function JobPageClient({ jobs }: { jobs: JobResponse[] }) {
                                                     <td className="px-4 py-3.5">
                                                         <div className="flex items-center justify-end gap-2">
                                                             <button
-                                                                onClick={() => setApplicantsJob(job)}
+                                                                onClick={() => router.push(`/recruiter/job/${job.id}/applicants`)}
                                                                 className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-primary bg-primary/10 rounded-lg hover:bg-primary/20 transition-colors cursor-pointer"
                                                                 aria-label={`View applicants for ${job.title}`}
                                                             >

@@ -46,6 +46,10 @@ export async function deleteJobAction(id: string) {
     revalidatePath("/recruiter/job")
 }
 
+export async function getJobDetailsAction(jobId: string): Promise<JobResponse> {
+    return serverFetch<JobResponse>(`/api/jobs/${jobId}`)
+}
+
 export async function getJobApplicationsAction(jobId: string): Promise<ApplicationResponse[]> {
     return serverFetch<ApplicationResponse[]>(`/api/applications/job/${jobId}`)
 }
