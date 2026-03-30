@@ -6,7 +6,6 @@ import { formatDistanceToNow } from "date-fns"
 import {
     ArrowLeft,
     Search,
-    SlidersHorizontal,
     ArrowDownUp,
     Sparkles,
     Users,
@@ -16,19 +15,27 @@ import {
     Loader2,
     ChevronLeft,
     ChevronRight,
+    Upload,
+    UploadCloud,
+    FileText,
+    BarChart2,
 } from "lucide-react"
 import { toast } from "sonner"
 
 import { JobResponse } from "@/types/job"
-import { ApplicationResponse, ApplicationStatus } from "@/types/application"
+import { ApplicationAnalysis, ApplicationResponse, ApplicationStatus } from "@/types/application"
 import {
     ExternalApplicationResponse,
-    scoreJobApplicationsAction,
+    ExternalApplicationSource,
     updateApplicationStatusAction,
     updateExternalApplicationStatusAction,
     getApplicationResumeAction,
+    uploadExternalResumeAction,
+    bulkUploadExternalResumesAction,
 } from "../../actions"
+import { applicationApi } from "@/services/application.service"
 import ScoreRing from "./ScoreRing"
+import CandidateAnalysisModal from "./CandidateAnalysisModal"
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -242,6 +249,336 @@ function ExternalCvModal({
     )
 }
 
+// ── Source options ────────────────────────────────────────────────────────────
+
+const SOURCE_OPTIONS: { value: ExternalApplicationSource; label: string }[] = [
+    { value: "EMAIL", label: "Email" },
+    { value: "LINKEDIN", label: "LinkedIn" },
+    { value: "REFERRAL", label: "Referral" },
+    { value: "OFFLINE", label: "Offline" },
+    { value: "OTHER", label: "Other" },
+]
+
+// ── Single Upload Modal ───────────────────────────────────────────────────────
+
+function SingleUploadModal({
+    jobId,
+    onClose,
+    onSuccess,
+}: {
+    jobId: string
+    onClose: () => void
+    onSuccess: (app: ExternalApplicationResponse) => void
+}) {
+    const [candidateName, setCandidateName] = useState("")
+    const [candidateEmail, setCandidateEmail] = useState("")
+    const [source, setSource] = useState<ExternalApplicationSource>("OTHER")
+    const [notes, setNotes] = useState("")
+    const [file, setFile] = useState<File | null>(null)
+    const [submitting, setSubmitting] = useState(false)
+
+    async function handleSubmit(e: React.FormEvent) {
+        e.preventDefault()
+        if (!file) { toast.error("Please select a file"); return }
+        if (!candidateName.trim()) { toast.error("Candidate name is required"); return }
+        const fd = new FormData()
+        fd.append("file", file)
+        fd.append("candidate_name", candidateName.trim())
+        if (candidateEmail.trim()) fd.append("candidate_email", candidateEmail.trim())
+        fd.append("source", source)
+        if (notes.trim()) fd.append("notes", notes.trim())
+        setSubmitting(true)
+        try {
+            const result = await uploadExternalResumeAction(jobId, fd)
+            toast.success(`${candidateName} uploaded successfully`)
+            onSuccess(result)
+            onClose()
+        } catch (e: unknown) {
+            toast.error(e instanceof Error ? e.message : "Upload failed")
+        } finally {
+            setSubmitting(false)
+        }
+    }
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md">
+                <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+                    <div className="flex items-center gap-2">
+                        <Upload className="w-5 h-5 text-indigo-600" />
+                        <p className="font-bold text-slate-900">Upload Resume</p>
+                    </div>
+                    <button onClick={onClose} className="p-2 rounded-xl hover:bg-slate-100 transition-colors">
+                        <X className="w-5 h-5 text-slate-500" />
+                    </button>
+                </div>
+                <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                    <div>
+                        <label className="block text-xs font-semibold text-slate-600 mb-1">
+                            Candidate Name <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                            value={candidateName}
+                            onChange={(e) => setCandidateName(e.target.value)}
+                            required
+                            placeholder="John Doe"
+                            className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-xs font-semibold text-slate-600 mb-1">Email</label>
+                        <input
+                            type="email"
+                            value={candidateEmail}
+                            onChange={(e) => setCandidateEmail(e.target.value)}
+                            placeholder="john@example.com"
+                            className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-xs font-semibold text-slate-600 mb-1">Source</label>
+                        <select
+                            value={source}
+                            onChange={(e) => setSource(e.target.value as ExternalApplicationSource)}
+                            className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-white"
+                        >
+                            {SOURCE_OPTIONS.map((o) => (
+                                <option key={o.value} value={o.value}>{o.label}</option>
+                            ))}
+                        </select>
+                    </div>
+                    <div>
+                        <label className="block text-xs font-semibold text-slate-600 mb-1">Notes</label>
+                        <textarea
+                            value={notes}
+                            onChange={(e) => setNotes(e.target.value)}
+                            placeholder="Optional notes…"
+                            rows={2}
+                            className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 resize-none"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-xs font-semibold text-slate-600 mb-1">
+                            Resume File <span className="text-red-500">*</span>
+                        </label>
+                        <label className="flex flex-col items-center justify-center gap-2 w-full h-28 border-2 border-dashed border-slate-200 rounded-xl cursor-pointer hover:border-indigo-300 hover:bg-indigo-50/50 transition-colors">
+                            <FileText className="w-6 h-6 text-slate-400" />
+                            {file ? (
+                                <span className="text-xs font-semibold text-indigo-600">{file.name}</span>
+                            ) : (
+                                <span className="text-xs text-slate-400">Click to select PDF, DOC, or DOCX</span>
+                            )}
+                            <input
+                                type="file"
+                                accept=".pdf,.doc,.docx"
+                                className="hidden"
+                                onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+                            />
+                        </label>
+                    </div>
+                    <div className="flex gap-3 pt-2">
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className="flex-1 px-4 py-2.5 border border-slate-200 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={submitting}
+                            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-semibold hover:bg-indigo-700 transition-colors disabled:opacity-60"
+                        >
+                            {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                            {submitting ? "Uploading…" : "Upload"}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    )
+}
+
+// ── Bulk Upload Modal ─────────────────────────────────────────────────────────
+
+interface BulkFileEntry {
+    file: File
+    candidateName: string
+}
+
+function BulkUploadModal({
+    jobId,
+    onClose,
+    onSuccess,
+}: {
+    jobId: string
+    onClose: () => void
+    onSuccess: (apps: ExternalApplicationResponse[]) => void
+}) {
+    const [entries, setEntries] = useState<BulkFileEntry[]>([])
+    const [source, setSource] = useState<ExternalApplicationSource>("OTHER")
+    const [notes, setNotes] = useState("")
+    const [submitting, setSubmitting] = useState(false)
+
+    function handleFilesChange(e: React.ChangeEvent<HTMLInputElement>) {
+        const files = Array.from(e.target.files ?? [])
+        setEntries(files.map((f) => ({
+            file: f,
+            candidateName: f.name.replace(/\.[^.]+$/, "").replace(/[-_]/g, " "),
+        })))
+    }
+
+    function updateName(idx: number, name: string) {
+        setEntries((prev) => prev.map((en, i) => i === idx ? { ...en, candidateName: name } : en))
+    }
+
+    function removeEntry(idx: number) {
+        setEntries((prev) => prev.filter((_, i) => i !== idx))
+    }
+
+    async function handleSubmit(e: React.FormEvent) {
+        e.preventDefault()
+        if (entries.length === 0) { toast.error("Please select at least one file"); return }
+        const invalidNames = entries.filter((en) => !en.candidateName.trim())
+        if (invalidNames.length > 0) { toast.error("All candidates must have a name"); return }
+
+        const fd = new FormData()
+        entries.forEach((en) => fd.append("files", en.file))
+        fd.append("candidate_names", JSON.stringify(entries.map((en) => en.candidateName.trim())))
+        fd.append("source", source)
+        if (notes.trim()) fd.append("notes", notes.trim())
+
+        setSubmitting(true)
+        try {
+            const result = await bulkUploadExternalResumesAction(jobId, fd)
+            const uploaded = result.results.filter((r) => r.success && r.data).map((r) => r.data!)
+            if (result.uploaded_count > 0) {
+                toast.success(`${result.uploaded_count} resume${result.uploaded_count > 1 ? "s" : ""} uploaded successfully`)
+            }
+            if (result.failed_count > 0) {
+                toast.error(`${result.failed_count} upload${result.failed_count > 1 ? "s" : ""} failed`)
+            }
+            onSuccess(uploaded)
+            onClose()
+        } catch (e: unknown) {
+            toast.error(e instanceof Error ? e.message : "Bulk upload failed")
+        } finally {
+            setSubmitting(false)
+        }
+    }
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col">
+                <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+                    <div className="flex items-center gap-2">
+                        <UploadCloud className="w-5 h-5 text-indigo-600" />
+                        <p className="font-bold text-slate-900">Bulk Upload Resumes</p>
+                    </div>
+                    <button onClick={onClose} className="p-2 rounded-xl hover:bg-slate-100 transition-colors">
+                        <X className="w-5 h-5 text-slate-500" />
+                    </button>
+                </div>
+
+                <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
+                    <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                        {/* File picker */}
+                        <div>
+                            <label className="flex flex-col items-center justify-center gap-2 w-full h-28 border-2 border-dashed border-slate-200 rounded-xl cursor-pointer hover:border-indigo-300 hover:bg-indigo-50/50 transition-colors">
+                                <UploadCloud className="w-7 h-7 text-slate-400" />
+                                <span className="text-xs text-slate-400">
+                                    {entries.length > 0
+                                        ? `${entries.length} file${entries.length > 1 ? "s" : ""} selected — click to change`
+                                        : "Click to select multiple PDF, DOC, or DOCX files"}
+                                </span>
+                                <input
+                                    type="file"
+                                    accept=".pdf,.doc,.docx"
+                                    multiple
+                                    className="hidden"
+                                    onChange={handleFilesChange}
+                                />
+                            </label>
+                        </div>
+
+                        {/* Per-file name inputs */}
+                        {entries.length > 0 && (
+                            <div className="space-y-2">
+                                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Candidate Names</p>
+                                {entries.map((en, idx) => (
+                                    <div key={idx} className="flex items-center gap-2">
+                                        <FileText className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                                        <span className="text-xs text-slate-400 truncate flex-1 min-w-0" title={en.file.name}>
+                                            {en.file.name}
+                                        </span>
+                                        <input
+                                            value={en.candidateName}
+                                            onChange={(e) => updateName(idx, e.target.value)}
+                                            placeholder="Candidate name"
+                                            className="w-36 px-2 py-1.5 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => removeEntry(idx)}
+                                            className="p-1 text-slate-400 hover:text-red-500 transition-colors"
+                                        >
+                                            <X className="w-3.5 h-3.5" />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        {/* Source */}
+                        <div>
+                            <label className="block text-xs font-semibold text-slate-600 mb-1">Source</label>
+                            <select
+                                value={source}
+                                onChange={(e) => setSource(e.target.value as ExternalApplicationSource)}
+                                className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-white"
+                            >
+                                {SOURCE_OPTIONS.map((o) => (
+                                    <option key={o.value} value={o.value}>{o.label}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        {/* Notes */}
+                        <div>
+                            <label className="block text-xs font-semibold text-slate-600 mb-1">Notes</label>
+                            <textarea
+                                value={notes}
+                                onChange={(e) => setNotes(e.target.value)}
+                                placeholder="Optional notes for all uploads…"
+                                rows={2}
+                                className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 resize-none"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="flex gap-3 px-6 py-4 border-t border-slate-100">
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className="flex-1 px-4 py-2.5 border border-slate-200 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={submitting || entries.length === 0}
+                            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-semibold hover:bg-indigo-700 transition-colors disabled:opacity-60"
+                        >
+                            {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <UploadCloud className="w-4 h-4" />}
+                            {submitting ? "Uploading…" : `Upload ${entries.length > 0 ? entries.length : ""} Resume${entries.length !== 1 ? "s" : ""}`}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    )
+}
+
 // ── Unified row type ──────────────────────────────────────────────────────────
 
 type AnyApplication =
@@ -260,9 +597,11 @@ export default function ApplicantsPageClient({
     const [applications, setApplications] = useState(initialApplications)
     const [externalApplications, setExternalApplications] = useState(initialExternalApplications)
 
-    // AI scores
-    const [aiScores, setAiScores] = useState<Record<string, number> | null>(null)
+    // AI scores + analysis
+    type AIEntry = { score: number; analysis: ApplicationAnalysis | null }
+    const [aiScores, setAiScores] = useState<Record<string, AIEntry> | null>(null)
     const [aiRunning, setAiRunning] = useState(false)
+    const [analysisModal, setAnalysisModal] = useState<AnyApplication | null>(null)
 
     // Filters / sort
     const [search, setSearch] = useState("")
@@ -278,6 +617,8 @@ export default function ApplicantsPageClient({
     // Modals
     const [cvApp, setCvApp] = useState<ApplicationResponse | null>(null)
     const [cvExtApp, setCvExtApp] = useState<ExternalApplicationResponse | null>(null)
+    const [showSingleUpload, setShowSingleUpload] = useState(false)
+    const [showBulkUpload, setShowBulkUpload] = useState(false)
 
     // Job keywords for skills matching
     const jobKeywords = useMemo(() => extractJobKeywords(job.description), [job.description])
@@ -295,7 +636,7 @@ export default function ApplicantsPageClient({
     const stats = useMemo(() => {
         const shortlisted = allRows.filter((r) => r.data.status === "REVIEWING").length
         const aiSuggested = aiScores
-            ? allRows.filter((r) => (aiScores[r.data.id] ?? 0) >= 70).length
+            ? allRows.filter((r) => (aiScores[r.data.id]?.score ?? 0) >= 70).length
             : 0
         return { total: allRows.length, shortlisted, aiSuggested }
     }, [allRows, aiScores])
@@ -320,7 +661,7 @@ export default function ApplicantsPageClient({
 
         if (sortMode === "score" && aiScores) {
             rows = [...rows].sort(
-                (a, b) => (aiScores[b.data.id] ?? 0) - (aiScores[a.data.id] ?? 0),
+                (a, b) => (aiScores[b.data.id]?.score ?? 0) - (aiScores[a.data.id]?.score ?? 0),
             )
         } else {
             rows = [...rows].sort((a, b) => {
@@ -355,7 +696,7 @@ export default function ApplicantsPageClient({
         let best: string | null = null
         let bestScore = -1
         for (const r of allRows) {
-            const s = aiScores[r.data.id] ?? 0
+            const s = aiScores[r.data.id]?.score ?? 0
             if (s > bestScore) { bestScore = s; best = r.data.id }
         }
         return best
@@ -366,10 +707,11 @@ export default function ApplicantsPageClient({
     const runAiScores = useCallback(async () => {
         setAiRunning(true)
         try {
-            const result = await scoreJobApplicationsAction(job.id)
-            const map: Record<string, number> = {}
-            for (const s of result.scores) map[s.application_id] = s.score
-            for (const s of result.external_scores) map[s.external_application_id] = s.score
+            const result = await applicationApi.scoreApplications(job.id)
+            type AIEntry = { score: number; analysis: ApplicationAnalysis | null }
+            const map: Record<string, AIEntry> = {}
+            for (const s of result.scores) map[s.application_id] = { score: s.score, analysis: s.analysis ?? null }
+            for (const s of result.external_scores) map[s.external_application_id] = { score: s.score, analysis: s.analysis ?? null }
             setAiScores(map)
             setSortMode("score")
             toast.success("AI scoring complete")
@@ -470,6 +812,20 @@ export default function ApplicantsPageClient({
                 </div>
 
                 <div className="flex items-center gap-3 flex-shrink-0">
+                    <button
+                        onClick={() => setShowSingleUpload(true)}
+                        className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl font-semibold text-sm hover:border-indigo-300 hover:text-indigo-600 transition-all"
+                    >
+                        <Upload className="w-4 h-4" />
+                        Upload Resume
+                    </button>
+                    <button
+                        onClick={() => setShowBulkUpload(true)}
+                        className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl font-semibold text-sm hover:border-indigo-300 hover:text-indigo-600 transition-all"
+                    >
+                        <UploadCloud className="w-4 h-4" />
+                        Bulk Upload
+                    </button>
                     <button
                         onClick={runAiScores}
                         disabled={aiRunning}
@@ -606,7 +962,9 @@ export default function ApplicantsPageClient({
                                     const name = row.data.candidate_name ?? "Unknown"
                                     const email = row.data.candidate_email ?? ""
                                     const status = row.data.status
-                                    const score = aiScores?.[id]
+                                    const aiEntry = aiScores?.[id]
+                                    const score = aiEntry?.score
+                                    const hasAnalysis = aiEntry?.analysis != null
                                     const isTopMatch = id === topMatchId && score !== undefined
                                     const isToggling = togglingId === id
                                     const isShortlisted = status === "REVIEWING"
@@ -704,6 +1062,16 @@ export default function ApplicantsPageClient({
                                             {/* Actions */}
                                             <td className="px-6 py-4 text-right">
                                                 <div className="flex items-center justify-end gap-1">
+                                                    {/* View AI Analysis */}
+                                                    {hasAnalysis && (
+                                                        <button
+                                                            onClick={() => setAnalysisModal(row)}
+                                                            className="p-2 text-slate-400 hover:text-purple-600 rounded-lg hover:bg-purple-50 transition-colors"
+                                                            title="View AI Analysis"
+                                                        >
+                                                            <BarChart2 className="w-4 h-4" />
+                                                        </button>
+                                                    )}
                                                     {/* View CV */}
                                                     <button
                                                         onClick={() =>
@@ -793,8 +1161,37 @@ export default function ApplicantsPageClient({
             </div>
 
             {/* ── Modals ── */}
+            {analysisModal && aiScores?.[analysisModal.data.id]?.analysis && (
+                <CandidateAnalysisModal
+                    applicant={analysisModal}
+                    analysis={aiScores[analysisModal.data.id]!.analysis!}
+                    jobTitle={job.title}
+                    onClose={() => setAnalysisModal(null)}
+                    onStatusChange={(id, next) => {
+                        if (analysisModal.kind === "platform") {
+                            setApplications((prev) => prev.map((a) => a.id === id ? { ...a, status: next as ApplicationStatus } : a))
+                        } else {
+                            setExternalApplications((prev) => prev.map((a) => a.id === id ? { ...a, status: next } : a))
+                        }
+                    }}
+                />
+            )}
             {cvApp && <CvModal application={cvApp} onClose={() => setCvApp(null)} />}
             {cvExtApp && <ExternalCvModal application={cvExtApp} onClose={() => setCvExtApp(null)} />}
+            {showSingleUpload && (
+                <SingleUploadModal
+                    jobId={job.id}
+                    onClose={() => setShowSingleUpload(false)}
+                    onSuccess={(app) => setExternalApplications((prev) => [app, ...prev])}
+                />
+            )}
+            {showBulkUpload && (
+                <BulkUploadModal
+                    jobId={job.id}
+                    onClose={() => setShowBulkUpload(false)}
+                    onSuccess={(apps) => setExternalApplications((prev) => [...apps, ...prev])}
+                />
+            )}
         </div>
     )
 }

@@ -54,14 +54,6 @@ export async function getJobApplicationsAction(jobId: string): Promise<Applicati
     return serverFetch<ApplicationResponse[]>(`/api/applications/job/${jobId}`)
 }
 
-export async function scoreJobApplicationsAction(
-    jobId: string,
-): Promise<{
-    scores: { application_id: string; score: number }[]
-    external_scores: { external_application_id: string; score: number }[]
-}> {
-    return serverFetch(`/api/applications/job/${jobId}/ai-scores`)
-}
 
 export async function getApplicationResumeAction(
     applicationId: string,

@@ -39,7 +39,6 @@ import {
     getJobApplicationsAction,
     updateApplicationStatusAction,
     getApplicationResumeAction,
-    scoreJobApplicationsAction,
     uploadExternalResumeAction,
     bulkUploadExternalResumesAction,
     getExternalApplicationsAction,
@@ -49,6 +48,7 @@ import {
     type ExternalApplicationStatus,
     type BulkUploadResultItem,
 } from "./actions"
+import { applicationApi } from "@/services/application.service"
 import { toast } from "sonner"
 import CreateJobForm from "./CreateJobForm"
 import EditJobForm from "./EditJobForm"
@@ -1184,7 +1184,7 @@ function ApplicantsSheet({
     async function runAiAnalysis() {
         setAiAnalyzing(true)
         try {
-            const res = await scoreJobApplicationsAction(job.id)
+            const res = await applicationApi.scoreApplications(job.id)
             const map: Record<string, number> = {}
             res.scores.forEach(({ application_id, score }) => { map[application_id] = score })
             res.external_scores.forEach(({ external_application_id, score }) => { map[external_application_id] = score })

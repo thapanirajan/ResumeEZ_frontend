@@ -11,13 +11,6 @@ export default function HeroSection() {
             <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16 items-center">
                 {/* Left Content */}
                 <div className="z-10">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 mb-6">
-                        <span className="flex h-2 w-2 rounded-full bg-primary animate-pulse" />
-                        <span className="text-xs font-bold uppercase tracking-wider text-primary">
-                            Next Gen Recruitment AI
-                        </span>
-                    </div>
-
                     <h1 className="text-4xl sm:text-5xl lg:text-7xl font-black leading-[1.1] tracking-tight mb-6">
                         <span className="text-black">AI-Powered Hiring &amp;{" "}</span>
                         <span className="text-primary">Resume Intelligence</span>
