@@ -1,5 +1,8 @@
 import Link from "next/link";
 import { MapPin, Clock, Banknote, ArrowRight, Briefcase, Sparkles } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 
 type JobCard = {
     title: string;
@@ -45,10 +48,10 @@ const jobs: JobCard[] = [
     },
 ];
 
-const typeColors: Record<JobCard["type"], string> = {
-    Remote: "bg-green-100 text-green-700",
-    Hybrid: "bg-amber-100 text-amber-700",
-    "On-site": "bg-blue-100 text-blue-700",
+const typeBadgeVariant: Record<JobCard["type"], "success" | "warning" | "info"> = {
+    Remote: "success",
+    Hybrid: "warning",
+    "On-site": "info",
 };
 
 export default function JobBoardSection() {
@@ -58,22 +61,20 @@ export default function JobBoardSection() {
                 <div className="grid lg:grid-cols-2 gap-16 items-center">
                     {/* Left — copy */}
                     <div>
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 mb-6">
-                            <Briefcase size={13} className="text-primary" />
-                            <span className="text-xs font-bold uppercase tracking-wider text-primary">
-                                Job Board
-                            </span>
-                        </div>
+                        <Badge className="mb-5 gap-1.5">
+                            <Briefcase size={11} />
+                            Job Board
+                        </Badge>
 
                         <h2 className="text-3xl sm:text-4xl font-black text-slate-900 leading-tight mb-5">
                             Browse &amp; Apply for{" "}
-                            <span className="text-primary">Top Roles</span> — All in One Place
+                            <span className="text-primary">Top Roles</span>
+                            {" "}— All in One Place
                         </h2>
 
                         <p className="text-slate-500 text-base leading-relaxed mb-8 max-w-md">
                             Explore hundreds of open positions posted by verified recruiters.
-                            Apply directly with your ResumeEZ profile — no copy-pasting
-                            required.
+                            Apply directly with your ResumeEZ profile — no copy-pasting required.
                         </p>
 
                         <ul className="space-y-4 mb-10">
@@ -83,90 +84,79 @@ export default function JobBoardSection() {
                                 { icon: ArrowRight, text: "Track all applications in your dashboard" },
                             ].map(({ icon: Icon, text }) => (
                                 <li key={text} className="flex items-center gap-3 text-slate-700 text-sm font-medium">
-                                    <span className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                                        <Icon size={14} className="text-primary" />
+                                    <span className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                                        <Icon size={15} className="text-primary" />
                                     </span>
                                     {text}
                                 </li>
                             ))}
                         </ul>
 
-                        <Link
-                            href="/login"
-                            className="inline-flex items-center gap-2 bg-primary text-white font-bold px-7 py-3.5 rounded-lg shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all"
-                        >
-                            Browse Open Jobs
-                            <ArrowRight size={16} />
-                        </Link>
+                        <Button size="lg" asChild>
+                            <Link href="/login">
+                                Browse Open Jobs
+                                <ArrowRight size={16} />
+                            </Link>
+                        </Button>
                     </div>
 
-                    {/* Right — mock job cards */}
-                    <div className="flex flex-col gap-4">
+                    {/* Right — job cards */}
+                    <div className="flex flex-col gap-3">
                         {jobs.map((job) => (
-                            <div
+                            <Card
                                 key={job.title}
-                                className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:shadow-md hover:border-primary/30 transition-all group"
+                                className="border-slate-200 hover:border-primary/30 hover:shadow-md transition-all duration-200 group"
                             >
-                                <div className="flex items-start justify-between gap-4">
-                                    {/* Logo + info */}
-                                    <div className="flex items-start gap-4">
-                                        <div className="w-11 h-11 rounded-lg bg-primary flex items-center justify-center text-white font-black text-lg shrink-0">
-                                            {job.logo}
-                                        </div>
-                                        <div>
-                                            <h3 className="font-bold text-slate-800 text-sm group-hover:text-primary transition-colors">
-                                                {job.title}
-                                            </h3>
-                                            <p className="text-xs text-slate-500 mt-0.5">{job.company}</p>
-                                            <div className="flex flex-wrap items-center gap-2 mt-2">
-                                                <span className="flex items-center gap-1 text-[11px] text-slate-400">
-                                                    <MapPin size={11} />
-                                                    {job.location}
-                                                </span>
-                                                <span className="flex items-center gap-1 text-[11px] text-slate-400">
-                                                    <Banknote size={11} />
-                                                    {job.salary}
-                                                </span>
-                                                <span className="flex items-center gap-1 text-[11px] text-slate-400">
-                                                    <Clock size={11} />
-                                                    {job.posted}
-                                                </span>
+                                <CardContent className="p-5">
+                                    <div className="flex items-start justify-between gap-4">
+                                        <div className="flex items-start gap-4">
+                                            {/* Logo */}
+                                            <div className="w-11 h-11 rounded-xl bg-primary flex items-center justify-center text-white font-black text-lg shrink-0 shadow-md shadow-primary/20">
+                                                {job.logo}
+                                            </div>
+                                            <div>
+                                                <h3 className="font-bold text-slate-800 text-sm group-hover:text-primary transition-colors">
+                                                    {job.title}
+                                                </h3>
+                                                <p className="text-xs text-slate-400 mt-0.5 font-medium">{job.company}</p>
+                                                <div className="flex flex-wrap items-center gap-2 mt-2">
+                                                    <span className="flex items-center gap-1 text-[11px] text-slate-400">
+                                                        <MapPin size={10} /> {job.location}
+                                                    </span>
+                                                    <span className="flex items-center gap-1 text-[11px] text-slate-400">
+                                                        <Banknote size={10} /> {job.salary}
+                                                    </span>
+                                                    <span className="flex items-center gap-1 text-[11px] text-slate-400">
+                                                        <Clock size={10} /> {job.posted}
+                                                    </span>
+                                                </div>
                                             </div>
                                         </div>
+
+                                        <div className="flex flex-col items-end gap-3 shrink-0">
+                                            <Badge variant={typeBadgeVariant[job.type]} className="text-[10px] font-bold">
+                                                {job.type}
+                                            </Badge>
+                                            <Button size="sm" variant="outline" asChild>
+                                                <Link href="/login">Apply</Link>
+                                            </Button>
+                                        </div>
                                     </div>
 
-                                    {/* Type badge + apply */}
-                                    <div className="flex flex-col items-end gap-3 shrink-0">
-                                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${typeColors[job.type]}`}>
-                                            {job.type}
-                                        </span>
-                                        <Link
-                                            href="/login"
-                                            className="text-xs font-bold text-primary border border-primary/30 px-3 py-1.5 rounded-lg hover:bg-primary hover:text-white transition-all"
-                                        >
-                                            Apply
-                                        </Link>
+                                    <div className="flex flex-wrap gap-1.5 mt-4">
+                                        {job.tags.map((tag) => (
+                                            <Badge key={tag} variant="secondary" className="text-[10px] rounded-md px-2 py-0.5">
+                                                {tag}
+                                            </Badge>
+                                        ))}
                                     </div>
-                                </div>
-
-                                {/* Tags */}
-                                <div className="flex flex-wrap gap-1.5 mt-4">
-                                    {job.tags.map((tag) => (
-                                        <span
-                                            key={tag}
-                                            className="text-[10px] font-semibold bg-slate-100 text-slate-600 px-2 py-0.5 rounded"
-                                        >
-                                            {tag}
-                                        </span>
-                                    ))}
-                                </div>
-                            </div>
+                                </CardContent>
+                            </Card>
                         ))}
 
-                        {/* View more nudge */}
                         <Link
                             href="/login"
-                            className="text-center text-sm font-semibold text-primary hover:underline py-2"
+                            className="text-center text-sm font-semibold text-primary hover:underline py-2 transition-colors"
                         >
                             + View 200 more open positions →
                         </Link>

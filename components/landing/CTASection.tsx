@@ -1,11 +1,13 @@
 import Link from "next/link";
+import { ArrowRight, Sparkles } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export default function CTASection() {
     return (
-        <section className="py-16 bg-[#F8FAFC]">
+        <section className="py-16 bg-slate-50">
             <div className="max-w-7xl mx-auto px-6">
-                <div className="rounded-xl p-8 sm:p-12 lg:p-20 text-center relative overflow-hidden">
-                    {/* Background image — blurred, very low opacity */}
+                <div className="relative rounded-2xl overflow-hidden">
+                    {/* Background image */}
                     <div
                         className="absolute inset-0 scale-105"
                         style={{
@@ -17,30 +19,53 @@ export default function CTASection() {
                             opacity: 0.9,
                         }}
                     />
-                    {/* Dark overlay for contrast */}
-                    <div className="absolute inset-0 bg-gray-900/50 rounded-xl" />
+                    {/* Gradient overlay */}
+                    <div className="absolute inset-0 bg-linear-to-br from-primary/90 via-primary/80 to-blue-900/90" />
 
-                    <div className="relative z-10">
-                        <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white mb-4 sm:mb-6 tracking-tight">
-                            Ready to Land Your Dream Role?
+                    {/* Decorative dots */}
+                    <div className="absolute inset-0 opacity-10"
+                        style={{
+                            backgroundImage: `url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='1' fill-rule='evenodd'%3E%3Ccircle cx='3' cy='3' r='1.5'/%3E%3C/g%3E%3C/svg%3E")`,
+                        }}
+                    />
+
+                    <div className="relative z-10 px-8 py-20 sm:px-16 sm:py-24 text-center">
+                        {/* Eyebrow */}
+                        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/15 border border-white/20 text-white text-xs font-bold uppercase tracking-wider mb-6">
+                            <Sparkles size={12} />
+                            Start for Free Today
+                        </div>
+
+                        <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white mb-5 tracking-tight leading-tight">
+                            Ready to Land Your <br className="hidden sm:block" />
+                            <span className="text-blue-200">Dream Role?</span>
                         </h2>
-                        <p className="text-gray-300 text-base sm:text-lg mb-8 max-w-2xl mx-auto font-medium">
+
+                        <p className="text-blue-100 text-base sm:text-lg mb-10 max-w-2xl mx-auto font-medium leading-relaxed">
                             Join thousands of successful professionals and top-tier recruiters
-                            using ResumeEZ to build their future.
+                            using ResumeEZ to build their future — no credit card required.
                         </p>
+
                         <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                            <Link
-                                href="/login"
-                                className="bg-white text-gray-900 text-sm sm:text-base font-black px-6 py-3 rounded-lg shadow-xl hover:scale-105 transition-all text-center"
-                            >
-                                Get Started for Free
-                            </Link>
-                            <Link
-                                href="/login"
-                                className="bg-transparent border-2 border-white/60 text-white text-sm sm:text-base font-black px-6 py-3 rounded-lg hover:bg-white/10 transition-all text-center"
-                            >
-                                View All Templates
-                            </Link>
+                            <Button variant="white" size="lg" asChild>
+                                <Link href="/login">
+                                    Get Started for Free
+                                    <ArrowRight size={18} />
+                                </Link>
+                            </Button>
+                            <Button variant="outline-white" size="lg" asChild>
+                                <Link href="/login">View All Templates</Link>
+                            </Button>
+                        </div>
+
+                        {/* Trust indicators */}
+                        <div className="mt-10 flex items-center justify-center gap-6 flex-wrap">
+                            {["No credit card", "Free forever plan", "Cancel anytime"].map((item) => (
+                                <div key={item} className="flex items-center gap-1.5 text-blue-200 text-xs font-medium">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-blue-300" />
+                                    {item}
+                                </div>
+                            ))}
                         </div>
                     </div>
                 </div>

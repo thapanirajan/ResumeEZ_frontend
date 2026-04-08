@@ -1,18 +1,5 @@
 export type ApplicationStatus = "PENDING" | "REVIEWING" | "ACCEPTED" | "REJECTED"
 
-export type ApplicationResponse = {
-    id: string
-    job_id: string
-    candidate_id: string
-    candidate_name: string | null
-    candidate_email: string | null
-    resume_id: string
-    resume_title: string | null
-    status: ApplicationStatus
-    applied_at: string
-    updated_at: string
-}
-
 // ── AI Analysis Types ────────────────────────────────────────────────────────
 
 export type MatchType = "exact" | "fuzzy" | "semantic"
@@ -53,4 +40,22 @@ export type ApplicationAnalysis = {
     extra_skills: ExtraSkillItem[]
     gap_report: string
     reasoning: string
+}
+
+export type ApplicationResponse = {
+    id: string
+    job_id: string
+    candidate_id: string
+    candidate_name: string | null
+    candidate_email: string | null
+    resume_id: string
+    resume_title: string | null
+    status: ApplicationStatus
+    applied_at: string
+    updated_at: string
+    // AI scoring (auto-populated after submit scoring or manual run)
+    ai_score: number | null
+    ai_analysis: ApplicationAnalysis | null
+    ai_scored_at: string | null
+    recruiter_notes: string | null
 }

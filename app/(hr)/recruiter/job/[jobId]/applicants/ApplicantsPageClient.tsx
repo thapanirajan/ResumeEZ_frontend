@@ -19,6 +19,7 @@ import {
     UploadCloud,
     FileText,
     BarChart2,
+    RocketIcon,
 } from "lucide-react"
 import { toast } from "sonner"
 
@@ -61,7 +62,7 @@ function initials(name: string | null): string {
 
 function avatarColor(name: string | null): string {
     const colors = [
-        "bg-indigo-100 text-indigo-700",
+        "bg-primary/10 text-primary",
         "bg-emerald-100 text-emerald-700",
         "bg-amber-100 text-amber-700",
         "bg-rose-100 text-rose-700",
@@ -79,20 +80,6 @@ function relativeTime(iso: string): string {
     } catch {
         return iso
     }
-}
-
-// Extract top keywords from job description for skills matching
-function extractJobKeywords(description: string): string[] {
-    const stopWords = new Set([
-        "the", "and", "or", "to", "a", "an", "in", "of", "for", "with",
-        "is", "are", "will", "we", "you", "our", "your", "be", "as",
-        "at", "by", "on", "this", "that", "have", "has", "from",
-    ])
-    return [...new Set(
-        description
-            .toLowerCase()
-            .match(/\b[a-z][a-z+#.]{2,}\b/g) ?? []
-    )].filter((w) => !stopWords.has(w)).slice(0, 40)
 }
 
 
@@ -168,7 +155,7 @@ function CvModal({
                 <div className="flex-1 overflow-y-auto p-6">
                     {loading && (
                         <div className="flex items-center justify-center h-40">
-                            <Loader2 className="w-6 h-6 animate-spin text-indigo-500" />
+                            <Loader2 className="w-6 h-6 animate-spin text-primary" />
                         </div>
                     )}
                     {error && <p className="text-sm text-red-500">{error}</p>}
@@ -211,7 +198,7 @@ function ExternalCvModal({
                             href={application.resume_file_url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-xs font-semibold text-indigo-600 hover:underline"
+                            className="text-xs font-semibold text-primary hover:underline"
                         >
                             Open in new tab
                         </a>
@@ -237,11 +224,141 @@ function ExternalCvModal({
                                 href={application.resume_file_url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-semibold hover:bg-indigo-700 transition"
+                                className="px-4 py-2 bg-primary text-white rounded-xl text-sm font-semibold hover:brightness-110 transition"
                             >
                                 Open File
                             </a>
                         </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    )
+}
+
+// ── Auto Shortlist Modal ──────────────────────────────────────────────────────
+
+function AutoShortlistModal({
+    onClose,
+    onConfirm,
+    totalCandidates,
+    hasScores,
+}: {
+    onClose: () => void
+    onConfirm: (topPercent: number) => void
+    totalCandidates: number
+    hasScores: boolean
+}) {
+    const [selectedPercent, setSelectedPercent] = useState<10 | 20 | null>(10)
+    const [customPercent, setCustomPercent] = useState("")
+
+    const effectivePercent = (selectedPercent !== null ? selectedPercent : parseInt(customPercent)) || 0
+    const count = Math.ceil(totalCandidates * effectivePercent / 100)
+    const isValid = effectivePercent > 0 && effectivePercent <= 100
+
+    return (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white w-full max-w-lg rounded-xl shadow-2xl overflow-hidden border border-slate-200">
+                <div className="p-8">
+                    <div className="flex items-start gap-4 mb-6">
+                        <div className="bg-primary/10 rounded-xl p-3 text-primary shrink-0">
+                            <Sparkles className="w-7 h-7" />
+                        </div>
+                        <div>
+                            <h2 className="text-2xl font-black text-slate-900 tracking-tight leading-tight">
+                                Auto Shortlist Top Candidates
+                            </h2>
+                            <p className="text-slate-500 mt-2 leading-relaxed text-sm">
+                                {hasScores
+                                    ? "Automatically shortlist the highest-matching candidates based on AI scores."
+                                    : "Run AI Scores first to enable auto shortlisting."}
+                            </p>
+                        </div>
+                    </div>
+
+                    {hasScores ? (
+                        <div className="space-y-5">
+                            <div>
+                                <label className="block text-sm font-bold text-slate-900 mb-3">
+                                    Shortlist top candidates by percentage:
+                                </label>
+                                <div className="grid grid-cols-3 gap-3">
+                                    {([10, 20] as const).map((p) => (
+                                        <button
+                                            key={p}
+                                            onClick={() => { setSelectedPercent(p); setCustomPercent("") }}
+                                            className={`py-3 px-4 rounded-xl border-2 font-bold text-sm transition-all ${
+                                                selectedPercent === p
+                                                    ? "border-primary bg-primary/5 text-primary"
+                                                    : "border-slate-100 bg-slate-50 text-slate-600 hover:border-primary/40"
+                                            }`}
+                                        >
+                                            Top {p}%
+                                        </button>
+                                    ))}
+                                    <button
+                                        onClick={() => setSelectedPercent(null)}
+                                        className={`py-3 px-4 rounded-xl border-2 font-bold text-sm transition-all ${
+                                            selectedPercent === null
+                                                ? "border-primary bg-primary/5 text-primary"
+                                                : "border-slate-100 bg-slate-50 text-slate-600 hover:border-primary/40"
+                                        }`}
+                                    >
+                                        Custom %
+                                    </button>
+                                </div>
+                                {selectedPercent === null && (
+                                    <div className="mt-3">
+                                        <input
+                                            type="number"
+                                            min="1"
+                                            max="100"
+                                            value={customPercent}
+                                            onChange={(e) => setCustomPercent(e.target.value)}
+                                            placeholder="Enter percentage (1–100)"
+                                            className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                                        />
+                                    </div>
+                                )}
+                            </div>
+
+                            {isValid && (
+                                <div className="bg-primary/5 rounded-xl p-4 border border-primary/20">
+                                    <div className="flex items-center gap-3">
+                                        <Sparkles className="w-4 h-4 text-primary shrink-0" />
+                                        <p className="text-sm text-primary font-medium">
+                                            This will shortlist the top{" "}
+                                            <span className="font-black underline">{count} candidate{count !== 1 ? "s" : ""}</span>{" "}
+                                            out of {totalCandidates}.
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    ) : (
+                        <div className="bg-amber-50 rounded-xl p-4 border border-amber-200">
+                            <p className="text-sm text-amber-700 font-medium">
+                                Please run AI Scores first so candidates can be ranked before shortlisting.
+                            </p>
+                        </div>
+                    )}
+                </div>
+
+                <div className="bg-slate-50 p-6 flex justify-end gap-3 border-t border-slate-100">
+                    <button
+                        onClick={onClose}
+                        className="px-6 py-2.5 rounded-xl text-slate-600 font-bold text-sm hover:bg-slate-200 transition-colors"
+                    >
+                        Cancel
+                    </button>
+                    {hasScores && (
+                        <button
+                            disabled={!isValid}
+                            onClick={() => onConfirm(effectivePercent)}
+                            className="bg-primary text-white px-8 py-2.5 rounded-xl font-bold text-sm shadow-lg shadow-primary/25 hover:brightness-110 active:scale-95 transition-all disabled:opacity-50"
+                        >
+                            Shortlist {isValid && count > 0 ? `${count} ` : ""}Candidate{count !== 1 ? "s" : ""}
+                        </button>
                     )}
                 </div>
             </div>
@@ -305,7 +422,7 @@ function SingleUploadModal({
             <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md">
                 <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
                     <div className="flex items-center gap-2">
-                        <Upload className="w-5 h-5 text-indigo-600" />
+                        <Upload className="w-5 h-5 text-primary" />
                         <p className="font-bold text-slate-900">Upload Resume</p>
                     </div>
                     <button onClick={onClose} className="p-2 rounded-xl hover:bg-slate-100 transition-colors">
@@ -322,7 +439,7 @@ function SingleUploadModal({
                             onChange={(e) => setCandidateName(e.target.value)}
                             required
                             placeholder="John Doe"
-                            className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                            className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
                         />
                     </div>
                     <div>
@@ -332,7 +449,7 @@ function SingleUploadModal({
                             value={candidateEmail}
                             onChange={(e) => setCandidateEmail(e.target.value)}
                             placeholder="john@example.com"
-                            className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                            className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
                         />
                     </div>
                     <div>
@@ -340,7 +457,7 @@ function SingleUploadModal({
                         <select
                             value={source}
                             onChange={(e) => setSource(e.target.value as ExternalApplicationSource)}
-                            className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-white"
+                            className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 bg-white"
                         >
                             {SOURCE_OPTIONS.map((o) => (
                                 <option key={o.value} value={o.value}>{o.label}</option>
@@ -354,17 +471,17 @@ function SingleUploadModal({
                             onChange={(e) => setNotes(e.target.value)}
                             placeholder="Optional notes…"
                             rows={2}
-                            className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 resize-none"
+                            className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
                         />
                     </div>
                     <div>
                         <label className="block text-xs font-semibold text-slate-600 mb-1">
                             Resume File <span className="text-red-500">*</span>
                         </label>
-                        <label className="flex flex-col items-center justify-center gap-2 w-full h-28 border-2 border-dashed border-slate-200 rounded-xl cursor-pointer hover:border-indigo-300 hover:bg-indigo-50/50 transition-colors">
+                        <label className="flex flex-col items-center justify-center gap-2 w-full h-28 border-2 border-dashed border-slate-200 rounded-xl cursor-pointer hover:border-primary/40 hover:bg-primary/5 transition-colors">
                             <FileText className="w-6 h-6 text-slate-400" />
                             {file ? (
-                                <span className="text-xs font-semibold text-indigo-600">{file.name}</span>
+                                <span className="text-xs font-semibold text-primary">{file.name}</span>
                             ) : (
                                 <span className="text-xs text-slate-400">Click to select PDF, DOC, or DOCX</span>
                             )}
@@ -387,7 +504,7 @@ function SingleUploadModal({
                         <button
                             type="submit"
                             disabled={submitting}
-                            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-semibold hover:bg-indigo-700 transition-colors disabled:opacity-60"
+                            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-white rounded-xl text-sm font-semibold hover:brightness-110 transition-colors disabled:opacity-60"
                         >
                             {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
                             {submitting ? "Uploading…" : "Upload"}
@@ -472,7 +589,7 @@ function BulkUploadModal({
             <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col">
                 <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
                     <div className="flex items-center gap-2">
-                        <UploadCloud className="w-5 h-5 text-indigo-600" />
+                        <UploadCloud className="w-5 h-5 text-primary" />
                         <p className="font-bold text-slate-900">Bulk Upload Resumes</p>
                     </div>
                     <button onClick={onClose} className="p-2 rounded-xl hover:bg-slate-100 transition-colors">
@@ -484,7 +601,7 @@ function BulkUploadModal({
                     <div className="flex-1 overflow-y-auto p-6 space-y-4">
                         {/* File picker */}
                         <div>
-                            <label className="flex flex-col items-center justify-center gap-2 w-full h-28 border-2 border-dashed border-slate-200 rounded-xl cursor-pointer hover:border-indigo-300 hover:bg-indigo-50/50 transition-colors">
+                            <label className="flex flex-col items-center justify-center gap-2 w-full h-28 border-2 border-dashed border-slate-200 rounded-xl cursor-pointer hover:border-primary/40 hover:bg-primary/5 transition-colors">
                                 <UploadCloud className="w-7 h-7 text-slate-400" />
                                 <span className="text-xs text-slate-400">
                                     {entries.length > 0
@@ -515,7 +632,7 @@ function BulkUploadModal({
                                             value={en.candidateName}
                                             onChange={(e) => updateName(idx, e.target.value)}
                                             placeholder="Candidate name"
-                                            className="w-36 px-2 py-1.5 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                                            className="w-36 px-2 py-1.5 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-primary/20"
                                         />
                                         <button
                                             type="button"
@@ -535,7 +652,7 @@ function BulkUploadModal({
                             <select
                                 value={source}
                                 onChange={(e) => setSource(e.target.value as ExternalApplicationSource)}
-                                className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-white"
+                                className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 bg-white"
                             >
                                 {SOURCE_OPTIONS.map((o) => (
                                     <option key={o.value} value={o.value}>{o.label}</option>
@@ -551,7 +668,7 @@ function BulkUploadModal({
                                 onChange={(e) => setNotes(e.target.value)}
                                 placeholder="Optional notes for all uploads…"
                                 rows={2}
-                                className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 resize-none"
+                                className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
                             />
                         </div>
                     </div>
@@ -567,7 +684,7 @@ function BulkUploadModal({
                         <button
                             type="submit"
                             disabled={submitting || entries.length === 0}
-                            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-semibold hover:bg-indigo-700 transition-colors disabled:opacity-60"
+                            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-white rounded-xl text-sm font-semibold hover:brightness-110 transition-colors disabled:opacity-60"
                         >
                             {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <UploadCloud className="w-4 h-4" />}
                             {submitting ? "Uploading…" : `Upload ${entries.length > 0 ? entries.length : ""} Resume${entries.length !== 1 ? "s" : ""}`}
@@ -597,9 +714,28 @@ export default function ApplicantsPageClient({
     const [applications, setApplications] = useState(initialApplications)
     const [externalApplications, setExternalApplications] = useState(initialExternalApplications)
 
-    // AI scores + analysis
+    // AI scores + analysis — pre-seed from any already-scored applications
     type AIEntry = { score: number; analysis: ApplicationAnalysis | null }
-    const [aiScores, setAiScores] = useState<Record<string, AIEntry> | null>(null)
+
+    const seedAiScores = useMemo<Record<string, AIEntry> | null>(() => {
+        const entries: Record<string, AIEntry> = {}
+        let hasAny = false
+        for (const a of initialApplications) {
+            if (a.ai_score != null) {
+                entries[a.id] = { score: a.ai_score, analysis: a.ai_analysis ?? null }
+                hasAny = true
+            }
+        }
+        for (const a of initialExternalApplications) {
+            if (a.ai_score != null) {
+                entries[a.id] = { score: a.ai_score, analysis: a.ai_analysis ?? null }
+                hasAny = true
+            }
+        }
+        return hasAny ? entries : null
+    }, [initialApplications, initialExternalApplications])
+
+    const [aiScores, setAiScores] = useState<Record<string, AIEntry> | null>(seedAiScores)
     const [aiRunning, setAiRunning] = useState(false)
     const [analysisModal, setAnalysisModal] = useState<AnyApplication | null>(null)
 
@@ -619,9 +755,7 @@ export default function ApplicantsPageClient({
     const [cvExtApp, setCvExtApp] = useState<ExternalApplicationResponse | null>(null)
     const [showSingleUpload, setShowSingleUpload] = useState(false)
     const [showBulkUpload, setShowBulkUpload] = useState(false)
-
-    // Job keywords for skills matching
-    const jobKeywords = useMemo(() => extractJobKeywords(job.description), [job.description])
+    const [showAutoShortlist, setShowAutoShortlist] = useState(false)
 
     // ── Combined rows ────────────────────────────────────────────────────────
 
@@ -776,6 +910,37 @@ export default function ApplicantsPageClient({
         [],
     )
 
+    // ── Auto Shortlist ───────────────────────────────────────────────────────
+
+    const handleAutoShortlist = useCallback(async (topPercent: number) => {
+        if (!aiScores) return
+        setShowAutoShortlist(false)
+
+        const scored = allRows
+            .map((r) => ({ row: r, score: aiScores[r.data.id]?.score ?? 0 }))
+            .sort((a, b) => b.score - a.score)
+
+        const topN = Math.ceil(scored.length * topPercent / 100)
+        const toShortlist = scored.slice(0, topN).filter((s) => s.row.data.status !== "REVIEWING")
+
+        let successCount = 0
+        for (const { row } of toShortlist) {
+            try {
+                if (row.kind === "platform") {
+                    await updateApplicationStatusAction(row.data.id, "REVIEWING")
+                    setApplications((prev) => prev.map((a) => a.id === row.data.id ? { ...a, status: "REVIEWING" } : a))
+                } else {
+                    await updateExternalApplicationStatusAction(row.data.id, "REVIEWING")
+                    setExternalApplications((prev) => prev.map((a) => a.id === row.data.id ? { ...a, status: "REVIEWING" } : a))
+                }
+                successCount++
+            } catch {
+                // continue with others
+            }
+        }
+        toast.success(`${successCount} candidate${successCount !== 1 ? "s" : ""} shortlisted`)
+    }, [aiScores, allRows])
+
     // ── Render ───────────────────────────────────────────────────────────────
 
     const tabs: { key: TabFilter; label: string }[] = [
@@ -795,7 +960,7 @@ export default function ApplicantsPageClient({
                     <div className="flex items-center gap-2 text-slate-500 text-sm font-medium">
                         <button
                             onClick={() => router.back()}
-                            className="flex items-center gap-1 hover:text-indigo-600 transition-colors"
+                            className="flex items-center gap-1 hover:text-primary transition-colors"
                         >
                             <ArrowLeft className="w-4 h-4" />
                             Jobs
@@ -811,25 +976,32 @@ export default function ApplicantsPageClient({
                     </p>
                 </div>
 
-                <div className="flex items-center gap-3 flex-shrink-0">
+                <div className="flex items-center gap-3 shrink-0">
                     <button
                         onClick={() => setShowSingleUpload(true)}
-                        className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl font-semibold text-sm hover:border-indigo-300 hover:text-indigo-600 transition-all"
+                        className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl font-semibold text-sm hover:border-primary/40 hover:text-primary transition-all"
                     >
                         <Upload className="w-4 h-4" />
                         Upload Resume
                     </button>
                     <button
                         onClick={() => setShowBulkUpload(true)}
-                        className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl font-semibold text-sm hover:border-indigo-300 hover:text-indigo-600 transition-all"
+                        className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl font-semibold text-sm hover:border-primary/40 hover:text-primary transition-all"
                     >
                         <UploadCloud className="w-4 h-4" />
                         Bulk Upload
                     </button>
                     <button
+                        onClick={() => setShowAutoShortlist(true)}
+                        className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl font-semibold text-sm hover:border-primary/40 hover:text-primary transition-all"
+                    >
+                        <RocketIcon className="w-4 h-4" />
+                        Auto Shortlist
+                    </button>
+                    <button
                         onClick={runAiScores}
                         disabled={aiRunning}
-                        className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white rounded-xl font-bold text-sm shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all disabled:opacity-60"
+                        className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-xl font-bold text-sm shadow-lg shadow-primary/20 hover:brightness-110 active:scale-95 transition-all disabled:opacity-60"
                     >
                         {aiRunning ? (
                             <Loader2 className="w-4 h-4 animate-spin" />
@@ -869,14 +1041,14 @@ export default function ApplicantsPageClient({
 
                 <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 relative overflow-hidden">
                     <div className="absolute top-2 right-2 opacity-5">
-                        <Sparkles className="w-16 h-16 text-indigo-600" />
+                        <Sparkles className="w-16 h-16 text-primary" />
                     </div>
                     <div className="flex items-center justify-between mb-2">
                         <p className="text-slate-500 font-medium text-sm">AI Suggested</p>
-                        <Sparkles className="w-5 h-5 text-indigo-500" />
+                        <Sparkles className="w-5 h-5 text-primary" />
                     </div>
                     <p className="text-3xl font-black text-slate-900">{stats.aiSuggested}</p>
-                    <p className="mt-1 text-xs text-indigo-600 font-semibold">
+                    <p className="mt-1 text-xs text-primary font-semibold">
                         {aiScores ? "Scores available — ≥70% match" : "Run AI Scores to see matches"}
                     </p>
                 </div>
@@ -891,7 +1063,7 @@ export default function ApplicantsPageClient({
                         value={search}
                         onChange={(e) => { setSearch(e.target.value); setPage(1) }}
                         placeholder="Search by name or email…"
-                        className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                        className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
                     />
                 </div>
 
@@ -903,13 +1075,13 @@ export default function ApplicantsPageClient({
                             onClick={() => { setTab(t.key); setPage(1) }}
                             className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
                                 tab === t.key
-                                    ? "bg-indigo-600 text-white"
+                                    ? "bg-primary text-white"
                                     : "text-slate-500 hover:text-slate-900"
                             }`}
                         >
                             {t.label}
                             {(tabCounts[t.key] ?? 0) > 0 && (
-                                <span className={`ml-1.5 text-[10px] font-bold ${tab === t.key ? "text-indigo-200" : "text-slate-400"}`}>
+                                <span className={`ml-1.5 text-[10px] font-bold ${tab === t.key ? "text-white/60" : "text-slate-400"}`}>
                                     {tabCounts[t.key]}
                                 </span>
                             )}
@@ -922,8 +1094,8 @@ export default function ApplicantsPageClient({
                     onClick={() => setSortMode((m) => (m === "score" ? "date" : "score"))}
                     className={`flex items-center gap-2 px-4 py-2.5 border rounded-xl text-sm font-semibold transition-colors ${
                         sortMode === "score"
-                            ? "bg-indigo-50 text-indigo-700 border-indigo-200"
-                            : "bg-white text-slate-600 border-slate-200 hover:border-indigo-200"
+                            ? "bg-primary/10 text-primary border-primary/20"
+                            : "bg-white text-slate-600 border-slate-200 hover:border-primary/20"
                     }`}
                 >
                     <ArrowDownUp className="w-4 h-4" />
@@ -972,15 +1144,15 @@ export default function ApplicantsPageClient({
                                         row.kind === "platform"
                                             ? row.data.applied_at
                                             : row.data.uploaded_at
-                                    // Top job requirement keywords shown as context pills
-                                    const topKeywords = jobKeywords.slice(0, 4)
+                                    // Show actual matched skills if AI analysis available, otherwise nothing
+                                    const topMatchedSkills = aiEntry?.analysis?.matched_skills?.slice(0, 4) ?? []
 
                                     return (
                                         <tr
                                             key={id}
                                             className={`group transition-colors ${
                                                 isTopMatch
-                                                    ? "bg-indigo-50/60 hover:bg-indigo-50"
+                                                    ? "bg-primary/5 hover:bg-primary/10"
                                                     : "hover:bg-slate-50"
                                             }`}
                                         >
@@ -1026,18 +1198,20 @@ export default function ApplicantsPageClient({
                                                 </div>
                                             </td>
 
-                                            {/* Skills Match — job keywords shown as context */}
+                                            {/* Skills Match — actual matched skills from AI analysis */}
                                             <td className="px-6 py-4">
                                                 <div className="flex flex-wrap gap-1 max-w-[220px]">
-                                                    {topKeywords.length > 0 ? topKeywords.map((kw) => (
+                                                    {topMatchedSkills.length > 0 ? topMatchedSkills.map((s) => (
                                                         <span
-                                                            key={kw}
-                                                            className="text-[11px] font-medium bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full"
+                                                            key={s.canonical_id}
+                                                            className="text-[11px] font-medium bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full"
                                                         >
-                                                            {kw}
+                                                            {s.name}
                                                         </span>
                                                     )) : (
-                                                        <span className="text-xs text-slate-300">—</span>
+                                                        <span className="text-xs text-slate-300">
+                                                            {aiEntry ? "No skills matched" : "—"}
+                                                        </span>
                                                     )}
                                                 </div>
                                             </td>
@@ -1066,7 +1240,7 @@ export default function ApplicantsPageClient({
                                                     {hasAnalysis && (
                                                         <button
                                                             onClick={() => setAnalysisModal(row)}
-                                                            className="p-2 text-slate-400 hover:text-purple-600 rounded-lg hover:bg-purple-50 transition-colors"
+                                                            className="p-2 text-slate-400 hover:text-primary rounded-lg hover:bg-primary/5 transition-colors"
                                                             title="View AI Analysis"
                                                         >
                                                             <BarChart2 className="w-4 h-4" />
@@ -1079,7 +1253,7 @@ export default function ApplicantsPageClient({
                                                                 ? setCvApp(row.data)
                                                                 : setCvExtApp(row.data)
                                                         }
-                                                        className="p-2 text-slate-400 hover:text-indigo-600 rounded-lg hover:bg-indigo-50 transition-colors"
+                                                        className="p-2 text-slate-400 hover:text-primary rounded-lg hover:bg-primary/5 transition-colors"
                                                         title="View CV"
                                                     >
                                                         <Eye className="w-4 h-4" />
@@ -1151,7 +1325,7 @@ export default function ApplicantsPageClient({
                         <button
                             disabled={page === totalPages}
                             onClick={() => setPage((p) => p + 1)}
-                            className="flex items-center gap-1 px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 transition-colors disabled:opacity-40"
+                            className="flex items-center gap-1 px-3 py-1.5 bg-primary text-white rounded-lg text-xs font-bold hover:brightness-110 transition-all disabled:opacity-40"
                         >
                             Next
                             <ChevronRight className="w-3.5 h-3.5" />
@@ -1161,6 +1335,14 @@ export default function ApplicantsPageClient({
             </div>
 
             {/* ── Modals ── */}
+            {showAutoShortlist && (
+                <AutoShortlistModal
+                    onClose={() => setShowAutoShortlist(false)}
+                    onConfirm={handleAutoShortlist}
+                    totalCandidates={allRows.length}
+                    hasScores={aiScores !== null}
+                />
+            )}
             {analysisModal && aiScores?.[analysisModal.data.id]?.analysis && (
                 <CandidateAnalysisModal
                     applicant={analysisModal}

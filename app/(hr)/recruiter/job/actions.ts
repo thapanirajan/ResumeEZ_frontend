@@ -3,7 +3,7 @@
 import { serverFetch } from "@/lib/serverFetch"
 import { revalidatePath } from "next/cache"
 import { JobCreatePayload, JobResponse, JobUpdatePayload } from "@/types/job"
-import { ApplicationResponse, ApplicationStatus } from "@/types/application"
+import { ApplicationAnalysis, ApplicationResponse, ApplicationStatus } from "@/types/application"
 import { cookies } from "next/headers"
 
 export type ExternalApplicationSource = "EMAIL" | "LINKEDIN" | "REFERRAL" | "OFFLINE" | "OTHER"
@@ -19,6 +19,10 @@ export interface ExternalApplicationResponse {
     resume_filename: string
     status: ExternalApplicationStatus
     notes: string | null
+    recruiter_notes: string | null
+    ai_score: number | null
+    ai_analysis: ApplicationAnalysis | null
+    ai_scored_at: string | null
     uploaded_at: string
     updated_at: string
 }

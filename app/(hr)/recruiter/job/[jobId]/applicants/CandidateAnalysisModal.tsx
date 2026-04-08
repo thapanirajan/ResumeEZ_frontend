@@ -11,6 +11,8 @@ import {
     Sparkles,
     User,
     Loader2,
+    Star,
+    BarChart2,
 } from "lucide-react"
 import { toast } from "sonner"
 
@@ -53,31 +55,38 @@ interface Props {
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
 const CATEGORY_COLORS: Record<string, string> = {
-    language:    "bg-blue-100 text-blue-700",
-    framework:   "bg-indigo-100 text-indigo-700",
-    tool:        "bg-orange-100 text-orange-700",
-    cloud:       "bg-sky-100 text-sky-700",
-    database:    "bg-emerald-100 text-emerald-700",
-    ai_ml:       "bg-purple-100 text-purple-700",
-    methodology: "bg-slate-100 text-slate-600",
-    soft:        "bg-pink-100 text-pink-700",
-    api:         "bg-yellow-100 text-yellow-700",
+    language:    "bg-blue-50 text-blue-600 border border-blue-100",
+    framework:   "bg-indigo-50 text-indigo-600 border border-indigo-100",
+    tool:        "bg-orange-50 text-orange-600 border border-orange-100",
+    cloud:       "bg-sky-50 text-sky-600 border border-sky-100",
+    database:    "bg-emerald-50 text-emerald-600 border border-emerald-100",
+    ai_ml:       "bg-purple-50 text-purple-600 border border-purple-100",
+    methodology: "bg-slate-50 text-slate-500 border border-slate-100",
+    soft:        "bg-pink-50 text-pink-600 border border-pink-100",
+    api:         "bg-yellow-50 text-yellow-600 border border-yellow-100",
 }
 
 function catColor(cat: string) {
-    return CATEGORY_COLORS[cat] ?? "bg-gray-100 text-gray-600"
+    return CATEGORY_COLORS[cat] ?? "bg-gray-50 text-gray-500 border border-gray-100"
 }
 
 function SubScoreBar({ label, score }: { label: string; score: number }) {
-    const color = score >= 80 ? "bg-emerald-500" : score >= 60 ? "bg-indigo-500" : score >= 40 ? "bg-amber-500" : "bg-red-500"
+    const color =
+        score >= 80 ? "bg-emerald-400" :
+        score >= 60 ? "bg-violet-400" :
+        score >= 40 ? "bg-amber-400" : "bg-red-400"
+    const textColor =
+        score >= 80 ? "text-emerald-600" :
+        score >= 60 ? "text-violet-600" :
+        score >= 40 ? "text-amber-600" : "text-red-500"
     return (
         <div>
-            <div className="flex items-center justify-between text-xs text-slate-500 mb-1">
-                <span>{label}</span>
-                <span className="font-semibold text-slate-700">{score}</span>
+            <div className="flex items-center justify-between text-xs mb-1.5">
+                <span className="text-slate-500">{label}</span>
+                <span className={`font-bold tabular-nums ${textColor}`}>{score}</span>
             </div>
             <div className="h-1.5 w-full rounded-full bg-slate-100">
-                <div className={`h-1.5 rounded-full transition-all ${color}`} style={{ width: `${Math.min(score, 100)}%` }} />
+                <div className={`h-1.5 rounded-full transition-all duration-500 ${color}`} style={{ width: `${Math.min(score, 100)}%` }} />
             </div>
         </div>
     )
@@ -131,205 +140,231 @@ export default function CandidateAnalysisModal({ applicant, analysis, jobTitle, 
         }
     }, [applicant, appId, currentStatus, onStatusChange, onClose])
 
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+    const isRejected = currentStatus === "REJECTED"
+    const isShortlisted = currentStatus === "REVIEWING"
 
-                {/* Header */}
-                <div className="flex items-start justify-between gap-4 p-6 border-b border-slate-100">
+    return (
+        <>
+            {/* Overlay */}
+            <div
+                className="fixed inset-0 z-40 bg-slate-800/30 backdrop-blur-[2px]"
+                onClick={onClose}
+            />
+
+            {/* Right-Side Drawer */}
+            <div className="fixed right-0 top-0 h-screen w-full max-w-xl bg-white shadow-xl z-50 flex flex-col border-l border-slate-100">
+
+                {/* Drawer Header */}
+                <header className="px-5 py-4 border-b border-slate-100 flex items-center justify-between sticky top-0 bg-white/95 backdrop-blur-md z-10">
                     <div className="flex items-center gap-3">
-                        <div className="w-11 h-11 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-base shrink-0">
-                            <User className="w-5 h-5" />
-                        </div>
+                        <button
+                            onClick={onClose}
+                            className="size-8 rounded-lg hover:bg-slate-100 flex items-center justify-center transition-colors"
+                        >
+                            <X className="w-4 h-4 text-slate-400" />
+                        </button>
                         <div>
-                            <h2 className="text-lg font-bold text-slate-900">{name}</h2>
-                            {email && <p className="text-sm text-slate-500">{email}</p>}
-                            <p className="text-xs text-slate-400 mt-0.5">{jobTitle}</p>
+                            <div className="flex items-center gap-2">
+                                <h2 className="text-base font-bold text-slate-800">{name}</h2>
+                                {applicant.kind === "external" && (
+                                    <span className="px-2 py-0.5 bg-slate-100 text-slate-400 text-[10px] font-bold uppercase rounded-full">
+                                        {applicant.data.source}
+                                    </span>
+                                )}
+                            </div>
+                            <div className="flex items-center gap-2 mt-0.5">
+                                <span className="text-violet-600 font-bold text-xs">
+                                    ATS {analysis.ats_score}%
+                                </span>
+                                <div className="w-20 h-1 bg-slate-100 rounded-full overflow-hidden">
+                                    <div className="h-full bg-violet-400 rounded-full" style={{ width: `${analysis.ats_score}%` }} />
+                                </div>
+                                {email && <span className="text-[11px] text-slate-400">· {email}</span>}
+                            </div>
                         </div>
                     </div>
-                    <button
-                        onClick={onClose}
-                        className="p-2 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors shrink-0"
-                    >
-                        <X className="w-5 h-5" />
-                    </button>
-                </div>
+                </header>
 
-                <div className="p-6 space-y-6">
+                {/* Scrollable Content */}
+                <div className="flex-1 overflow-y-auto p-5 space-y-5">
 
                     {/* Score Overview */}
-                    <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-                        <div className="sm:col-span-1 flex flex-col items-center justify-center bg-slate-50 rounded-xl p-5">
-                            <ScoreRing score={analysis.ats_score} size={72} />
-                            <p className="text-xs font-semibold text-slate-500 mt-2">Overall ATS</p>
+                    <section className="bg-slate-50 rounded-xl p-4 border border-slate-100">
+                        <div className="flex items-center gap-2 mb-4">
+                            <BarChart2 className="w-4 h-4 text-slate-300" />
+                            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">Score Breakdown</h3>
                         </div>
-                        <div className="sm:col-span-3 flex flex-col justify-center gap-3 bg-slate-50 rounded-xl p-5">
-                            <SubScoreBar label="Skills Match" score={analysis.skills_score} />
-                            <SubScoreBar label="Experience" score={analysis.experience_score} />
-                            <SubScoreBar label="Education" score={analysis.education_score} />
-                        </div>
-                    </div>
-
-                    {/* Skill Columns */}
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-
-                        {/* Matched Skills */}
-                        <div className="rounded-xl border border-emerald-200 bg-emerald-50/50 p-4">
-                            <div className="flex items-center gap-2 mb-3">
-                                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                                <span className="text-sm font-semibold text-slate-800">Matched</span>
-                                <span className="ml-auto rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700">
-                                    {analysis.matched_skills.length}
-                                </span>
+                        <div className="grid grid-cols-4 gap-3">
+                            <div className="flex flex-col items-center justify-center bg-white rounded-lg p-3 border border-slate-100">
+                                <ScoreRing score={analysis.ats_score} size={60} />
+                                <p className="text-[10px] font-semibold text-slate-400 mt-2 text-center">Overall</p>
                             </div>
-                            {analysis.matched_skills.length === 0 ? (
-                                <p className="text-xs text-slate-400">No matching skills detected.</p>
-                            ) : (
-                                <ul className="space-y-1.5">
-                                    {analysis.matched_skills.slice(0, 10).map((s) => (
-                                        <li key={s.canonical_id} className="rounded-lg bg-white border border-emerald-100 px-2.5 py-2">
-                                            <div className="flex items-center justify-between gap-1">
-                                                <span className="text-xs font-medium text-emerald-800 truncate">{s.name}</span>
+                            <div className="col-span-3 flex flex-col justify-center gap-3 bg-white rounded-lg p-3 border border-slate-100">
+                                <SubScoreBar label="Skills" score={analysis.skills_score} />
+                                <SubScoreBar label="Experience" score={analysis.experience_score} />
+                                <SubScoreBar label="Education" score={analysis.education_score} />
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* AI Summary */}
+                    {analysis.gap_report && (
+                        <section className="bg-violet-50 rounded-xl p-4 border border-violet-100">
+                            <div className="flex items-center gap-2 mb-2">
+                                <Sparkles className="w-3.5 h-3.5 text-violet-400" />
+                                <h3 className="text-xs font-bold uppercase tracking-wider text-violet-500">AI Summary</h3>
+                            </div>
+                            <p className="text-slate-600 leading-relaxed text-sm">
+                                {analysis.gap_report}
+                            </p>
+                        </section>
+                    )}
+
+                    {/* Skills Breakdown */}
+                    <section className="bg-white rounded-xl border border-slate-100 overflow-hidden">
+                        <div className="px-4 py-3 border-b border-slate-50 flex items-center gap-2">
+                            <User className="w-4 h-4 text-slate-300" />
+                            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">Skills</h3>
+                        </div>
+
+                        <div className="p-4 grid grid-cols-2 gap-4">
+                            {/* Matched Skills */}
+                            <div>
+                                <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-500 mb-2.5 flex items-center gap-1">
+                                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                                    Matched ({analysis.matched_skills.length})
+                                </p>
+                                {analysis.matched_skills.length === 0 ? (
+                                    <p className="text-xs text-slate-300">None detected</p>
+                                ) : (
+                                    <ul className="space-y-1.5">
+                                        {analysis.matched_skills.slice(0, 8).map((s) => (
+                                            <li key={s.canonical_id} className="flex items-center gap-1.5 text-xs text-slate-600">
+                                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                                                <span className="truncate">{s.name}</span>
                                                 {s.match_type === "semantic" && (
-                                                    <span className="shrink-0 text-[9px] font-semibold px-1 py-0.5 rounded bg-purple-100 text-purple-700">~AI</span>
+                                                    <span className="shrink-0 text-[9px] font-semibold px-1 py-0.5 rounded bg-violet-50 text-violet-500 border border-violet-100">~AI</span>
                                                 )}
                                                 {s.match_type === "fuzzy" && (
-                                                    <span className="shrink-0 text-[9px] font-semibold px-1 py-0.5 rounded bg-amber-100 text-amber-700">~fuzz</span>
+                                                    <span className="shrink-0 text-[9px] font-semibold px-1 py-0.5 rounded bg-amber-50 text-amber-500 border border-amber-100">~fuzz</span>
                                                 )}
-                                            </div>
-                                            <span className={`inline-block mt-1 rounded-full px-1.5 py-0.5 text-[9px] font-medium ${catColor(s.category)}`}>
-                                                {s.category}
-                                            </span>
-                                        </li>
-                                    ))}
-                                    {analysis.matched_skills.length > 10 && (
-                                        <p className="text-xs text-slate-400 text-center">+{analysis.matched_skills.length - 10} more</p>
-                                    )}
-                                </ul>
-                            )}
-                        </div>
-
-                        {/* Missing Skills */}
-                        <div className="rounded-xl border border-red-200 bg-red-50/50 p-4">
-                            <div className="flex items-center gap-2 mb-3">
-                                <XCircle className="w-4 h-4 text-red-500" />
-                                <span className="text-sm font-semibold text-slate-800">Missing</span>
-                                <span className="ml-auto rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-600">
-                                    {analysis.missing_skills.length}
-                                </span>
+                                            </li>
+                                        ))}
+                                        {analysis.matched_skills.length > 8 && (
+                                            <p className="text-[11px] text-slate-400">+{analysis.matched_skills.length - 8} more</p>
+                                        )}
+                                    </ul>
+                                )}
                             </div>
-                            {analysis.missing_skills.length === 0 ? (
-                                <p className="text-xs text-slate-400">No skill gaps — strong match!</p>
-                            ) : (
-                                <ul className="space-y-1.5">
-                                    {analysis.missing_skills.slice(0, 10).map((s) => (
-                                        <li key={s.canonical_id} className="rounded-lg bg-white border border-red-100 px-2.5 py-2">
-                                            <div className="flex items-center justify-between gap-1">
-                                                <span className="text-xs font-medium text-red-800 truncate">{s.name}</span>
+
+                            {/* Missing Skills */}
+                            <div>
+                                <p className="text-[10px] font-bold uppercase tracking-wider text-rose-400 mb-2.5 flex items-center gap-1">
+                                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-rose-300" />
+                                    Missing ({analysis.missing_skills.length})
+                                </p>
+                                {analysis.missing_skills.length === 0 ? (
+                                    <p className="text-xs text-slate-300">No gaps — strong match!</p>
+                                ) : (
+                                    <ul className="space-y-1.5">
+                                        {analysis.missing_skills.slice(0, 8).map((s) => (
+                                            <li key={s.canonical_id} className="flex items-center gap-1.5 text-xs text-slate-400">
+                                                <XCircle className="w-3.5 h-3.5 text-rose-300 shrink-0" />
+                                                <span className="truncate">{s.name}</span>
                                                 {s.section === "required" && (
-                                                    <span className="shrink-0 text-[9px] font-semibold px-1 py-0.5 rounded bg-red-100 text-red-700">req</span>
+                                                    <span className="shrink-0 text-[9px] font-semibold px-1 py-0.5 rounded bg-rose-50 text-rose-400 border border-rose-100">req</span>
                                                 )}
-                                            </div>
-                                            <span className={`inline-block mt-1 rounded-full px-1.5 py-0.5 text-[9px] font-medium ${catColor(s.category)}`}>
-                                                {s.category}
-                                            </span>
-                                        </li>
-                                    ))}
-                                    {analysis.missing_skills.length > 10 && (
-                                        <p className="text-xs text-slate-400 text-center">+{analysis.missing_skills.length - 10} more</p>
-                                    )}
-                                </ul>
-                            )}
+                                            </li>
+                                        ))}
+                                        {analysis.missing_skills.length > 8 && (
+                                            <p className="text-[11px] text-slate-400">+{analysis.missing_skills.length - 8} more</p>
+                                        )}
+                                    </ul>
+                                )}
+                            </div>
                         </div>
 
                         {/* Extra Skills */}
-                        <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4">
-                            <div className="flex items-center gap-2 mb-3">
-                                <MinusCircle className="w-4 h-4 text-slate-400" />
-                                <span className="text-sm font-semibold text-slate-800">Additional</span>
-                                <span className="ml-auto rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">
-                                    {analysis.extra_skills.length}
-                                </span>
-                            </div>
-                            <p className="text-[10px] text-slate-400 mb-2">Skills in resume, not in JD.</p>
-                            {analysis.extra_skills.length === 0 ? (
-                                <p className="text-xs text-slate-400">None detected.</p>
-                            ) : (
-                                <ul className="space-y-1.5">
-                                    {analysis.extra_skills.slice(0, 10).map((s) => (
-                                        <li key={s.canonical_id} className="rounded-lg bg-white border border-slate-100 px-2.5 py-2">
-                                            <span className="text-xs font-medium text-slate-700 truncate block">{s.name}</span>
-                                            <span className={`inline-block mt-1 rounded-full px-1.5 py-0.5 text-[9px] font-medium ${catColor(s.category)}`}>
-                                                {s.category}
-                                            </span>
-                                        </li>
+                        {analysis.extra_skills.length > 0 && (
+                            <div className="px-4 pb-4 pt-0">
+                                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2.5 flex items-center gap-1">
+                                    <MinusCircle className="w-3 h-3" />
+                                    Additional ({analysis.extra_skills.length})
+                                </p>
+                                <div className="flex flex-wrap gap-1.5">
+                                    {analysis.extra_skills.slice(0, 12).map((s) => (
+                                        <span
+                                            key={s.canonical_id}
+                                            className={`px-2 py-0.5 rounded-full text-[11px] font-medium ${catColor(s.category)}`}
+                                        >
+                                            {s.name}
+                                        </span>
                                     ))}
-                                    {analysis.extra_skills.length > 10 && (
-                                        <p className="text-xs text-slate-400 text-center">+{analysis.extra_skills.length - 10} more</p>
+                                    {analysis.extra_skills.length > 12 && (
+                                        <span className="text-[11px] text-slate-400 self-center">+{analysis.extra_skills.length - 12} more</span>
                                     )}
-                                </ul>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Gap Report */}
-                    {analysis.gap_report && (
-                        <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-                            <div className="flex items-center gap-2 mb-1.5">
-                                <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
-                                <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">AI Gap Report</span>
+                                </div>
                             </div>
-                            <p className="text-sm text-slate-700 leading-relaxed">{analysis.gap_report}</p>
-                        </div>
-                    )}
+                        )}
+                    </section>
 
                     {/* AI Reasoning (collapsible) */}
                     {analysis.reasoning && (
-                        <div className="rounded-xl border border-slate-200">
+                        <section className="rounded-xl border border-slate-100 overflow-hidden">
                             <button
                                 type="button"
                                 onClick={() => setReasoningOpen((p) => !p)}
-                                className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-slate-50 transition-colors rounded-xl"
+                                className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-slate-50 transition-colors"
                             >
-                                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">AI Reasoning</span>
-                                {reasoningOpen ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
+                                <div className="flex items-center gap-2">
+                                    <Sparkles className="w-3.5 h-3.5 text-slate-300" />
+                                    <span className="text-xs font-bold uppercase tracking-wider text-slate-400">AI Reasoning</span>
+                                </div>
+                                {reasoningOpen
+                                    ? <ChevronUp className="w-3.5 h-3.5 text-slate-300" />
+                                    : <ChevronDown className="w-3.5 h-3.5 text-slate-300" />}
                             </button>
                             {reasoningOpen && (
-                                <div className="px-4 pb-4">
-                                    <p className="text-sm text-slate-600 leading-relaxed">{analysis.reasoning}</p>
+                                <div className="px-4 pb-4 bg-slate-50">
+                                    <p className="text-xs text-slate-500 leading-relaxed">{analysis.reasoning}</p>
                                 </div>
                             )}
-                        </div>
+                        </section>
                     )}
+                </div>
 
-                    {/* Actions */}
-                    <div className="flex items-center gap-3 pt-2 border-t border-slate-100">
-                        <button
-                            type="button"
-                            onClick={handleShortlist}
-                            disabled={updatingStatus}
-                            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all disabled:opacity-50 ${
-                                currentStatus === "REVIEWING"
-                                    ? "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                                    : "bg-indigo-600 text-white hover:bg-indigo-700 shadow-md shadow-indigo-200"
-                            }`}
-                        >
-                            {updatingStatus ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-                            {currentStatus === "REVIEWING" ? "Remove from Shortlist" : "Shortlist Candidate"}
-                        </button>
-                        {currentStatus !== "REJECTED" && (
+                {/* Footer Actions */}
+                <footer className="px-5 py-4 border-t border-slate-100 bg-white">
+                    <div className={`grid gap-3 ${isRejected ? "grid-cols-1" : "grid-cols-2"}`}>
+                        {!isRejected && (
                             <button
                                 type="button"
                                 onClick={handleReject}
                                 disabled={updatingStatus}
-                                className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 transition-all disabled:opacity-50"
+                                className="flex items-center justify-center gap-2 h-10 rounded-lg border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-red-50 hover:border-red-200 hover:text-red-600 transition-all disabled:opacity-50"
                             >
+                                {updatingStatus ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4" />}
                                 Reject
                             </button>
                         )}
+                        <button
+                            type="button"
+                            onClick={handleShortlist}
+                            disabled={updatingStatus}
+                            className={`flex items-center justify-center gap-2 h-10 rounded-lg text-sm font-semibold transition-all disabled:opacity-50 ${
+                                isShortlisted
+                                    ? "bg-slate-100 text-slate-500 hover:bg-slate-200"
+                                    : "bg-violet-500 text-white hover:bg-violet-600 shadow-sm shadow-violet-200"
+                            }`}
+                        >
+                            {updatingStatus
+                                ? <Loader2 className="w-4 h-4 animate-spin" />
+                                : <Star className={`w-4 h-4 ${isShortlisted ? "" : "fill-white"}`} />}
+                            {isShortlisted ? "Remove Shortlist" : "Shortlist"}
+                        </button>
                     </div>
-                </div>
+                </footer>
             </div>
-        </div>
+        </>
     )
 }
