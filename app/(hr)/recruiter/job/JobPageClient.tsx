@@ -28,6 +28,7 @@ import {
     CheckCircle2,
     XCircle,
     Trash2,
+    type LucideIcon,
 } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 import { JobResponse } from "@/types/job"
@@ -52,6 +53,10 @@ import { applicationApi } from "@/services/application.service"
 import { toast } from "sonner"
 import CreateJobForm from "./CreateJobForm"
 import EditJobForm from "./EditJobForm"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Card, CardContent } from "@/components/ui/card"
+import { cn } from "@/lib/utils"
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -237,25 +242,17 @@ function DeleteConfirmModal({
                         </div>
                     </div>
                     <div className="flex items-center justify-end gap-3">
-                        <button
-                            onClick={onCancel}
-                            disabled={isDeleting}
-                            className="px-4 py-2 text-sm font-semibold text-slate-700 bg-slate-100 rounded-xl hover:bg-slate-200 transition-colors disabled:opacity-50 cursor-pointer"
-                        >
+                        <Button variant="secondary" onClick={onCancel} disabled={isDeleting}>
                             Cancel
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                             onClick={onConfirm}
                             disabled={isDeleting}
-                            className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-xl hover:bg-red-700 transition-colors disabled:opacity-50 cursor-pointer"
+                            className="bg-red-600 hover:bg-red-700 shadow-red-200 shadow-lg"
                         >
-                            {isDeleting ? (
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                            ) : (
-                                <Trash2 className="w-4 h-4" />
-                            )}
+                            {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
                             {isDeleting ? "Deleting…" : "Delete"}
-                        </button>
+                        </Button>
                     </div>
                 </div>
             </div>
@@ -466,12 +463,7 @@ function BulkUploadModal({
                         ))}
                     </div>
                     <div className="flex justify-end">
-                        <button
-                            onClick={onClose}
-                            className="px-4 py-2 text-sm font-semibold text-white bg-primary rounded-xl hover:bg-primary/90 transition-colors cursor-pointer"
-                        >
-                            Done
-                        </button>
+                        <Button onClick={onClose}>Done</Button>
                     </div>
                 </div>
             ) : (
@@ -573,27 +565,14 @@ function BulkUploadModal({
                         <span className="text-xs text-slate-400">
                             {entries.length === 0 ? "No files selected" : `${entries.length} file${entries.length !== 1 ? "s" : ""} ready`}
                         </span>
-                        <div className="flex items-center gap-3">
-                            <button
-                                type="button"
-                                onClick={onClose}
-                                disabled={uploading}
-                                className="px-4 py-2 text-sm font-semibold text-slate-700 bg-slate-100 rounded-xl hover:bg-slate-200 transition-colors disabled:opacity-50 cursor-pointer"
-                            >
+                        <div className="flex items-center gap-2">
+                            <Button type="button" variant="secondary" onClick={onClose} disabled={uploading}>
                                 Cancel
-                            </button>
-                            <button
-                                onClick={handleUpload}
-                                disabled={uploading || entries.length === 0}
-                                className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-primary rounded-xl hover:bg-primary/90 transition-colors disabled:opacity-50 cursor-pointer"
-                            >
-                                {uploading ? (
-                                    <Loader2 className="w-4 h-4 animate-spin" />
-                                ) : (
-                                    <Upload className="w-4 h-4" />
-                                )}
+                            </Button>
+                            <Button onClick={handleUpload} disabled={uploading || entries.length === 0}>
+                                {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
                                 {uploading ? "Uploading…" : `Upload ${entries.length > 0 ? entries.length : ""} Resume${entries.length !== 1 ? "s" : ""}`}
-                            </button>
+                            </Button>
                         </div>
                     </div>
                 </div>
@@ -735,27 +714,14 @@ function UploadResumeModal({
                 </div>
 
                 {/* Actions */}
-                <div className="flex items-center justify-end gap-3 pt-1">
-                    <button
-                        type="button"
-                        onClick={onClose}
-                        disabled={uploading}
-                        className="px-4 py-2 text-sm font-semibold text-slate-700 bg-slate-100 rounded-xl hover:bg-slate-200 transition-colors disabled:opacity-50 cursor-pointer"
-                    >
+                <div className="flex items-center justify-end gap-2 pt-1">
+                    <Button type="button" variant="secondary" onClick={onClose} disabled={uploading}>
                         Cancel
-                    </button>
-                    <button
-                        type="submit"
-                        disabled={uploading || !file || !candidateName.trim()}
-                        className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-primary rounded-xl hover:bg-primary/90 transition-colors disabled:opacity-50 cursor-pointer"
-                    >
-                        {uploading ? (
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : (
-                            <Upload className="w-4 h-4" />
-                        )}
+                    </Button>
+                    <Button type="submit" disabled={uploading || !file || !candidateName.trim()}>
+                        {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
                         {uploading ? "Uploading…" : "Upload Resume"}
-                    </button>
+                    </Button>
                 </div>
             </form>
         </Modal>
@@ -797,22 +763,19 @@ function ExternalCvModal({
                             {applicant.candidate_name}&apos;s Resume
                         </h2>
                         <p className="text-xs text-slate-500 mt-0.5 flex items-center gap-1.5">
-                            <span className="inline-flex items-center gap-1 bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded-full text-xs font-semibold">
+                            <Badge variant="default" className="text-[10px] py-0 h-5">
                                 {SOURCE_LABEL[applicant.source]}
-                            </span>
+                            </Badge>
                             {applicant.resume_filename}
                         </p>
                     </div>
                     <div className="flex items-center gap-2">
-                        <a
-                            href={applicant.resume_file_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
-                        >
-                            <ExternalLink className="w-3.5 h-3.5" />
-                            Open in new tab
-                        </a>
+                        <Button size="sm" variant="secondary" asChild>
+                            <a href={applicant.resume_file_url} target="_blank" rel="noopener noreferrer">
+                                <ExternalLink className="w-3.5 h-3.5" />
+                                Open in new tab
+                            </a>
+                        </Button>
                         <button
                             onClick={onClose}
                             className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
@@ -889,16 +852,15 @@ function ExternalApplicantCard({
         : "bg-red-50 text-red-600 ring-1 ring-red-200"
 
     return (
-        <div className={`border rounded-xl p-4 bg-indigo-50/30 transition-colors ${
-            hasScore && !aboveThreshold
-                ? "border-slate-200 opacity-60 hover:opacity-100"
-                : hasScore && aboveThreshold
-                ? "border-emerald-200 hover:border-emerald-300"
-                : "border-indigo-100 hover:border-indigo-200"
-        }`}>
+        <div className={cn(
+            "border rounded-xl p-4 bg-primary/[0.02] transition-colors",
+            hasScore && !aboveThreshold ? "border-slate-200 opacity-60 hover:opacity-100"
+                : hasScore && aboveThreshold ? "border-emerald-200 hover:border-emerald-300"
+                : "border-primary/10 hover:border-primary/20"
+        )}>
             <div className="flex items-start gap-3">
                 {/* Avatar */}
-                <div className="w-9 h-9 rounded-full bg-indigo-100 flex items-center justify-center shrink-0 text-xs font-bold text-indigo-700 select-none">
+                <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-xs font-bold text-primary select-none">
                     {initials}
                 </div>
 
@@ -908,20 +870,20 @@ function ExternalApplicantCard({
                         <p className="font-semibold text-slate-900 truncate text-sm">
                             {applicant.candidate_name}
                         </p>
-                        <div className="flex items-center gap-1.5 shrink-0">
+                        <div className="flex items-center gap-1.5 shrink-0 flex-wrap">
                             {hasScore && (
-                                <span className={`inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full ${scoreBadgeClass}`}>
+                                <Badge className={cn("gap-1 text-xs font-bold", scoreBadgeClass)}>
                                     <Sparkles className="w-2.5 h-2.5" />
                                     {aiScore}%
-                                </span>
+                                </Badge>
                             )}
-                            <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700">
+                            <Badge variant="default" className="gap-1 text-[10px]">
                                 <SourceIcon className="w-2.5 h-2.5" />
                                 {SOURCE_LABEL[applicant.source]}
-                            </span>
-                            <span className={`inline-flex items-center text-xs font-semibold px-2 py-0.5 rounded-full ${APP_STATUS_STYLE[applicant.status as ApplicationStatus]}`}>
+                            </Badge>
+                            <Badge className={cn("text-[10px]", APP_STATUS_STYLE[applicant.status as ApplicationStatus])}>
                                 {APP_STATUS_LABEL[applicant.status as ApplicationStatus]}
-                            </span>
+                            </Badge>
                         </div>
                     </div>
                     {applicant.candidate_email && (
@@ -938,31 +900,28 @@ function ExternalApplicantCard({
             </div>
 
             {/* Action row */}
-            <div className="flex items-center gap-2 mt-3 pt-3 border-t border-indigo-100">
-                <button
-                    onClick={onViewCv}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer"
-                >
+            <div className="flex items-center gap-2 mt-3 pt-3 border-t border-slate-100">
+                <Button size="sm" variant="secondary" onClick={onViewCv}>
                     <FileText className="w-3.5 h-3.5" />
                     View CV
-                </button>
-
-                <button
+                </Button>
+                <Button
+                    size="sm"
+                    variant="ghost"
                     onClick={onToggleShortlist}
                     disabled={isShortlisting}
-                    className={`ml-auto flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer disabled:opacity-50 ${
-                        isShortlisted
-                            ? "text-amber-700 bg-amber-50 hover:bg-amber-100"
-                            : "text-slate-600 bg-white border border-slate-200 hover:bg-slate-50"
-                    }`}
+                    className={cn(
+                        "ml-auto",
+                        isShortlisted ? "text-amber-700 bg-amber-50 hover:bg-amber-100" : ""
+                    )}
                 >
                     {isShortlisting ? (
                         <Loader2 className="w-3.5 h-3.5 animate-spin" />
                     ) : (
-                        <Star className={`w-3.5 h-3.5 ${isShortlisted ? "fill-amber-500 text-amber-500" : ""}`} />
+                        <Star className={cn("w-3.5 h-3.5", isShortlisted && "fill-amber-500 text-amber-500")} />
                     )}
                     {isShortlisted ? "Shortlisted" : "Shortlist"}
-                </button>
+                </Button>
             </div>
         </div>
     )
@@ -1044,30 +1003,27 @@ function ApplicantCard({
 
             {/* Action row */}
             <div className="flex items-center gap-2 mt-3 pt-3 border-t border-slate-100">
-                <button
-                    onClick={onViewCv}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors cursor-pointer"
-                >
+                <Button size="sm" variant="secondary" onClick={onViewCv}>
                     <FileText className="w-3.5 h-3.5" />
                     {applicant.resume_title ?? "View CV"}
-                </button>
-
-                <button
+                </Button>
+                <Button
+                    size="sm"
+                    variant="ghost"
                     onClick={onToggleShortlist}
                     disabled={isShortlisting}
-                    className={`ml-auto flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer disabled:opacity-50 ${
-                        isShortlisted
-                            ? "text-amber-700 bg-amber-50 hover:bg-amber-100"
-                            : "text-slate-600 bg-slate-100 hover:bg-slate-200"
-                    }`}
+                    className={cn(
+                        "ml-auto",
+                        isShortlisted ? "text-amber-700 bg-amber-50 hover:bg-amber-100" : ""
+                    )}
                 >
                     {isShortlisting ? (
                         <Loader2 className="w-3.5 h-3.5 animate-spin" />
                     ) : (
-                        <Star className={`w-3.5 h-3.5 ${isShortlisted ? "fill-amber-500 text-amber-500" : ""}`} />
+                        <Star className={cn("w-3.5 h-3.5", isShortlisted && "fill-amber-500 text-amber-500")} />
                     )}
                     {isShortlisted ? "Shortlisted" : "Shortlist"}
-                </button>
+                </Button>
             </div>
         </div>
     )
@@ -1313,22 +1269,24 @@ function ApplicantsSheet({
                     </div>
                     <div className="flex items-center gap-2">
                         {/* Upload external resumes */}
-                        <button
+                        <Button
+                            size="sm"
+                            variant="secondary"
                             onClick={() => setUploadModalOpen(true)}
-                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-colors cursor-pointer"
                             title="Upload a single resume"
                         >
                             <Upload className="w-3.5 h-3.5" />
                             Upload
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                            size="sm"
+                            variant="outline"
                             onClick={() => setBulkUploadModalOpen(true)}
-                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg bg-indigo-100 text-indigo-700 hover:bg-indigo-200 transition-colors cursor-pointer"
                             title="Upload multiple resumes at once"
                         >
                             <Upload className="w-3.5 h-3.5" />
                             Bulk Upload
-                        </button>
+                        </Button>
                         {/* ✨ AI magic button */}
                         {applicants !== null && applicants.length > 0 && (
                             <button
@@ -1548,9 +1506,9 @@ function ApplicantsSheet({
                                                 <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide">
                                                     Externally Uploaded
                                                 </p>
-                                                <span className="text-xs font-semibold bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded-full">
+                                                <Badge variant="default" className="text-[10px] h-5 py-0">
                                                     {externalApplicants.length}
-                                                </span>
+                                                </Badge>
                                             </div>
                                             {externalApplicants.map((applicant) => (
                                                 <ExternalApplicantCard
@@ -1618,15 +1576,31 @@ function ApplicantsSheet({
 
 // ─── Stat Card ────────────────────────────────────────────────────────────────
 
-function StatCard({ label, value, color }: { label: string; value: number; color: string }) {
+function StatCard({
+    label,
+    value,
+    icon: Icon,
+}: {
+    label: string
+    value: number
+    icon: LucideIcon
+}) {
     return (
-        <div className="bg-white border border-slate-200 rounded-xl px-4 py-3 flex items-center gap-3">
-            <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${color}`} />
-            <div>
-                <p className="text-xs text-slate-500">{label}</p>
-                <p className="text-lg font-bold text-slate-900 leading-tight">{value}</p>
-            </div>
-        </div>
+        <Card className="border-slate-200/80 hover:shadow-md transition-shadow duration-200">
+            <CardContent className="p-5 sm:p-6">
+                <div className="flex items-start justify-between gap-4">
+                    <div className="space-y-1">
+                        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">{label}</p>
+                        <p className="text-3xl sm:text-4xl font-black text-slate-900 leading-none tabular-nums">
+                            {value}
+                        </p>
+                    </div>
+                    <div className="shrink-0 rounded-2xl p-2.5 bg-primary/10 text-primary shadow-sm">
+                        <Icon className="w-5 h-5" />
+                    </div>
+                </div>
+            </CardContent>
+        </Card>
     )
 }
 
@@ -1711,21 +1685,18 @@ export default function JobPageClient({ jobs }: { jobs: JobResponse[] }) {
                             Manage your open, draft, and closed job listings.
                         </p>
                     </div>
-                    <button
-                        onClick={openCreate}
-                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold bg-primary text-white hover:bg-primary/90 transition-all shadow-sm cursor-pointer"
-                    >
+                    <Button onClick={openCreate}>
                         <Plus className="w-4 h-4" />
                         Post a Job
-                    </button>
+                    </Button>
                 </div>
 
                 {/* ── Stats Row ── */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    <StatCard label="Total" value={stats.total} color="bg-slate-400" />
-                    <StatCard label="Open" value={stats.open} color="bg-emerald-500" />
-                    <StatCard label="Draft" value={stats.draft} color="bg-amber-400" />
-                    <StatCard label="Closed" value={stats.closed} color="bg-slate-300" />
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+                    <StatCard label="Total" value={stats.total} icon={Briefcase} />
+                    <StatCard label="Open" value={stats.open} icon={CheckCircle2} />
+                    <StatCard label="Draft" value={stats.draft} icon={Pencil} />
+                    <StatCard label="Closed" value={stats.closed} icon={XCircle} />
                 </div>
 
                 {/* ── Search & Filters ── */}
@@ -1798,13 +1769,10 @@ export default function JobPageClient({ jobs }: { jobs: JobResponse[] }) {
                                 Click &quot;Post a Job&quot; to get started.
                             </p>
                         </div>
-                        <button
-                            onClick={openCreate}
-                            className="mt-1 flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline cursor-pointer"
-                        >
+                        <Button onClick={openCreate} className="mt-1">
                             <Plus className="w-4 h-4" />
                             Post your first job
-                        </button>
+                        </Button>
                     </div>
                 ) : (
                     <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
@@ -1867,8 +1835,8 @@ export default function JobPageClient({ jobs }: { jobs: JobResponse[] }) {
                                                     {/* Title */}
                                                     <td className="px-5 py-3.5">
                                                         <div className="flex items-center gap-3">
-                                                            <div className="w-8 h-8 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0">
-                                                                <Briefcase className="w-4 h-4 text-slate-500" />
+                                                            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                                                                <Briefcase className="w-4 h-4 text-primary" />
                                                             </div>
                                                             <div>
                                                                 <p className="font-semibold text-slate-900 truncate max-w-[180px]">
@@ -1926,43 +1894,44 @@ export default function JobPageClient({ jobs }: { jobs: JobResponse[] }) {
 
                                                     {/* Status */}
                                                     <td className="px-4 py-3.5">
-                                                        <span
-                                                            className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-0.5 rounded-full ${badge.className}`}
+                                                        <Badge
+                                                            className={cn("gap-1.5 text-xs font-semibold", badge.className)}
                                                         >
-                                                            <span
-                                                                className={`w-1.5 h-1.5 rounded-full ${badge.dot}`}
-                                                            />
+                                                            <span className={cn("w-1.5 h-1.5 rounded-full", badge.dot)} />
                                                             {badge.label}
-                                                        </span>
+                                                        </Badge>
                                                     </td>
 
                                                     {/* Actions */}
                                                     <td className="px-4 py-3.5">
-                                                        <div className="flex items-center justify-end gap-2">
-                                                            <button
+                                                        <div className="flex items-center justify-end gap-1.5">
+                                                            <Button
+                                                                size="sm"
                                                                 onClick={() => router.push(`/recruiter/job/${job.id}/applicants`)}
-                                                                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-primary bg-primary/10 rounded-lg hover:bg-primary/20 transition-colors cursor-pointer"
                                                                 aria-label={`View applicants for ${job.title}`}
                                                             >
                                                                 <Users className="w-3.5 h-3.5" />
                                                                 Applicants
-                                                            </button>
-                                                            <button
+                                                            </Button>
+                                                            <Button
+                                                                size="sm"
+                                                                variant="secondary"
                                                                 onClick={() => openEdit(job)}
-                                                                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors cursor-pointer"
                                                                 aria-label={`Edit ${job.title}`}
                                                             >
                                                                 <Pencil className="w-3.5 h-3.5" />
                                                                 Edit
-                                                            </button>
-                                                            <button
+                                                            </Button>
+                                                            <Button
+                                                                size="sm"
+                                                                variant="ghost"
                                                                 onClick={() => openDelete(job)}
-                                                                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors cursor-pointer"
+                                                                className="text-red-600 hover:bg-red-50 hover:text-red-700"
                                                                 aria-label={`Delete ${job.title}`}
                                                             >
                                                                 <Trash2 className="w-3.5 h-3.5" />
                                                                 Delete
-                                                            </button>
+                                                            </Button>
                                                         </div>
                                                     </td>
                                                 </tr>

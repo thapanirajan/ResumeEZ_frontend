@@ -26,12 +26,12 @@ export default function HrLayout({ children }: { children: ReactNode }) {
 
     return (
         <RoleGuard role="RECRUITER">
-            <div className="flex min-h-screen bg-gray-50">
+            <div className="flex min-h-screen bg-slate-50/60">
                 <aside
                     data-expanded={isExpanded}
                     onMouseEnter={() => setIsHovered(true)}
                     onMouseLeave={() => setIsHovered(false)}
-                    className={`group relative hidden h-screen shrink-0 border-r border-gray-200 bg-white transition-all duration-300 lg:flex lg:flex-col ${isExpanded ? "w-64" : "w-20"}`}
+                    className={`group relative hidden h-screen shrink-0 border-r border-slate-100 bg-white shadow-sm transition-all duration-300 lg:flex lg:flex-col ${isExpanded ? "w-64" : "w-20"}`}
                 >
                     <button
                         type="button"

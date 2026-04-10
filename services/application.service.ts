@@ -15,7 +15,7 @@ export const applicationApi = {
     scoreApplications: async (jobId: string): Promise<ScoreResult> => {
         const response = await api.get<ScoreResult>(
             `/api/applications/job/${jobId}/ai-scores`,
-            { timeout: 10 * 60 * 1000 }, // 10 minutes
+            { timeout: 10 * 60 * 1000 },
         )
         return response.data
     },

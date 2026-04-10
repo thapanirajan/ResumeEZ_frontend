@@ -86,7 +86,7 @@ export default function HeroSection() {
                         </div>
 
                         {/* Social proof */}
-                        <div className="flex items-center gap-5 pt-6 border-t border-slate-100">
+                        {/* <div className="flex items-center gap-5 pt-6 border-t border-slate-100">
                             <div className="flex -space-x-2.5">
                                 {[
                                     "https://lh3.googleusercontent.com/aida-public/AB6AXuBMllwfQ1npW9l83GKfeP-RLQYUidwVw4q0cOOa4vvXlddU5MwojQb7OHFdyzcHhuypp5di8fuQqjWhpMsikH7sBG8wYJz0Ybja4WLA1--g7ixsxwRLljwBbHatnx41a4WQSEZmP5BZCPAiG3odwEZQtRGzNWEw5PpQLmoB2fRU1KxRN_moVx9gXPy0_SDQpM8pMO-3nSFyA8-_El98JTkQ1TkygQMvx_ypWfOhoZN3wyK55ro1WGXabhpZYIVVOx3QR6C0rDYDqeF_",
@@ -113,7 +113,7 @@ export default function HeroSection() {
                                     Trusted by <span className="text-slate-800 font-bold">50,000+</span> professionals
                                 </p>
                             </div>
-                        </div>
+                        </div> */}
                     </div>
 
                     {/* ── Right Visual ── */}
@@ -195,7 +195,7 @@ export default function HeroSection() {
                 </div>
 
                 {/* Stats row */}
-                <div className="mt-20 pt-12 border-t border-slate-100 grid grid-cols-2 sm:grid-cols-4 gap-8">
+                {/* <div className="mt-20 pt-12 border-t border-slate-100 grid grid-cols-2 sm:grid-cols-4 gap-8">
                     {[
                         { value: "50K+", label: "Active Users" },
                         { value: "98.2%", label: "Match Accuracy" },
@@ -207,7 +207,7 @@ export default function HeroSection() {
                             <p className="text-sm text-slate-500 font-medium">{stat.label}</p>
                         </div>
                     ))}
-                </div>
+                </div> */}
             </div>
         </section>
     );

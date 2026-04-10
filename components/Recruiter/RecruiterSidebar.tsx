@@ -43,7 +43,7 @@ export default function RecruiterSidebar() {
                                 <Link
                                     href={item.href}
                                     className={`flex items-center rounded-xl p-3 transition-colors ${isActive
-                                            ? "bg-blue-100 text-blue-700"
+                                            ? "bg-primary/10 text-primary font-semibold"
                                             : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
                                         }`}
                                     title={item.name}

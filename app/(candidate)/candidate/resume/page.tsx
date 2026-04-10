@@ -15,7 +15,7 @@ type Resume = {
 import { useEffect, useState } from "react";
 import { resumeApi, ResumeResponse } from "@/services/resume.service";
 import { formatDistanceToNow } from "date-fns";
-import { Trash2 } from "lucide-react";
+import ConfirmDeleteButton from "@/components/common/ConfirmDeleteButton";
 
 export default function ResumeDashboardPage() {
     const router = useRouter();
@@ -38,16 +38,13 @@ export default function ResumeDashboardPage() {
         }
     };
 
-    const handleDelete = async (e: React.MouseEvent, id: string) => {
-        e.stopPropagation();
-        if (!confirm("Are you sure you want to delete this resume?")) return;
-
+    const deleteResume = async (id: string) => {
         try {
             await resumeApi.deleteResume(id);
             setResumes((prev) => prev.filter((r) => r.id !== id));
         } catch (error) {
             console.error("Failed to delete resume:", error);
-            alert("Failed to delete resume");
+            throw error;
         }
     };
     return (
@@ -145,12 +142,15 @@ export default function ResumeDashboardPage() {
                                             </div>
                                         </div>
 
-                                        <button
-                                            onClick={(e) => handleDelete(e, resume.id)}
-                                            className="opacity-0 group-hover:opacity-100 p-2 text-slate-400 hover:text-red-600 transition"
-                                        >
-                                            <Trash2 className="h-4 w-4" />
-                                        </button>
+                                        <div className="opacity-0 group-hover:opacity-100 transition">
+                                            <ConfirmDeleteButton
+                                                onConfirm={() => deleteResume(resume.id)}
+                                                title="Delete resume?"
+                                                description={`This will permanently delete “${resume.title}”.`}
+                                                successToast="Resume deleted."
+                                                buttonClassName="p-2 text-slate-400 hover:text-red-600 transition"
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                             ))}
