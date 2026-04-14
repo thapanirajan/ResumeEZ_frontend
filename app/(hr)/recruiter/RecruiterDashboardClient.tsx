@@ -1,7 +1,6 @@
 "use client";
 
 import {
-    Bell,
     Briefcase,
     CheckCircle2,
     Clock,
@@ -25,6 +24,7 @@ import {
     ResponsiveContainer,
 } from "recharts";
 import UserDropdown from "@/components/common/UserDropDown";
+import NotificationCenter from "@/components/common/NotificationCenter";
 import {
     ApplicationSourceValue,
     ApplicationStatusValue,
@@ -33,7 +33,6 @@ import {
 } from "@/types/recruiter_dashboard";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 
 // ── Color maps ────────────────────────────────────────────────────────────────
 
@@ -187,9 +186,7 @@ export default function RecruiterDashboard({ data, error }: RecruiterDashboardPr
                             className="pl-9 pr-4 py-2.5 w-56 rounded-xl bg-white border border-slate-200 text-sm text-slate-800 placeholder:text-slate-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition"
                         />
                     </div>
-                    <Button variant="secondary" size="icon" className="rounded-xl border-slate-200 w-10 h-10 shrink-0">
-                        <Bell className="h-4 w-4 text-slate-600" />
-                    </Button>
+                    <NotificationCenter userRole="RECRUITER" />
                     <UserDropdown />
                 </div>
             </div>

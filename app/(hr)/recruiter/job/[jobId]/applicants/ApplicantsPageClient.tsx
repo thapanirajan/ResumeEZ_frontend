@@ -20,6 +20,10 @@ import {
     FileText,
     BarChart2,
     RocketIcon,
+    Bell,
+    CheckCircle2,
+    AlertTriangle,
+    Lock,
 } from "lucide-react"
 import { toast } from "sonner"
 
@@ -33,6 +37,7 @@ import {
     getApplicationResumeAction,
     uploadExternalResumeAction,
     bulkUploadExternalResumesAction,
+    notifyShortlistedAction,
 } from "../../actions"
 import { applicationApi } from "@/services/application.service"
 import ScoreRing from "./ScoreRing"
@@ -230,6 +235,130 @@ function ExternalCvModal({
                             </a>
                         </div>
                     )}
+                </div>
+            </div>
+        </div>
+    )
+}
+
+// ── Final Shortlist Confirmation Modal ───────────────────────────────────────
+
+type ShortlistedCandidate = { id: string; name: string; kind: "platform" | "external" }
+
+function FinalShortlistModal({
+    candidates,
+    jobTitle,
+    onClose,
+    onConfirm,
+    isSending,
+}: {
+    candidates: ShortlistedCandidate[]
+    jobTitle: string
+    onClose: () => void
+    onConfirm: () => void
+    isSending: boolean
+}) {
+    const [confirmed, setConfirmed] = useState(false)
+    const preview = candidates.slice(0, 3)
+    const overflow = candidates.length - preview.length
+
+    return (
+        <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden border border-slate-200">
+                {/* Header */}
+                <div className="flex items-start gap-4 p-6 border-b border-slate-100">
+                    <div className="bg-amber-100 rounded-xl p-3 text-amber-600 shrink-0">
+                        <Bell className="w-6 h-6" />
+                    </div>
+                    <div>
+                        <h2 className="text-xl font-black text-slate-900 tracking-tight">
+                            Confirm Final Shortlist Notification
+                        </h2>
+                        <p className="text-slate-500 text-sm mt-1">
+                            This will send notifications to all shortlisted candidates. This action cannot be undone.
+                        </p>
+                    </div>
+                </div>
+
+                {/* Body */}
+                <div className="p-6 space-y-5">
+                    {/* Summary */}
+                    <div className="bg-slate-50 rounded-xl p-4 border border-slate-200">
+                        <p className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-3">
+                            Candidates to be notified — {candidates.length} total
+                        </p>
+                        <ul className="space-y-2">
+                            {preview.map((c) => (
+                                <li key={c.id} className="flex items-center gap-2">
+                                    <div className="w-7 h-7 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold flex-shrink-0">
+                                        {c.name.charAt(0).toUpperCase()}
+                                    </div>
+                                    <span className="text-sm font-semibold text-slate-800">{c.name}</span>
+                                    {c.kind === "external" && (
+                                        <span className="text-[10px] font-bold bg-slate-200 text-slate-500 px-1.5 py-0.5 rounded-full uppercase">
+                                            ext
+                                        </span>
+                                    )}
+                                </li>
+                            ))}
+                            {overflow > 0 && (
+                                <li className="text-xs text-slate-500 font-medium pl-9">
+                                    +{overflow} more candidate{overflow > 1 ? "s" : ""}
+                                </li>
+                            )}
+                        </ul>
+                    </div>
+
+                    {/* Warning */}
+                    <div className="flex gap-3 bg-amber-50 border border-amber-200 rounded-xl p-4">
+                        <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                        <p className="text-sm text-amber-800">
+                            Each shortlisted candidate on the ResumeEZ platform will receive an{" "}
+                            <strong>in-app notification</strong> and an <strong>email</strong> notifying them
+                            they are on the final shortlist for <strong>{jobTitle}</strong>.
+                        </p>
+                    </div>
+
+                    {/* Confirmation checkbox */}
+                    <label className="flex items-start gap-3 cursor-pointer select-none">
+                        <input
+                            type="checkbox"
+                            checked={confirmed}
+                            onChange={(e) => setConfirmed(e.target.checked)}
+                            className="mt-0.5 w-4 h-4 accent-primary"
+                        />
+                        <span className="text-sm text-slate-700 font-medium">
+                            I confirm this final shortlist is correct and ready to send
+                        </span>
+                    </label>
+                </div>
+
+                {/* Footer */}
+                <div className="flex gap-3 px-6 py-4 bg-slate-50 border-t border-slate-100">
+                    <button
+                        onClick={onClose}
+                        disabled={isSending}
+                        className="flex-1 px-4 py-2.5 rounded-xl text-slate-600 font-bold text-sm border border-slate-200 hover:bg-slate-100 transition-colors disabled:opacity-50"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        onClick={onConfirm}
+                        disabled={!confirmed || isSending}
+                        className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-white rounded-xl font-bold text-sm shadow-lg shadow-primary/25 hover:brightness-110 active:scale-95 transition-all disabled:opacity-50"
+                    >
+                        {isSending ? (
+                            <>
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                                Sending Notifications...
+                            </>
+                        ) : (
+                            <>
+                                <Bell className="w-4 h-4" />
+                                Confirm &amp; Send Notifications
+                            </>
+                        )}
+                    </button>
                 </div>
             </div>
         </div>
@@ -757,6 +886,12 @@ export default function ApplicantsPageClient({
     const [showBulkUpload, setShowBulkUpload] = useState(false)
     const [showAutoShortlist, setShowAutoShortlist] = useState(false)
 
+    // ── Final shortlist notification flow state ──────────────────────────────
+    const [isFinalizing, setIsFinalizing] = useState(false)    // State 2: list locked, ready
+    const [showFinalModal, setShowFinalModal] = useState(false) // State 3: modal open
+    const [isSending, setIsSending] = useState(false)          // State 4: sending
+    const [notifySuccess, setNotifySuccess] = useState<{ count: number } | null>(null) // State 5: done
+
     // ── Combined rows ────────────────────────────────────────────────────────
 
     const allRows: AnyApplication[] = useMemo(() => {
@@ -941,6 +1076,45 @@ export default function ApplicantsPageClient({
         toast.success(`${successCount} candidate${successCount !== 1 ? "s" : ""} shortlisted`)
     }, [aiScores, allRows])
 
+    // ── Shortlisted candidates (platform only — they have user accounts) ─────
+
+    const shortlistedCandidates = useMemo<ShortlistedCandidate[]>(() => {
+        const platform = applications
+            .filter((a) => a.status === "REVIEWING")
+            .map((a) => ({ id: a.id, name: a.candidate_name ?? "Unknown", kind: "platform" as const }))
+        const external = externalApplications
+            .filter((a) => a.status === "REVIEWING")
+            .map((a) => ({ id: a.id, name: a.candidate_name, kind: "external" as const }))
+        return [...platform, ...external]
+    }, [applications, externalApplications])
+
+    // ── Send final notifications ─────────────────────────────────────────────
+
+    const handleSendNotifications = useCallback(async () => {
+        // Only send to platform applications (they have ResumeEZ accounts)
+        const platformIds = applications
+            .filter((a) => a.status === "REVIEWING")
+            .map((a) => a.id)
+
+        if (platformIds.length === 0) {
+            toast.error("No platform candidates to notify")
+            return
+        }
+
+        setIsSending(true)
+        try {
+            const result = await notifyShortlistedAction(job.id, platformIds)
+            setShowFinalModal(false)
+            setIsFinalizing(false)
+            setNotifySuccess({ count: result.notified_count })
+            toast.success(`Notifications sent to ${result.notified_count} candidate${result.notified_count !== 1 ? "s" : ""}`)
+        } catch (e: unknown) {
+            toast.error(e instanceof Error ? e.message : "Failed to send notifications")
+        } finally {
+            setIsSending(false)
+        }
+    }, [applications, job.id])
+
     // ── Render ───────────────────────────────────────────────────────────────
 
     const tabs: { key: TabFilter; label: string }[] = [
@@ -976,40 +1150,69 @@ export default function ApplicantsPageClient({
                     </p>
                 </div>
 
-                <div className="flex items-center gap-3 shrink-0">
-                    <button
-                        onClick={() => setShowSingleUpload(true)}
-                        className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl font-semibold text-sm hover:border-primary/40 hover:text-primary transition-all"
-                    >
-                        <Upload className="w-4 h-4" />
-                        Upload Resume
-                    </button>
-                    <button
-                        onClick={() => setShowBulkUpload(true)}
-                        className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl font-semibold text-sm hover:border-primary/40 hover:text-primary transition-all"
-                    >
-                        <UploadCloud className="w-4 h-4" />
-                        Bulk Upload
-                    </button>
-                    <button
-                        onClick={() => setShowAutoShortlist(true)}
-                        className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl font-semibold text-sm hover:border-primary/40 hover:text-primary transition-all"
-                    >
-                        <RocketIcon className="w-4 h-4" />
-                        Auto Shortlist
-                    </button>
-                    <button
-                        onClick={runAiScores}
-                        disabled={aiRunning}
-                        className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-xl font-bold text-sm shadow-lg shadow-primary/20 hover:brightness-110 active:scale-95 transition-all disabled:opacity-60"
-                    >
-                        {aiRunning ? (
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : (
-                            <Sparkles className="w-4 h-4" />
-                        )}
-                        {aiRunning ? "Scoring…" : "Run AI Scores"}
-                    </button>
+                <div className="flex items-center gap-3 shrink-0 flex-wrap">
+                    {!notifySuccess && (
+                        <>
+                            <button
+                                onClick={() => setShowSingleUpload(true)}
+                                disabled={isFinalizing}
+                                className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl font-semibold text-sm hover:border-primary/40 hover:text-primary transition-all disabled:opacity-40"
+                            >
+                                <Upload className="w-4 h-4" />
+                                Upload Resume
+                            </button>
+                            <button
+                                onClick={() => setShowBulkUpload(true)}
+                                disabled={isFinalizing}
+                                className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl font-semibold text-sm hover:border-primary/40 hover:text-primary transition-all disabled:opacity-40"
+                            >
+                                <UploadCloud className="w-4 h-4" />
+                                Bulk Upload
+                            </button>
+                            <button
+                                onClick={() => setShowAutoShortlist(true)}
+                                disabled={isFinalizing}
+                                className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl font-semibold text-sm hover:border-primary/40 hover:text-primary transition-all disabled:opacity-40"
+                            >
+                                <RocketIcon className="w-4 h-4" />
+                                Auto Shortlist
+                            </button>
+                            <button
+                                onClick={runAiScores}
+                                disabled={aiRunning || isFinalizing}
+                                className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-xl font-bold text-sm shadow-lg shadow-primary/20 hover:brightness-110 active:scale-95 transition-all disabled:opacity-60"
+                            >
+                                {aiRunning ? (
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : (
+                                    <Sparkles className="w-4 h-4" />
+                                )}
+                                {aiRunning ? "Scoring…" : "Run AI Scores"}
+                            </button>
+
+                            {/* Finalization CTA */}
+                            {!isFinalizing ? (
+                                <button
+                                    onClick={() => setIsFinalizing(true)}
+                                    disabled={stats.shortlisted === 0}
+                                    className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 text-white rounded-xl font-bold text-sm shadow-lg shadow-emerald-600/20 hover:brightness-110 active:scale-95 transition-all disabled:opacity-40"
+                                    title={stats.shortlisted === 0 ? "Shortlist at least one candidate first" : ""}
+                                >
+                                    <Bell className="w-4 h-4" />
+                                    Proceed to Final Decision
+                                </button>
+                            ) : (
+                                <button
+                                    onClick={() => setShowFinalModal(true)}
+                                    disabled={stats.shortlisted === 0}
+                                    className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 text-white rounded-xl font-bold text-sm shadow-lg shadow-emerald-600/20 hover:brightness-110 active:scale-95 transition-all animate-pulse"
+                                >
+                                    <Bell className="w-4 h-4" />
+                                    Notify Job Seekers
+                                </button>
+                            )}
+                        </>
+                    )}
                 </div>
             </div>
 
@@ -1053,6 +1256,50 @@ export default function ApplicantsPageClient({
                     </p>
                 </div>
             </div>
+
+            {/* ── State 5: Success Banner ── */}
+            {notifySuccess && (
+                <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-6">
+                    <div className="flex flex-col items-center text-center gap-4">
+                        <div className="w-14 h-14 rounded-full bg-emerald-100 flex items-center justify-center">
+                            <CheckCircle2 className="w-7 h-7 text-emerald-600" />
+                        </div>
+                        <div>
+                            <h3 className="text-xl font-black text-emerald-900">Notifications Sent Successfully</h3>
+                            <p className="text-emerald-700 text-sm mt-1">
+                                {notifySuccess.count} candidate{notifySuccess.count !== 1 ? "s" : ""} notified — in-app notifications
+                                delivered, emails sent.
+                            </p>
+                        </div>
+                        <button
+                            onClick={() => router.back()}
+                            className="px-6 py-2.5 bg-emerald-600 text-white rounded-xl font-bold text-sm hover:brightness-110 transition-all"
+                        >
+                            Back to Job Dashboard
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* ── State 2: Finalizing Warning Banner ── */}
+            {isFinalizing && !notifySuccess && (
+                <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-2xl p-4">
+                    <Lock className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                        <p className="text-sm font-bold text-amber-900">Review mode active</p>
+                        <p className="text-xs text-amber-700 mt-0.5">
+                            The shortlist is locked for review. Click <strong>Notify Job Seekers</strong> when you are ready
+                            to send final notifications to {stats.shortlisted} shortlisted candidate{stats.shortlisted !== 1 ? "s" : ""}.
+                        </p>
+                    </div>
+                    <button
+                        onClick={() => setIsFinalizing(false)}
+                        className="text-amber-500 hover:text-amber-700 transition-colors text-xs font-semibold underline"
+                    >
+                        Cancel
+                    </button>
+                </div>
+            )}
 
             {/* ── Filter Bar ── */}
             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
@@ -1259,16 +1506,18 @@ export default function ApplicantsPageClient({
                                                         <Eye className="w-4 h-4" />
                                                     </button>
 
-                                                    {/* Shortlist / Unshortlist */}
+                                                    {/* Shortlist / Unshortlist — locked during finalization */}
                                                     <button
                                                         onClick={() => toggleStatus(row)}
-                                                        disabled={isToggling}
+                                                        disabled={isToggling || isFinalizing}
                                                         className={`p-2 rounded-lg transition-colors ${
-                                                            isShortlisted
+                                                            isFinalizing
+                                                                ? "opacity-30 cursor-not-allowed"
+                                                                : isShortlisted
                                                                 ? "text-emerald-500 hover:bg-emerald-50"
                                                                 : "text-slate-400 hover:text-emerald-500 hover:bg-emerald-50"
                                                         }`}
-                                                        title={isShortlisted ? "Remove from shortlist" : "Shortlist"}
+                                                        title={isFinalizing ? "Locked during review" : isShortlisted ? "Remove from shortlist" : "Shortlist"}
                                                     >
                                                         {isToggling ? (
                                                             <Loader2 className="w-4 h-4 animate-spin" />
@@ -1279,12 +1528,12 @@ export default function ApplicantsPageClient({
                                                         )}
                                                     </button>
 
-                                                    {/* Reject */}
+                                                    {/* Reject — locked during finalization */}
                                                     <button
                                                         onClick={() => rejectRow(row)}
-                                                        disabled={isToggling || status === "REJECTED"}
+                                                        disabled={isToggling || status === "REJECTED" || isFinalizing}
                                                         className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-30"
-                                                        title="Reject"
+                                                        title={isFinalizing ? "Locked during review" : "Reject"}
                                                     >
                                                         <X className="w-4 h-4" />
                                                     </button>
@@ -1335,6 +1584,15 @@ export default function ApplicantsPageClient({
             </div>
 
             {/* ── Modals ── */}
+            {showFinalModal && (
+                <FinalShortlistModal
+                    candidates={shortlistedCandidates}
+                    jobTitle={job.title}
+                    onClose={() => setShowFinalModal(false)}
+                    onConfirm={handleSendNotifications}
+                    isSending={isSending}
+                />
+            )}
             {showAutoShortlist && (
                 <AutoShortlistModal
                     onClose={() => setShowAutoShortlist(false)}

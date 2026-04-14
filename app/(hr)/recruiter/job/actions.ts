@@ -132,6 +132,24 @@ export interface BulkUploadResponse {
     failed_count: number
 }
 
+export interface NotifyShortlistedResult {
+    notified_count: number
+    job_title: string
+}
+
+export async function notifyShortlistedAction(
+    jobId: string,
+    applicationIds: string[],
+): Promise<NotifyShortlistedResult> {
+    return serverFetch<NotifyShortlistedResult>(
+        `/api/applications/job/${jobId}/notify-shortlisted`,
+        {
+            method: "POST",
+            body: JSON.stringify({ application_ids: applicationIds }),
+        },
+    )
+}
+
 export async function bulkUploadExternalResumesAction(
     jobId: string,
     formData: FormData,
