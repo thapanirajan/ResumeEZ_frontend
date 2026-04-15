@@ -8,11 +8,23 @@ export type CandidateProfile = {
     full_name: string | null;
     current_role: string | null;
     experience_years: number | null;
+    bio: string | null;
+    location: string | null;
+    skills: string[] | null;
+    is_public: boolean | null;
+    is_profile_complete: boolean | null;
 };
 
 export type RecruiterProfile = {
     username: string | null;
     full_name: string | null;
+    company_name: string | null;
+    company_logo: string | null;
+    company_website: string | null;
+    industry: string | null;
+    company_size: string | null;
+    company_description: string | null;
+    location: string | null;
 };
 
 export type UserProfileData = {
@@ -26,8 +38,20 @@ export type UserProfileData = {
 export type UserProfilePayload = {
     username?: string;
     full_name?: string;
+    location?: string;
+    // Candidate
     current_role?: string;
     experience_years?: number | null;
+    bio?: string;
+    skills?: string[];
+    is_public?: boolean;
+    // Recruiter
+    company_name?: string;
+    company_logo?: string;
+    company_website?: string;
+    industry?: string;
+    company_size?: string;
+    company_description?: string;
 };
 
 type ApiErrorShape = {

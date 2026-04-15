@@ -10,97 +10,154 @@ type Props = {
     subtitle: string;
 };
 
+const COMPANY_SIZE_OPTIONS = [
+    "1–10",
+    "11–50",
+    "51–200",
+    "201–500",
+    "501–1000",
+    "1000+",
+];
+
+const INDUSTRY_OPTIONS = [
+    "Technology",
+    "Finance",
+    "Healthcare",
+    "Education",
+    "Retail",
+    "Manufacturing",
+    "Media & Entertainment",
+    "Government",
+    "Non-profit",
+    "Other",
+];
+
 export default function ProfileSettingsPage({ expectedRole, title, subtitle }: Props) {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
-    const [error, setError] = useState<string | null>(null);
     const [profile, setProfile] = useState<UserProfileData | null>(null);
 
+    // ── Shared ──────────────────────────────────────────────────────
     const [username, setUsername] = useState("");
     const [fullName, setFullName] = useState("");
+    const [location, setLocation] = useState("");
+
+    // ── Candidate ───────────────────────────────────────────────────
     const [currentRole, setCurrentRole] = useState("");
     const [experienceYears, setExperienceYears] = useState("");
+    const [bio, setBio] = useState("");
+    const [skillsInput, setSkillsInput] = useState("");   // comma-separated string
+    const [isPublic, setIsPublic] = useState(true);
+
+    // ── Recruiter ───────────────────────────────────────────────────
+    const [companyName, setCompanyName] = useState("");
+    const [companyWebsite, setCompanyWebsite] = useState("");
+    const [companyLogo, setCompanyLogo] = useState("");
+    const [industry, setIndustry] = useState("");
+    const [companySize, setCompanySize] = useState("");
+    const [companyDescription, setCompanyDescription] = useState("");
 
     const isCandidate = expectedRole === "JOB_SEEKER";
-
-    const roleLabel = useMemo(() => {
-        return expectedRole === "JOB_SEEKER" ? "Job Seeker" : "Recruiter";
-    }, [expectedRole]);
+    const roleLabel = useMemo(
+        () => (expectedRole === "JOB_SEEKER" ? "Job Seeker" : "Recruiter"),
+        [expectedRole],
+    );
 
     useEffect(() => {
-        async function load() {
+        (async () => {
             setLoading(true);
-            setError(null);
-
             try {
                 const data = await getProfile();
                 setProfile(data);
 
                 if (data.role === "JOB_SEEKER" && data.candidate_profile) {
-                    setUsername(data.candidate_profile.username ?? "");
-                    setFullName(data.candidate_profile.full_name ?? "");
-                    setCurrentRole(data.candidate_profile.current_role ?? "");
-                    setExperienceYears(
-                        data.candidate_profile.experience_years != null
-                            ? String(data.candidate_profile.experience_years)
-                            : "",
-                    );
+                    const cp = data.candidate_profile;
+                    setUsername(cp.username ?? "");
+                    setFullName(cp.full_name ?? "");
+                    setLocation(cp.location ?? "");
+                    setCurrentRole(cp.current_role ?? "");
+                    setExperienceYears(cp.experience_years != null ? String(cp.experience_years) : "");
+                    setBio(cp.bio ?? "");
+                    setSkillsInput(Array.isArray(cp.skills) ? cp.skills.join(", ") : "");
+                    setIsPublic(cp.is_public ?? true);
                 }
 
                 if (data.role === "RECRUITER" && data.recruiter_profile) {
-                    setUsername(data.recruiter_profile.username ?? "");
-                    setFullName(data.recruiter_profile.full_name ?? "");
+                    const rp = data.recruiter_profile;
+                    setUsername(rp.username ?? "");
+                    setFullName(rp.full_name ?? "");
+                    setLocation(rp.location ?? "");
+                    setCompanyName(rp.company_name ?? "");
+                    setCompanyWebsite(rp.company_website ?? "");
+                    setCompanyLogo(rp.company_logo ?? "");
+                    setIndustry(rp.industry ?? "");
+                    setCompanySize(rp.company_size ?? "");
+                    setCompanyDescription(rp.company_description ?? "");
                 }
             } catch (err) {
-                const message = err instanceof Error ? err.message : "Failed to load profile";
-                setError(message);
-                toast.error(message);
+                const msg = err instanceof Error ? err.message : "Failed to load profile";
+                toast.error(msg);
             } finally {
                 setLoading(false);
             }
-        }
-
-        load();
+        })();
     }, []);
 
     async function onSubmit(e: FormEvent<HTMLFormElement>) {
         e.preventDefault();
         setSaving(true);
-        setError(null);
-
         try {
             if (isCandidate && experienceYears.trim() !== "") {
-                const parsedYears = Number(experienceYears);
-                if (!Number.isInteger(parsedYears) || parsedYears < 0) {
+                const y = Number(experienceYears);
+                if (!Number.isInteger(y) || y < 0)
                     throw new Error("Experience years must be a non-negative whole number.");
+            }
+
+            const payload = isCandidate
+                ? {
+                    username: username.trim(),
+                    full_name: fullName.trim(),
+                    location: location.trim(),
+                    current_role: currentRole.trim(),
+                    experience_years: experienceYears.trim() === "" ? null : Number(experienceYears),
+                    bio: bio.trim(),
+                    skills: skillsInput
+                        .split(",")
+                        .map((s) => s.trim())
+                        .filter(Boolean),
+                    is_public: isPublic,
                 }
-            }
-
-            const payload: Record<string, string | number | null> = {
-                username: username.trim(),
-                full_name: fullName.trim(),
-            };
-
-            if (isCandidate) {
-                payload.current_role = currentRole.trim();
-                payload.experience_years =
-                    experienceYears.trim() === "" ? null : Number(experienceYears);
-            }
+                : {
+                    username: username.trim(),
+                    full_name: fullName.trim(),
+                    location: location.trim(),
+                    company_name: companyName.trim(),
+                    company_website: companyWebsite.trim(),
+                    company_logo: companyLogo.trim(),
+                    industry: industry.trim(),
+                    company_size: companySize,
+                    company_description: companyDescription.trim(),
+                };
 
             const updated = await updateProfile(payload);
             toast.success("Profile saved successfully.");
             setProfile(updated);
         } catch (err) {
-            const message = err instanceof Error ? err.message : "Failed to update profile";
-            setError(message);
-            toast.error(message);
+            const msg = err instanceof Error ? err.message : "Failed to update profile";
+            toast.error(msg);
         } finally {
             setSaving(false);
         }
     }
 
     if (loading) {
-        return <div className="rounded-2xl border border-gray-200 bg-white p-6">Loading profile...</div>;
+        return (
+            <div className="space-y-4 animate-pulse">
+                {[1, 2, 3].map((i) => (
+                    <div key={i} className="h-12 rounded-xl bg-slate-200" />
+                ))}
+            </div>
+        );
     }
 
     if (!profile) {
@@ -110,7 +167,7 @@ export default function ProfileSettingsPage({ expectedRole, title, subtitle }: P
     if (profile.role !== expectedRole) {
         return (
             <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-amber-800">
-                You are logged in as `{profile.role ?? "UNKNOWN"}`. This page is for `{expectedRole}` only.
+                You are logged in as <strong>{profile.role ?? "UNKNOWN"}</strong>. This page is for <strong>{expectedRole}</strong> only.
             </div>
         );
     }
@@ -122,78 +179,222 @@ export default function ProfileSettingsPage({ expectedRole, title, subtitle }: P
                 <p className="text-sm text-gray-600">{subtitle}</p>
             </header>
 
-            <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-                <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2">
-                    <div>
-                        <p className="text-xs uppercase tracking-wide text-gray-500">Email</p>
-                        <p className="mt-1 text-sm text-gray-900">{profile.email}</p>
-                    </div>
-                    <div>
-                        <p className="text-xs uppercase tracking-wide text-gray-500">Account Type</p>
-                        <p className="mt-1 text-sm text-gray-900">{roleLabel}</p>
-                    </div>
-                </div>
+            <form onSubmit={onSubmit} className="space-y-6">
 
-                <form onSubmit={onSubmit} className="space-y-4">
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                        <label className="space-y-1">
-                            <span className="text-sm text-gray-700">Username</span>
+                {/* ── Account info (read-only) ─────────────────────── */}
+                <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm space-y-4">
+                    <h2 className="text-base font-semibold text-gray-800">Account</h2>
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <div>
+                            <p className="text-xs uppercase tracking-wide text-gray-500 mb-1">Email</p>
+                            <p className="text-sm text-gray-900">{profile.email}</p>
+                        </div>
+                        <div>
+                            <p className="text-xs uppercase tracking-wide text-gray-500 mb-1">Account type</p>
+                            <p className="text-sm text-gray-900">{roleLabel}</p>
+                        </div>
+                    </div>
+                </section>
+
+                {/* ── Personal info ───────────────────────────────── */}
+                <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm space-y-4">
+                    <h2 className="text-base font-semibold text-gray-800">Personal information</h2>
+
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <Field label="Username">
                             <input
-                                className="w-full rounded-xl border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-400"
+                                className={inputCls}
                                 value={username}
                                 onChange={(e) => setUsername(e.target.value)}
-                                placeholder="Enter username"
+                                placeholder="e.g. johndoe"
                             />
-                        </label>
-
-                        <label className="space-y-1">
-                            <span className="text-sm text-gray-700">Full name</span>
+                        </Field>
+                        <Field label="Full name">
                             <input
-                                className="w-full rounded-xl border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-400"
+                                className={inputCls}
                                 value={fullName}
                                 onChange={(e) => setFullName(e.target.value)}
-                                placeholder="Enter full name"
+                                placeholder="e.g. John Doe"
                             />
-                        </label>
+                        </Field>
+                        <Field label="Location">
+                            <input
+                                className={inputCls}
+                                value={location}
+                                onChange={(e) => setLocation(e.target.value)}
+                                placeholder="e.g. Kathmandu, Nepal"
+                            />
+                        </Field>
                     </div>
+                </section>
 
-                    {isCandidate && (
-                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                            <label className="space-y-1">
-                                <span className="text-sm text-gray-700">Current role</span>
+                {/* ── Candidate: professional info ─────────────────── */}
+                {isCandidate && (
+                    <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm space-y-4">
+                        <h2 className="text-base font-semibold text-gray-800">Professional details</h2>
+
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                            <Field label="Current role">
                                 <input
-                                    className="w-full rounded-xl border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-400"
+                                    className={inputCls}
                                     value={currentRole}
                                     onChange={(e) => setCurrentRole(e.target.value)}
                                     placeholder="e.g. Backend Developer"
                                 />
-                            </label>
-
-                            <label className="space-y-1">
-                                <span className="text-sm text-gray-700">Experience (years)</span>
+                            </Field>
+                            <Field label="Experience (years)">
                                 <input
                                     type="number"
                                     min={0}
-                                    className="w-full rounded-xl border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-400"
+                                    className={inputCls}
                                     value={experienceYears}
                                     onChange={(e) => setExperienceYears(e.target.value)}
-                                    placeholder="e.g. 2"
+                                    placeholder="e.g. 3"
                                 />
+                            </Field>
+                        </div>
+
+                        <Field label="Bio">
+                            <textarea
+                                rows={3}
+                                className={inputCls}
+                                value={bio}
+                                onChange={(e) => setBio(e.target.value)}
+                                placeholder="Brief professional summary about yourself…"
+                            />
+                        </Field>
+
+                        <Field label="Skills" hint="Comma-separated, e.g. Python, React, Docker">
+                            <input
+                                className={inputCls}
+                                value={skillsInput}
+                                onChange={(e) => setSkillsInput(e.target.value)}
+                                placeholder="Python, React, Docker, PostgreSQL…"
+                            />
+                        </Field>
+
+                        <div className="flex items-center gap-3">
+                            <input
+                                id="is_public"
+                                type="checkbox"
+                                checked={isPublic}
+                                onChange={(e) => setIsPublic(e.target.checked)}
+                                className="h-4 w-4 rounded border-gray-300 text-blue-600"
+                            />
+                            <label htmlFor="is_public" className="text-sm text-gray-700">
+                                Make my profile public (visible to recruiters)
                             </label>
                         </div>
-                    )}
+                    </section>
+                )}
 
-                    {error && <p className="text-sm text-red-600">{error}</p>}
+                {/* ── Recruiter: company info ──────────────────────── */}
+                {!isCandidate && (
+                    <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm space-y-4">
+                        <h2 className="text-base font-semibold text-gray-800">Company details</h2>
 
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                            <Field label="Company name">
+                                <input
+                                    className={inputCls}
+                                    value={companyName}
+                                    onChange={(e) => setCompanyName(e.target.value)}
+                                    placeholder="e.g. Acme Corp"
+                                />
+                            </Field>
+                            <Field label="Company website">
+                                <input
+                                    type="url"
+                                    className={inputCls}
+                                    value={companyWebsite}
+                                    onChange={(e) => setCompanyWebsite(e.target.value)}
+                                    placeholder="https://acme.com"
+                                />
+                            </Field>
+                            <Field label="Industry">
+                                <select
+                                    className={inputCls}
+                                    value={industry}
+                                    onChange={(e) => setIndustry(e.target.value)}
+                                >
+                                    <option value="">Select industry…</option>
+                                    {INDUSTRY_OPTIONS.map((opt) => (
+                                        <option key={opt} value={opt}>{opt}</option>
+                                    ))}
+                                </select>
+                            </Field>
+                            <Field label="Company size">
+                                <select
+                                    className={inputCls}
+                                    value={companySize}
+                                    onChange={(e) => setCompanySize(e.target.value)}
+                                >
+                                    <option value="">Select size…</option>
+                                    {COMPANY_SIZE_OPTIONS.map((opt) => (
+                                        <option key={opt} value={opt}>{opt}</option>
+                                    ))}
+                                </select>
+                            </Field>
+                        </div>
+
+                        <Field label="Company logo URL">
+                            <input
+                                type="url"
+                                className={inputCls}
+                                value={companyLogo}
+                                onChange={(e) => setCompanyLogo(e.target.value)}
+                                placeholder="https://acme.com/logo.png"
+                            />
+                        </Field>
+
+                        <Field label="Company description">
+                            <textarea
+                                rows={4}
+                                className={inputCls}
+                                value={companyDescription}
+                                onChange={(e) => setCompanyDescription(e.target.value)}
+                                placeholder="What does your company do? Culture, mission, etc."
+                            />
+                        </Field>
+                    </section>
+                )}
+
+                {/* ── Submit ──────────────────────────────────────── */}
+                <div className="flex justify-end">
                     <button
                         type="submit"
                         disabled={saving}
-                        className="rounded-xl bg-primary px-4 py-2 text-sm font-medium cursor-pointer text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+                        className="rounded-xl bg-[#1e3a8a] px-6 py-2.5 text-sm font-medium text-white transition hover:bg-[#1e3a8a]/90 disabled:cursor-not-allowed disabled:opacity-60"
                     >
-                        {saving ? "Saving..." : "Save changes"}
+                        {saving ? "Saving…" : "Save changes"}
                     </button>
-                </form>
-            </section>
+                </div>
+            </form>
+        </div>
+    );
+}
+
+// ── Small helpers ────────────────────────────────────────────────────────────
+
+const inputCls =
+    "w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400";
+
+function Field({
+    label,
+    hint,
+    children,
+}: {
+    label: string;
+    hint?: string;
+    children: React.ReactNode;
+}) {
+    return (
+        <div className="space-y-1">
+            <label className="block text-sm font-medium text-gray-700">
+                {label}
+                {hint && <span className="ml-1 text-xs font-normal text-gray-400">({hint})</span>}
+            </label>
+            {children}
         </div>
     );
 }

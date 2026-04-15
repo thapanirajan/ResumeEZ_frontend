@@ -12,22 +12,22 @@ import { JobFeedSkeleton } from "@/components/job/JobCardSkeleton"
 const BATCH = 12
 
 const SORT_PRESETS: { key: string; label: string; sortBy: string; order: string }[] = [
-    { key: "created_at|desc",          label: "Newest first",        sortBy: "created_at",          order: "desc" },
-    { key: "created_at|asc",           label: "Oldest first",        sortBy: "created_at",          order: "asc"  },
-    { key: "salary_max|desc",          label: "Highest salary",      sortBy: "salary_max",          order: "desc" },
-    { key: "salary_min|asc",           label: "Lowest salary",       sortBy: "salary_min",          order: "asc"  },
-    { key: "experience_required|desc", label: "Most experienced",    sortBy: "experience_required", order: "desc" },
-    { key: "experience_required|asc",  label: "Least experienced",   sortBy: "experience_required", order: "asc"  },
+    { key: "created_at|desc", label: "Newest first", sortBy: "created_at", order: "desc" },
+    { key: "created_at|asc", label: "Oldest first", sortBy: "created_at", order: "asc" },
+    { key: "salary_max|desc", label: "Highest salary", sortBy: "salary_max", order: "desc" },
+    { key: "salary_min|asc", label: "Lowest salary", sortBy: "salary_min", order: "asc" },
+    { key: "experience_required|desc", label: "Most experienced", sortBy: "experience_required", order: "desc" },
+    { key: "experience_required|asc", label: "Least experienced", sortBy: "experience_required", order: "asc" },
 ]
 
 const FILTER_LABELS: Record<string, string> = {
-    title:            "Title",
-    location:         "Location",
+    title: "Title",
+    location: "Location",
     employment_types: "Type",
-    min_salary:       "Min salary",
-    max_salary:       "Max salary",
-    min_experience:   "Min exp",
-    max_experience:   "Max exp",
+    min_salary: "Min salary",
+    max_salary: "Max salary",
+    min_experience: "Min exp",
+    max_experience: "Max exp",
 }
 
 type Props = {
@@ -37,8 +37,8 @@ type Props = {
 }
 
 export default function JobsPageClient({ initialJobs, isFiltered, error }: Props) {
-    const router      = useRouter()
-    const pathname    = usePathname()
+    const router = useRouter()
+    const pathname = usePathname()
     const searchParams = useSearchParams()
 
     // Infinite scroll state
@@ -114,7 +114,7 @@ export default function JobsPageClient({ initialJobs, isFiltered, error }: Props
     }
 
     const visibleJobs = initialJobs.slice(0, visibleCount)
-    const hasMore     = visibleCount < initialJobs.length
+    const hasMore = visibleCount < initialJobs.length
 
     // Active filter tags from URL
     const activeTags: { key: string; value: string; label: string }[] = []
@@ -139,10 +139,10 @@ export default function JobsPageClient({ initialJobs, isFiltered, error }: Props
         <div className="bg-slate-50">
             {/* Page header */}
             <div className="mb-5">
-                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
+                <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-[#0f172a]">
                     Browse Jobs
                 </h1>
-                <p className="mt-1 text-sm text-slate-500">
+                <p className="mt-2 text-sm text-slate-500 max-w-xl">
                     Find your next opportunity from the latest open roles.
                 </p>
             </div>
@@ -204,7 +204,11 @@ export default function JobsPageClient({ initialJobs, isFiltered, error }: Props
                                     value={titleInput}
                                     onChange={(e) => setTitleInput(e.target.value)}
                                     onKeyDown={(e) => e.key === "Enter" && applyTitleSearch()}
-                                    className="w-full rounded-xl border border-slate-200 bg-white pl-9 pr-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 shadow-sm transition"
+                                    className="w-full rounded-lg border border-[#e2e8f0] bg-white 
+                                    pl-10 pr-4 py-2.5 text-sm text-[#0f172a]
+                                    focus:outline-none focus:ring-2 focus:ring-[#1e3b8a]/20 
+                                    focus:border-[#1e3b8a]
+                                    transition-all duration-200"
                                     aria-label="Search job title"
                                 />
                             </div>
