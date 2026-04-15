@@ -9,15 +9,12 @@ import {
     CheckCircle2,
     XCircle,
     Clock,
-    TrendingUp,
     BarChart3,
     Target,
     MapPin,
     ArrowUpRight,
     AlertCircle,
-    ChevronRight,
     Search,
-    Sparkles,
     BookOpen,
 } from "lucide-react"
 import {
@@ -34,12 +31,12 @@ import {
     YAxis,
     CartesianGrid,
     Tooltip,
-    Legend,
     ResponsiveContainer,
 } from "recharts"
 import { formatDistanceToNow } from "date-fns"
 import UserDropdown from "@/components/common/UserDropDown"
 import NotificationCenter from "@/components/common/NotificationCenter"
+import KpiCard from "@/components/common/KpiCard"
 import { useAuth } from "@/hooks/useAuth"
 import api from "@/util/api"
 
@@ -117,12 +114,6 @@ const STATUS_LABEL: Record<string, string> = {
     REJECTED: "Rejected",
 }
 
-const STATUS_ICON: Record<string, React.ElementType> = {
-    PENDING: Clock,
-    REVIEWING: Star,
-    ACCEPTED: CheckCircle2,
-    REJECTED: XCircle,
-}
 
 // ── Skeleton ───────────────────────────────────────────────────────────────────
 
@@ -155,38 +146,6 @@ function DashboardSkeleton() {
                 <SkeletonBlock className="h-64 rounded-2xl" />
             </div>
             <SkeletonBlock className="h-64 rounded-2xl" />
-        </div>
-    )
-}
-
-// ── KPI Card ───────────────────────────────────────────────────────────────────
-
-function KpiCard({
-    label,
-    value,
-    sub,
-    icon: Icon,
-    accent,
-}: {
-    label: string
-    value: string | number
-    sub?: string
-    icon: React.ElementType
-    accent: string
-}) {
-    return (
-        <div className={`relative bg-white rounded-2xl p-5 border border-slate-100 shadow-sm overflow-hidden group hover:shadow-md transition-shadow`}>
-            <div className={`absolute inset-x-0 top-0 h-1 ${accent}`} />
-            <div className="flex items-start justify-between">
-                <div className="space-y-1 flex-1 min-w-0">
-                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider truncate">{label}</p>
-                    <p className="text-3xl font-black text-slate-900 leading-none">{value}</p>
-                    {sub && <p className="text-xs text-slate-400 font-medium mt-1">{sub}</p>}
-                </div>
-                <div className={`shrink-0 w-11 h-11 rounded-xl flex items-center justify-center ${accent.replace("bg-", "bg-").split(" ")[0]}/10`}>
-                    <Icon className="w-5 h-5 text-slate-600" />
-                </div>
-            </div>
         </div>
     )
 }
@@ -255,7 +214,7 @@ export default function CandidateDashboard() {
 
     if (!data) return null
 
-    const { kpi, status_breakdown, weekly_applications, score_distribution, match_trend, top_missing_skills, recent_applications } = data
+    const { kpi, status_breakdown, weekly_applications, score_distribution, match_trend, top_missing_skills, recent_applications } = data;
 
     // Filter out zero-count statuses for the donut
     const donutData = status_breakdown.filter((s) => s.count > 0)
@@ -266,7 +225,7 @@ export default function CandidateDashboard() {
             value: kpi.total_applications,
             sub: `${kpi.pending} pending review`,
             icon: Briefcase,
-            accent: "bg-violet-500",
+            iconColor: "text-violet-500",
         },
         {
             label: "Shortlisted",
@@ -275,7 +234,7 @@ export default function CandidateDashboard() {
                 ? `${Math.round((kpi.shortlisted / kpi.total_applications) * 100)}% rate`
                 : "no applications yet",
             icon: Star,
-            accent: "bg-indigo-500",
+            iconColor: "text-indigo-500",
         },
         {
             label: "Avg AI Match Score",
@@ -284,14 +243,14 @@ export default function CandidateDashboard() {
                 ? kpi.avg_ai_score >= 70 ? "Strong match" : "Room to improve"
                 : "run AI scoring",
             icon: Target,
-            accent: "bg-emerald-500",
+            iconColor: "text-emerald-500",
         },
         {
             label: "Resumes",
             value: kpi.total_resumes,
             sub: `${kpi.total_skill_gap_reports} gap analyses run`,
             icon: FileText,
-            accent: "bg-sky-500",
+            iconColor: "text-sky-500",
         },
     ]
 
@@ -329,66 +288,10 @@ export default function CandidateDashboard() {
                 </div>
             </div>
 
-            {/* ── Profile + Quick Actions strip ── */}
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm px-6 py-4 flex flex-wrap items-center justify-between gap-4">
-                <div className="flex items-center gap-4">
-                    {/* Avatar */}
-                    <div className="w-12 h-12 rounded-full bg-linear-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white font-black text-lg shrink-0">
-                        {(data.full_name ?? emailPrefix).charAt(0).toUpperCase()}
-                    </div>
-                    <div>
-                        <p className="font-bold text-slate-900">{data.full_name ?? emailPrefix}</p>
-                        <p className="text-xs text-slate-500">{data.current_role ?? "No role set"}</p>
-                    </div>
-                    {/* Profile score pill */}
-                    {data.profile_score !== null && (
-                        <div className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border ${scoreBg(data.profile_score)} ${scoreColor(data.profile_score)}`}>
-                            <Sparkles className="w-3 h-3" />
-                            Profile score: {data.profile_score}%
-                        </div>
-                    )}
-                </div>
 
-                {/* Skill pills */}
-                <div className="flex flex-wrap gap-1.5 max-w-lg">
-                    {data.skills.length > 0 ? (
-                        data.skills.slice(0, 8).map((s) => (
-                            <span key={s} className="px-2.5 py-1 bg-slate-100 text-slate-600 text-xs font-medium rounded-full">
-                                {s}
-                            </span>
-                        ))
-                    ) : (
-                        <span className="text-xs text-slate-400">No skills added yet</span>
-                    )}
-                </div>
-
-                {/* Quick links */}
-                <div className="flex items-center gap-2 shrink-0">
-                    <button
-                        onClick={() => router.push("/candidate/resume")}
-                        className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-600 hover:border-primary/30 hover:text-primary transition-colors"
-                    >
-                        <FileText className="w-3.5 h-3.5" />
-                        Resumes
-                    </button>
-                    <button
-                        onClick={() => router.push("/candidate/job")}
-                        className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-600 hover:border-primary/30 hover:text-primary transition-colors"
-                    >
-                        <Briefcase className="w-3.5 h-3.5" />
-                        Browse Jobs
-                    </button>
-                    <button
-                        onClick={() => router.push("/candidate/skill-gap")}
-                        className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-primary text-white text-xs font-bold shadow-sm shadow-primary/20 hover:brightness-110 transition-all"
-                    >
-                        <Target className="w-3.5 h-3.5" />
-                        Skill Gap
-                    </button>
-                </div>
-            </div>
 
             {/* ── KPI Grid ── */}
+
             <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
                 {kpiCards.map((c) => (
                     <KpiCard key={c.label} {...c} />
@@ -400,25 +303,30 @@ export default function CandidateDashboard() {
 
                 {/* Application Status Donut */}
                 <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-100 shadow-sm p-6 flex flex-col">
-                    <div className="flex items-center gap-2 mb-4">
+
+                    {/* Header */}
+                    <div className="flex items-center gap-2 mb-5">
                         <div className="w-8 h-8 rounded-lg bg-violet-50 flex items-center justify-center">
                             <BarChart3 className="w-4 h-4 text-violet-600" />
                         </div>
                         <div>
-                            <p className="font-bold text-slate-900 text-sm">Application Status</p>
-                            <p className="text-xs text-slate-400">Breakdown of all {kpi.total_applications} applications</p>
+                            <p className="font-semibold text-slate-900 text-sm">Application Status</p>
+                            <p className="text-xs text-slate-400">
+                                Breakdown of your applications
+                            </p>
                         </div>
                     </div>
 
                     {donutData.length === 0 ? (
-                        <div className="flex-1 flex flex-col items-center justify-center gap-2 text-slate-300 py-8">
-                            <Briefcase className="w-10 h-10 opacity-30" />
-                            <p className="text-sm">No applications yet</p>
+                        <div className="flex-1 flex flex-col items-center justify-center text-slate-400 py-10">
+                            No applications yet
                         </div>
                     ) : (
                         <>
-                            <div className="flex-1">
-                                <ResponsiveContainer width="100%" height={180}>
+                            {/* Chart */}
+                            <div className="relative flex items-center justify-center">
+
+                                <ResponsiveContainer width="100%" height={200}>
                                     <PieChart>
                                         <Pie
                                             data={donutData}
@@ -426,32 +334,64 @@ export default function CandidateDashboard() {
                                             nameKey="status"
                                             cx="50%"
                                             cy="50%"
-                                            innerRadius={52}
-                                            outerRadius={80}
-                                            paddingAngle={3}
+                                            innerRadius={60}
+                                            outerRadius={85}
+                                            paddingAngle={2}
                                             strokeWidth={0}
                                         >
                                             {donutData.map((entry) => (
-                                                <Cell key={entry.status} fill={STATUS_COLOR[entry.status] ?? "#94a3b8"} />
+                                                <Cell
+                                                    key={entry.status}
+                                                    fill={STATUS_COLOR[entry.status] ?? "#94a3b8"}
+                                                />
                                             ))}
                                         </Pie>
-                                        <Tooltip
-                                            formatter={(val, name) => [val, STATUS_LABEL[name as string] ?? name]}
-                                            contentStyle={{ borderRadius: "10px", border: "1px solid #e2e8f0", fontSize: "12px" }}
-                                        />
+                                        <Tooltip content={<ChartTooltip />} />
                                     </PieChart>
                                 </ResponsiveContainer>
+
+                                {/* CENTER CONTENT */}
+                                <div className="absolute text-center">
+                                    <p className="text-2xl font-bold text-slate-900">
+                                        {kpi.total_applications}
+                                    </p>
+                                    <p className="text-xs text-slate-400">
+                                        total
+                                    </p>
+                                </div>
                             </div>
-                            <div className="grid grid-cols-2 gap-2 mt-2">
+
+                            {/* Legend */}
+                            <div className="mt-6 space-y-2">
                                 {status_breakdown.map((s) => {
-                                    const Icon = STATUS_ICON[s.status] ?? Clock
+                                    const percent =
+                                        kpi.total_applications > 0
+                                            ? Math.round((s.count / kpi.total_applications) * 100)
+                                            : 0
+
                                     return (
-                                        <div key={s.status} className="flex items-center gap-2">
-                                            <div className="w-2 h-2 rounded-full shrink-0" style={{ background: STATUS_COLOR[s.status] }} />
-                                            <p className="text-xs text-slate-500 truncate">
-                                                {STATUS_LABEL[s.status]}
-                                            </p>
-                                            <p className="text-xs font-bold text-slate-800 ml-auto">{s.count}</p>
+                                        <div
+                                            key={s.status}
+                                            className="flex items-center justify-between text-sm"
+                                        >
+                                            <div className="flex items-center gap-2">
+                                                <div
+                                                    className="w-2.5 h-2.5 rounded-full"
+                                                    style={{ background: STATUS_COLOR[s.status] }}
+                                                />
+                                                <span className="text-slate-600">
+                                                    {STATUS_LABEL[s.status]}
+                                                </span>
+                                            </div>
+
+                                            <div className="flex items-center gap-3 text-xs">
+                                                <span className="text-slate-500">
+                                                    {percent}%
+                                                </span>
+                                                <span className="font-semibold text-slate-800 w-6 text-right">
+                                                    {s.count}
+                                                </span>
+                                            </div>
                                         </div>
                                     )
                                 })}
@@ -462,41 +402,82 @@ export default function CandidateDashboard() {
 
                 {/* Weekly Applications Area Chart */}
                 <div className="lg:col-span-3 bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
-                    <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 rounded-lg bg-sky-50 flex items-center justify-center">
-                                <TrendingUp className="w-4 h-4 text-sky-600" />
-                            </div>
-                            <div>
-                                <p className="font-bold text-slate-900 text-sm">Applications Over Time</p>
-                                <p className="text-xs text-slate-400">Last 8 weeks</p>
-                            </div>
+
+                    {/* Header */}
+                    <div className="flex items-center justify-between mb-5">
+                        <div>
+                            <p className="font-semibold text-slate-900 text-sm">
+                                Applications Over Time
+                            </p>
+                            <p className="text-xs text-slate-400">
+                                Track your weekly activity
+                            </p>
                         </div>
-                        <span className="text-xs font-semibold text-slate-400 bg-slate-50 px-2.5 py-1 rounded-full border border-slate-100">
+
+                        <span className="text-xs font-medium text-slate-500 bg-slate-50 px-2.5 py-1 rounded-full">
                             {kpi.total_applications} total
                         </span>
                     </div>
-                    <ResponsiveContainer width="100%" height={200}>
-                        <AreaChart data={weekly_applications} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
+
+                    {/* Chart */}
+                    <ResponsiveContainer width="100%" height={220}>
+                        <AreaChart data={weekly_applications} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+
+                            {/* Gradient */}
                             <defs>
-                                <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#6366f1" stopOpacity={0.2} />
-                                    <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+                                <linearGradient id="smoothGradient" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stopColor="#6366f1" stopOpacity={0.25} />
+                                    <stop offset="100%" stopColor="#6366f1" stopOpacity={0} />
                                 </linearGradient>
                             </defs>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                            <XAxis dataKey="week" tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
-                            <YAxis tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} allowDecimals={false} />
-                            <Tooltip content={<ChartTooltip />} />
+
+                            {/* Minimal grid */}
+                            <CartesianGrid
+                                stroke="#f1f5f9"
+                                strokeDasharray="3 3"
+                                vertical={false}
+                            />
+
+                            {/* Axes */}
+                            <XAxis
+                                dataKey="week"
+                                tick={{ fontSize: 11, fill: "#94a3b8" }}
+                                axisLine={false}
+                                tickLine={false}
+                            />
+
+                            <YAxis
+                                tick={{ fontSize: 11, fill: "#94a3b8" }}
+                                axisLine={false}
+                                tickLine={false}
+                                allowDecimals={false}
+                            />
+
+                            {/* Tooltip */}
+                            <Tooltip
+                                contentStyle={{
+                                    borderRadius: "10px",
+                                    border: "1px solid #f1f5f9",
+                                    boxShadow: "0 4px 20px rgba(0,0,0,0.05)",
+                                    fontSize: "12px",
+                                }}
+                                cursor={{ stroke: "#e2e8f0", strokeWidth: 1 }}
+                            />
+
+                            {/* Area */}
                             <Area
                                 type="monotone"
                                 dataKey="count"
-                                name="Applications"
-                                stroke="#6366f1"
-                                strokeWidth={2.5}
-                                fill="url(#areaGrad)"
-                                dot={{ r: 3, fill: "#6366f1", strokeWidth: 0 }}
-                                activeDot={{ r: 5, fill: "#6366f1" }}
+                                stroke="#4f46e5"
+                                strokeWidth={3}
+                                fill="url(#smoothGradient)"
+                                dot={false}
+                                activeDot={{
+                                    r: 6,
+                                    fill: "#4f46e5",
+                                    stroke: "#fff",
+                                    strokeWidth: 2,
+                                }}
                             />
                         </AreaChart>
                     </ResponsiveContainer>
@@ -508,37 +489,93 @@ export default function CandidateDashboard() {
 
                 {/* AI Score Distribution */}
                 <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
-                    <div className="flex items-center gap-2 mb-4">
-                        <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center">
-                            <Target className="w-4 h-4 text-emerald-600" />
-                        </div>
+
+                    {/* Header */}
+                    <div className="flex items-center justify-between mb-5">
                         <div>
-                            <p className="font-bold text-slate-900 text-sm">AI Score Distribution</p>
+                            <p className="font-semibold text-slate-900 text-sm">
+                                AI Match Score Distribution
+                            </p>
                             <p className="text-xs text-slate-400">
-                                Across {score_distribution.reduce((a, b) => a + b.count, 0)} scored applications
+                                How well your applications are performing
                             </p>
                         </div>
+
                         {kpi.avg_ai_score !== null && (
-                            <div className={`ml-auto px-2.5 py-1 rounded-full text-xs font-bold ${scoreBg(kpi.avg_ai_score)} ${scoreColor(kpi.avg_ai_score)}`}>
+                            <div className={`px-2.5 py-1 rounded-full text-xs font-semibold ${scoreBg(kpi.avg_ai_score)} ${scoreColor(kpi.avg_ai_score)}`}>
                                 avg {kpi.avg_ai_score}%
                             </div>
                         )}
                     </div>
-                    <ResponsiveContainer width="100%" height={200}>
-                        <BarChart data={score_distribution} margin={{ top: 4, right: 4, left: -20, bottom: 0 }} barSize={36}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                            <XAxis dataKey="range" tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
-                            <YAxis tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} allowDecimals={false} />
-                            <Tooltip content={<ChartTooltip />} />
-                            <Bar dataKey="count" name="Applications" radius={[6, 6, 0, 0]}>
+
+                    {/* Chart */}
+                    <ResponsiveContainer width="100%" height={220}>
+                        <BarChart
+                            data={score_distribution}
+                            margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                            barCategoryGap={20}
+                        >
+
+                            {/* Minimal grid */}
+                            <CartesianGrid
+                                stroke="#f8fafc"
+                                vertical={false}
+                            />
+
+                            {/* Axes */}
+                            <XAxis
+                                dataKey="range"
+                                tick={{ fontSize: 11, fill: "#94a3b8" }}
+                                axisLine={false}
+                                tickLine={false}
+                            />
+
+                            <YAxis
+                                tick={{ fontSize: 11, fill: "#94a3b8" }}
+                                axisLine={false}
+                                tickLine={false}
+                                allowDecimals={false}
+                            />
+
+                            {/* Tooltip */}
+                            <Tooltip
+                                contentStyle={{
+                                    borderRadius: "10px",
+                                    border: "1px solid #f1f5f9",
+                                    boxShadow: "0 4px 20px rgba(0,0,0,0.05)",
+                                    fontSize: "12px",
+                                }}
+                                cursor={{ fill: "rgba(0,0,0,0.02)" }}
+                            />
+
+                            {/* Bars */}
+                            <Bar
+                                dataKey="count"
+                                radius={[8, 8, 0, 0]}
+                            >
                                 {score_distribution.map((entry) => {
-                                    const r = entry.range
-                                    const fill = r === "76–100" ? "#10b981" : r === "51–75" ? "#6366f1" : r === "26–50" ? "#f59e0b" : "#ef4444"
-                                    return <Cell key={r} fill={fill} />
+                                    let color = "#e2e8f0" // default neutral
+
+                                    if (entry.range === "0–25") color = "#ef4444"      // bad
+                                    else if (entry.range === "26–50") color = "#f59e0b" // warning
+                                    else if (entry.range === "51–75") color = "#6366f1" // good
+                                    else if (entry.range === "76–100") color = "#10b981" // excellent
+
+                                    return (
+                                        <Cell
+                                            key={entry.range}
+                                            fill={color}
+                                        />
+                                    )
                                 })}
                             </Bar>
                         </BarChart>
                     </ResponsiveContainer>
+
+                    {/* Insight hint */}
+                    <p className="text-xs text-slate-400 mt-4">
+                        Aim for scores above <span className="text-emerald-600 font-medium">75%</span> to increase your chances of getting shortlisted.
+                    </p>
                 </div>
 
                 {/* Skill Gap Match Trend */}
@@ -594,132 +631,156 @@ export default function CandidateDashboard() {
                 </div>
             </div>
 
-            {/* ── Row 4: Top Missing Skills ── */}
+            {/* ── Top Missing Skills (Clean + Balanced) ── */}
             {top_missing_skills.length > 0 && (
-                <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
-                    <div className="flex items-center justify-between mb-5">
-                        <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center">
-                                <AlertCircle className="w-4 h-4 text-red-500" />
-                            </div>
-                            <div>
-                                <p className="font-bold text-slate-900 text-sm">Top Missing Skills</p>
-                                <p className="text-xs text-slate-400">Most frequent skill gaps across all your analyses</p>
-                            </div>
-                        </div>
+                <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+
+                    {/* Header */}
+                    <div className="flex items-center justify-between mb-4">
+                        <p className="text-sm font-semibold text-slate-800">
+                            Skill gaps
+                        </p>
+
                         <button
                             onClick={() => router.push("/candidate/skill-gap")}
-                            className="flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
+                            className="text-xs text-slate-500 hover:text-slate-700 transition"
                         >
-                            View analysis <ChevronRight className="w-3 h-3" />
+                            View all →
                         </button>
                     </div>
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        {/* Horizontal bar */}
-                        <ResponsiveContainer width="100%" height={Math.max(160, top_missing_skills.length * 32)}>
-                            <BarChart
-                                data={top_missing_skills}
-                                layout="vertical"
-                                margin={{ top: 0, right: 16, left: 0, bottom: 0 }}
-                                barSize={14}
-                            >
-                                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
-                                <XAxis type="number" tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} allowDecimals={false} />
-                                <YAxis type="category" dataKey="skill" tick={{ fontSize: 11, fill: "#475569" }} axisLine={false} tickLine={false} width={90} />
-                                <Tooltip content={<ChartTooltip />} />
-                                <Bar dataKey="count" name="Appearances" fill="#ef4444" radius={[0, 6, 6, 0]} />
-                            </BarChart>
-                        </ResponsiveContainer>
 
-                        {/* Skill tags */}
-                        <div className="flex flex-wrap content-start gap-2 py-2">
-                            {top_missing_skills.map((s) => (
+                    {/* List */}
+                    <div className="divide-y divide-slate-100">
+
+                        {top_missing_skills.slice(0, 6).map((skill, index) => {
+
+                            const isTop = index === 0
+
+                            return (
                                 <div
-                                    key={s.skill}
-                                    className="group flex items-center gap-1.5 px-3 py-1.5 bg-red-50 border border-red-100 rounded-full hover:border-red-300 transition-colors cursor-default"
+                                    key={skill.skill}
+                                    className={`flex items-center justify-between py-3 group ${isTop ? "bg-slate-50 -mx-2 px-2 rounded-lg" : ""
+                                        }`}
                                 >
-                                    <span className="text-xs font-semibold text-red-700">{s.skill}</span>
-                                    <span className="text-[10px] font-bold text-red-400 bg-red-100 px-1.5 py-0.5 rounded-full leading-none">
-                                        ×{s.count}
-                                    </span>
+
+                                    {/* Left */}
+                                    <div className="flex items-center gap-3">
+                                        <span className="text-xs text-slate-400 w-4">
+                                            {index + 1}
+                                        </span>
+
+                                        <span className={`text-sm ${isTop ? "font-semibold text-slate-900" : "text-slate-700"
+                                            }`}>
+                                            {skill.skill}
+                                        </span>
+                                    </div>
+
+                                    {/* Right */}
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-xs text-slate-400">
+                                            {skill.count}
+                                        </span>
+
+                                        {isTop && (
+                                            <span className="text-[10px] font-medium text-slate-500 bg-slate-200 px-2 py-0.5 rounded-full">
+                                                highest
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
-                            ))}
-                        </div>
+                            )
+                        })}
                     </div>
+
+                    {/* Insight */}
+                    <p className="text-xs text-slate-400 mt-4">
+                        Focus on the top skills to improve your match rate faster.
+                    </p>
                 </div>
             )}
 
-            {/* ── Row 5: Recent Applications Table ── */}
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-                <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
-                    <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center">
-                            <Briefcase className="w-4 h-4 text-indigo-600" />
-                        </div>
-                        <div>
-                            <p className="font-bold text-slate-900 text-sm">Recent Applications</p>
-                            <p className="text-xs text-slate-400">Your 5 most recent applications</p>
-                        </div>
-                    </div>
+            {/* ── Recent Applications (Activity Feed) ── */}
+            <div className="bg-white rounded-2xl border border-slate-100 p-5">
+
+                {/* Header */}
+                <div className="flex items-center justify-between mb-4">
+                    <p className="text-sm font-semibold text-slate-800">
+                        Recent activity
+                    </p>
+
                     <button
                         onClick={() => router.push("/candidate/job")}
-                        className="flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
+                        className="text-xs text-slate-500 hover:text-slate-700 transition"
                     >
-                        Browse jobs <ChevronRight className="w-3 h-3" />
+                        View all →
                     </button>
                 </div>
 
                 {recent_applications.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-14 gap-3 text-slate-300">
-                        <Briefcase className="w-10 h-10 opacity-30" />
-                        <p className="text-sm font-medium text-slate-400">No applications yet</p>
-                        <button
-                            onClick={() => router.push("/candidate/job")}
-                            className="text-xs text-primary font-semibold underline"
-                        >
-                            Find your first job →
-                        </button>
+                    <div className="py-10 text-center text-slate-400 text-sm">
+                        You haven’t applied yet — let’s get started 🚀
                     </div>
                 ) : (
-                    <div className="divide-y divide-slate-50">
-                        {recent_applications.map((app) => (
-                            <div key={app.id} className="flex items-center gap-4 px-6 py-4 hover:bg-slate-50/60 transition-colors group">
-                                {/* Job info */}
-                                <div className="flex-1 min-w-0">
-                                    <p className="font-bold text-slate-900 text-sm truncate">{app.job_title}</p>
-                                    {app.company_name && (
-                                        <p className="text-xs text-slate-500 mt-0.5 truncate">{app.company_name}</p>
-                                    )}
-                                </div>
+                    <div className="space-y-3">
 
-                                {/* AI Score */}
-                                <div className="hidden sm:flex items-center gap-1.5 shrink-0">
-                                    {app.ai_score !== null ? (
-                                        <div className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold ${scoreBg(app.ai_score)} ${scoreColor(app.ai_score)}`}>
-                                            <Sparkles className="w-3 h-3" />
-                                            {app.ai_score}%
+                        {recent_applications.map((app) => {
+
+                            const isGood = app.ai_score !== null && app.ai_score >= 70
+                            const isMid = app.ai_score !== null && app.ai_score >= 50
+
+                            return (
+                                <div
+                                    key={app.id}
+                                    className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition group"
+                                >
+
+                                    {/* LEFT */}
+                                    <div className="flex items-start gap-3">
+
+                                        {/* Status dot */}
+                                        <div
+                                            className="w-2 h-2 rounded-full mt-2"
+                                            style={{ background: STATUS_COLOR[app.status] }}
+                                        />
+
+                                        <div>
+                                            {/* Title */}
+                                            <p className="text-sm font-medium text-slate-900">
+                                                {app.job_title}
+                                            </p>
+
+                                            {/* Meta */}
+                                            <p className="text-xs text-slate-400 mt-0.5">
+                                                {STATUS_LABEL[app.status]} ·{" "}
+                                                {formatDistanceToNow(new Date(app.applied_at), { addSuffix: true })}
+                                            </p>
                                         </div>
-                                    ) : (
-                                        <span className="text-xs text-slate-300 font-medium px-2">—</span>
-                                    )}
+                                    </div>
+
+                                    {/* RIGHT */}
+                                    <div className="flex items-center gap-3">
+
+                                        {/* AI Score */}
+                                        {app.ai_score !== null && (
+                                            <span
+                                                className={`text-xs font-medium ${isGood
+                                                    ? "text-emerald-600"
+                                                    : isMid
+                                                        ? "text-amber-600"
+                                                        : "text-slate-400"
+                                                    }`}
+                                            >
+                                                {app.ai_score}%
+                                            </span>
+                                        )}
+
+                                        {/* Arrow */}
+                                        <ArrowUpRight className="w-4 h-4 text-slate-300 group-hover:text-slate-600 transition" />
+                                    </div>
+
                                 </div>
-
-                                {/* Status */}
-                                <div className="shrink-0">
-                                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold border ${STATUS_BADGE[app.status] ?? "bg-slate-50 text-slate-500 border-slate-200"}`}>
-                                        <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: STATUS_COLOR[app.status] }} />
-                                        {STATUS_LABEL[app.status] ?? app.status}
-                                    </span>
-                                </div>
-
-                                {/* Time */}
-                                <p className="hidden md:block text-xs text-slate-400 shrink-0 w-24 text-right">
-                                    {formatDistanceToNow(new Date(app.applied_at), { addSuffix: true })}
-                                </p>
-
-                                <ArrowUpRight className="w-4 h-4 text-slate-300 group-hover:text-primary transition-colors shrink-0" />
-                            </div>
-                        ))}
+                            )
+                        })}
                     </div>
                 )}
             </div>

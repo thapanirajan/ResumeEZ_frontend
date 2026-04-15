@@ -2,25 +2,21 @@
 
 "use client"
 
-import { Plus, FileText, Clock } from "lucide-react";
+import { Plus, FileText, Clock, Upload } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation"
-
-type Resume = {
-    id: string;
-    title: string;
-    lastUpdated: string;
-};
-
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { resumeApi, ResumeResponse } from "@/services/resume.service";
 import { formatDistanceToNow } from "date-fns";
 import ConfirmDeleteButton from "@/components/common/ConfirmDeleteButton";
+import { toast } from "sonner";
 
 export default function ResumeDashboardPage() {
     const router = useRouter();
     const [resumes, setResumes] = useState<ResumeResponse[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [isImporting, setIsImporting] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         fetchResumes();
@@ -47,6 +43,30 @@ export default function ResumeDashboardPage() {
             throw error;
         }
     };
+
+    const handleImportFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        // Reset input so the same file can be re-selected if needed
+        e.target.value = "";
+
+        setIsImporting(true);
+        const toastId = toast.loading("Extracting resume with AI…");
+        try {
+            const imported = await resumeApi.importResume(file);
+            toast.success("Resume imported! You can now edit it.", { id: toastId });
+            localStorage.setItem(
+                "resume-builder-data",
+                JSON.stringify({ resume: imported.resume_data, template: "classic" })
+            );
+            router.push(`/candidate/resume/create?id=${imported.id}`);
+        } catch (err) {
+            console.error("Import failed:", err);
+            toast.error("Import failed. Please try again.", { id: toastId });
+        } finally {
+            setIsImporting(false);
+        }
+    };
     return (
         <main className="bg-slate-50 px-6 py-10">
             <div className="mx-auto max-w-full space-y-10">
@@ -60,8 +80,9 @@ export default function ResumeDashboardPage() {
                     </p>
                 </header>
 
-                {/* Primary CTA */}
-                <section>
+                {/* Primary CTAs */}
+                <section className="grid gap-4 sm:grid-cols-2">
+                    {/* Create from scratch */}
                     <button
                         className="
                         group relative w-full rounded-2xl border border-slate-200
@@ -80,7 +101,6 @@ export default function ResumeDashboardPage() {
                             <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-[#1e3a8a] text-white">
                                 <Plus className="h-6 w-6" />
                             </div>
-
                             <div className="flex-1">
                                 <h2 className="text-xl font-semibold text-slate-900">
                                     Create a new resume
@@ -91,6 +111,44 @@ export default function ResumeDashboardPage() {
                             </div>
                         </Link>
                     </button>
+
+                    {/* Import existing resume */}
+                    <button
+                        disabled={isImporting}
+                        onClick={() => fileInputRef.current?.click()}
+                        className="
+                        group relative w-full cursor-pointer rounded-2xl border border-slate-200
+                        bg-white p-8 text-left shadow-sm transition
+                        hover:shadow-md hover:border-[#1e3a8a]/30
+                        disabled:opacity-60 disabled:cursor-not-allowed
+                        "
+                    >
+                        <div className="flex items-center gap-6">
+                            <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-emerald-600 text-white">
+                                {isImporting
+                                    ? <span className="h-6 w-6 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                                    : <Upload className="h-6 w-6" />
+                                }
+                            </div>
+                            <div className="flex-1">
+                                <h2 className="text-xl font-semibold text-slate-900">
+                                    {isImporting ? "Importing…" : "Import existing resume"}
+                                </h2>
+                                <p className="mt-1 text-slate-500">
+                                    Upload a PDF or DOCX — AI extracts your details automatically.
+                                </p>
+                            </div>
+                        </div>
+                    </button>
+
+                    {/* Hidden file input */}
+                    <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept=".pdf,.docx"
+                        className="hidden"
+                        onChange={handleImportFile}
+                    />
                 </section>
 
                 {/* Previous Resumes */}

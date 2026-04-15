@@ -56,4 +56,12 @@ export const resumeApi = {
         const response = await api.delete<{ success: boolean; message: string }>(`/api/resume/${id}`);
         return response.data;
     },
+
+    importResume: async (file: File) => {
+        const form = new FormData();
+        form.append("file", file);
+        // Do NOT set Content-Type manually — axios sets it with the correct boundary automatically
+        const response = await api.post<ResumeResponse>("/api/resume/import", form);
+        return response.data;
+    },
 };

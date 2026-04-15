@@ -42,6 +42,7 @@ import {
 import { applicationApi } from "@/services/application.service"
 import ScoreRing from "./ScoreRing"
 import CandidateAnalysisModal from "./CandidateAnalysisModal"
+import KpiCard from "@/components/common/KpiCard"
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -1218,43 +1219,32 @@ export default function ApplicantsPageClient({
 
             {/* ── Stats Grid ── */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-                    <div className="flex items-center justify-between mb-2">
-                        <p className="text-slate-500 font-medium text-sm">Total Applicants</p>
-                        <Users className="w-5 h-5 text-slate-400" />
-                    </div>
-                    <p className="text-3xl font-black text-slate-900">{stats.total}</p>
-                    <p className="mt-1 text-xs text-slate-400">
-                        {applications.length} platform · {externalApplications.length} external
-                    </p>
-                </div>
-
-                <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-                    <div className="flex items-center justify-between mb-2">
-                        <p className="text-slate-500 font-medium text-sm">Shortlisted</p>
-                        <Star className="w-5 h-5 text-emerald-500 fill-emerald-500" />
-                    </div>
-                    <p className="text-3xl font-black text-slate-900">{stats.shortlisted}</p>
-                    <p className="mt-1 text-xs text-slate-400">
-                        {stats.total > 0
-                            ? `${Math.round((stats.shortlisted / stats.total) * 100)}% conversion`
-                            : "No applicants yet"}
-                    </p>
-                </div>
-
-                <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 relative overflow-hidden">
-                    <div className="absolute top-2 right-2 opacity-5">
-                        <Sparkles className="w-16 h-16 text-primary" />
-                    </div>
-                    <div className="flex items-center justify-between mb-2">
-                        <p className="text-slate-500 font-medium text-sm">AI Suggested</p>
-                        <Sparkles className="w-5 h-5 text-primary" />
-                    </div>
-                    <p className="text-3xl font-black text-slate-900">{stats.aiSuggested}</p>
-                    <p className="mt-1 text-xs text-primary font-semibold">
-                        {aiScores ? "Scores available — ≥70% match" : "Run AI Scores to see matches"}
-                    </p>
-                </div>
+                <KpiCard
+                    label="Total Applicants"
+                    value={stats.total}
+                    sub={`${applications.length} platform · ${externalApplications.length} external`}
+                    icon={Users}
+                    iconColor="text-slate-500"
+                    iconBg="bg-slate-100"
+                />
+                <KpiCard
+                    label="Shortlisted"
+                    value={stats.shortlisted}
+                    sub={stats.total > 0
+                        ? `${Math.round((stats.shortlisted / stats.total) * 100)}% conversion`
+                        : "No applicants yet"}
+                    icon={Star}
+                    iconColor="text-emerald-600"
+                    iconBg="bg-emerald-50"
+                />
+                <KpiCard
+                    label="AI Suggested"
+                    value={stats.aiSuggested}
+                    sub={aiScores ? "Scores available — ≥70% match" : "Run AI Scores to see matches"}
+                    icon={Sparkles}
+                    iconColor="text-primary"
+                    iconBg="bg-primary/10"
+                />
             </div>
 
             {/* ── State 5: Success Banner ── */}

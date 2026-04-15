@@ -25,6 +25,7 @@ import {
 } from "recharts";
 import UserDropdown from "@/components/common/UserDropDown";
 import NotificationCenter from "@/components/common/NotificationCenter";
+import KpiCard from "@/components/common/KpiCard";
 import {
     ApplicationSourceValue,
     ApplicationStatusValue,
@@ -125,21 +126,29 @@ export default function RecruiterDashboard({ data, error }: RecruiterDashboardPr
             label: "Job Postings",
             value: summary?.total_jobs ?? "—",
             icon: Briefcase,
+            iconColor: "text-primary",
+            iconBg: "bg-primary/10",
         },
         {
             label: "Total Applications",
             value: summary?.total_applications ?? "—",
             icon: FileText,
+            iconColor: "text-indigo-600",
+            iconBg: "bg-indigo-50",
         },
         {
             label: "Accepted Candidates",
             value: summary?.accepted_count ?? "—",
             icon: CheckCircle2,
+            iconColor: "text-emerald-600",
+            iconBg: "bg-emerald-50",
         },
         {
             label: "Pending Review",
             value: summary?.pending_count ?? "—",
             icon: Clock,
+            iconColor: "text-amber-600",
+            iconBg: "bg-amber-50",
         },
     ];
 
@@ -194,24 +203,7 @@ export default function RecruiterDashboard({ data, error }: RecruiterDashboardPr
             {/* ── Summary Cards ── */}
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
                 {summaryCards.map((card) => (
-                    <Card
-                        key={card.label}
-                        className="border-slate-200 hover:shadow-md transition-shadow duration-200"
-                    >
-                        <CardContent className="p-5 flex items-center justify-between gap-4">
-                            <div>
-                                <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider mb-1">
-                                    {card.label}
-                                </p>
-                                <p className="text-3xl font-black text-slate-900 leading-none">
-                                    {card.value}
-                                </p>
-                            </div>
-                            <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 bg-primary/10 text-primary">
-                                <card.icon className="h-6 w-6" />
-                            </div>
-                        </CardContent>
-                    </Card>
+                    <KpiCard key={card.label} {...card} />
                 ))}
             </div>
 

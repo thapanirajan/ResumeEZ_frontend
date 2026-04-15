@@ -28,7 +28,6 @@ import {
     CheckCircle2,
     XCircle,
     Trash2,
-    type LucideIcon,
 } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 import { JobResponse } from "@/types/job"
@@ -57,6 +56,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
+import KpiCard from "@/components/common/KpiCard"
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -1574,35 +1574,6 @@ function ApplicantsSheet({
     )
 }
 
-// ─── Stat Card ────────────────────────────────────────────────────────────────
-
-function StatCard({
-    label,
-    value,
-    icon: Icon,
-}: {
-    label: string
-    value: number
-    icon: LucideIcon
-}) {
-    return (
-        <Card className="border-slate-200/80 hover:shadow-md transition-shadow duration-200">
-            <CardContent className="p-5 sm:p-6">
-                <div className="flex items-start justify-between gap-4">
-                    <div className="space-y-1">
-                        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">{label}</p>
-                        <p className="text-3xl sm:text-4xl font-black text-slate-900 leading-none tabular-nums">
-                            {value}
-                        </p>
-                    </div>
-                    <div className="shrink-0 rounded-2xl p-2.5 bg-primary/10 text-primary shadow-sm">
-                        <Icon className="w-5 h-5" />
-                    </div>
-                </div>
-            </CardContent>
-        </Card>
-    )
-}
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
@@ -1693,10 +1664,10 @@ export default function JobPageClient({ jobs }: { jobs: JobResponse[] }) {
 
                 {/* ── Stats Row ── */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-                    <StatCard label="Total" value={stats.total} icon={Briefcase} />
-                    <StatCard label="Open" value={stats.open} icon={CheckCircle2} />
-                    <StatCard label="Draft" value={stats.draft} icon={Pencil} />
-                    <StatCard label="Closed" value={stats.closed} icon={XCircle} />
+                    <KpiCard label="Total" value={stats.total} icon={Briefcase} iconColor="text-primary" iconBg="bg-primary/10" />
+                    <KpiCard label="Open" value={stats.open} icon={CheckCircle2} iconColor="text-emerald-600" iconBg="bg-emerald-50" />
+                    <KpiCard label="Draft" value={stats.draft} icon={Pencil} iconColor="text-amber-600" iconBg="bg-amber-50" />
+                    <KpiCard label="Closed" value={stats.closed} icon={XCircle} iconColor="text-slate-500" iconBg="bg-slate-100" />
                 </div>
 
                 {/* ── Search & Filters ── */}
