@@ -21,7 +21,7 @@ async function JobsContent({ searchParams }: { searchParams: SearchParams }) {
         }
     }
     const qs = query.toString()
-    const isFiltered = qs.length > 0
+    const isFiltered = [...query.entries()].some(([k]) => k !== "sort_by" && k !== "order")
 
     let jobs: JobResponse[] = []
     let error: string | undefined

@@ -2,12 +2,15 @@
 
 import RoleGuard from "@/components/common/RoleGuard";
 import RecruiterSidebar from "@/components/Recruiter/RecruiterSidebar";
+import MobileNavDrawer from "@/components/common/MobileNavDrawer";
 import { ReactNode, useEffect, useState } from "react";
-import { Pin, PinOff } from "lucide-react";
+import { Pin, PinOff, Menu } from "lucide-react";
+import Logo from "@/components/landing/Logo";
 
 export default function HrLayout({ children }: { children: ReactNode }) {
     const [isPinned, setIsPinned] = useState(false);
     const [isHovered, setIsHovered] = useState(false);
+    const [mobileOpen, setMobileOpen] = useState(false);
 
     useEffect(() => {
         const stored = localStorage.getItem("recruiter-sidebar-pinned");
@@ -27,6 +30,27 @@ export default function HrLayout({ children }: { children: ReactNode }) {
     return (
         <RoleGuard role="RECRUITER">
             <div className="flex min-h-screen bg-slate-50/60">
+                {/* ── Mobile top bar ── */}
+                <header className="fixed inset-x-0 top-0 z-30 flex h-16 items-center justify-between border-b border-slate-200 bg-white px-4 lg:hidden">
+                    <Logo href="/" />
+                    <button
+                        type="button"
+                        onClick={() => setMobileOpen(true)}
+                        className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors"
+                        aria-label="Open navigation menu"
+                    >
+                        <Menu className="h-5 w-5" />
+                    </button>
+                </header>
+
+                {/* ── Mobile nav drawer ── */}
+                <MobileNavDrawer open={mobileOpen} onClose={() => setMobileOpen(false)}>
+                    <div data-expanded="true" className="group h-full bg-white">
+                        <RecruiterSidebar />
+                    </div>
+                </MobileNavDrawer>
+
+                {/* ── Desktop sidebar ── */}
                 <aside
                     data-expanded={isExpanded}
                     onMouseEnter={() => setIsHovered(true)}
@@ -45,7 +69,8 @@ export default function HrLayout({ children }: { children: ReactNode }) {
                     <RecruiterSidebar />
                 </aside>
 
-                <main className="h-screen flex-1 overflow-y-auto p-6 min-w-0">
+                {/* ── Main content ── */}
+                <main className="flex-1 overflow-y-auto p-6 pt-20 min-w-0 lg:h-screen lg:pt-6">
                     {children}
                 </main>
             </div>

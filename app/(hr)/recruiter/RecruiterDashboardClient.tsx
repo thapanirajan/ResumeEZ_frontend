@@ -187,14 +187,7 @@ export default function RecruiterDashboard({ data, error }: RecruiterDashboardPr
                     </div>
                 </div>
 
-                <div className="flex items-center gap-2.5">
-                    <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                        <input
-                            placeholder="Search jobs, resumes…"
-                            className="pl-9 pr-4 py-2.5 w-56 rounded-xl bg-white border border-slate-200 text-sm text-slate-800 placeholder:text-slate-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition"
-                        />
-                    </div>
+                <div className="flex items-center gap-2.5 shrink-0">
                     <NotificationCenter userRole="RECRUITER" />
                     <UserDropdown />
                 </div>
@@ -339,15 +332,15 @@ export default function RecruiterDashboard({ data, error }: RecruiterDashboardPr
                             <BarChart
                                 layout="vertical"
                                 data={data?.top_jobs_by_applications}
-                                margin={{ left: 16, right: 24, top: 4, bottom: 4 }}
+                                margin={{ left: 0, right: 16, top: 4, bottom: 4 }}
                             >
                                 <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
                                 <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
                                 <YAxis
                                     type="category"
                                     dataKey="title"
-                                    width={150}
-                                    tick={{ fontSize: 12, fill: "#64748b" }}
+                                    width={110}
+                                    tick={{ fontSize: 11, fill: "#64748b" }}
                                     axisLine={false}
                                     tickLine={false}
                                 />

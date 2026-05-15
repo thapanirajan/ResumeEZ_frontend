@@ -272,19 +272,6 @@ export default function ProfileSettingsPage({ expectedRole, title, subtitle }: P
                                 placeholder="Python, React, Docker, PostgreSQL…"
                             />
                         </Field>
-
-                        <div className="flex items-center gap-3">
-                            <input
-                                id="is_public"
-                                type="checkbox"
-                                checked={isPublic}
-                                onChange={(e) => setIsPublic(e.target.checked)}
-                                className="h-4 w-4 rounded border-gray-300 text-blue-600"
-                            />
-                            <label htmlFor="is_public" className="text-sm text-gray-700">
-                                Make my profile public (visible to recruiters)
-                            </label>
-                        </div>
                     </section>
                 )}
 

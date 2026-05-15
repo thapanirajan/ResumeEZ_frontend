@@ -1649,21 +1649,21 @@ export default function JobPageClient({ jobs }: { jobs: JobResponse[] }) {
         <>
             <div className="space-y-5">
                 {/* ── Page Header ── */}
-                <div className="flex items-center justify-between gap-4 flex-wrap">
-                    <div>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="min-w-0">
                         <h1 className="text-2xl font-bold text-slate-900">Job Postings</h1>
                         <p className="text-sm text-slate-500 mt-0.5">
                             Manage your open, draft, and closed job listings.
                         </p>
                     </div>
-                    <Button onClick={openCreate}>
+                    <Button onClick={openCreate} className="shrink-0 w-full sm:w-auto">
                         <Plus className="w-4 h-4" />
                         Post a Job
                     </Button>
                 </div>
 
                 {/* ── Stats Row ── */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                     <KpiCard label="Total" value={stats.total} icon={Briefcase} iconColor="text-primary" iconBg="bg-primary/10" />
                     <KpiCard label="Open" value={stats.open} icon={CheckCircle2} iconColor="text-emerald-600" iconBg="bg-emerald-50" />
                     <KpiCard label="Draft" value={stats.draft} icon={Pencil} iconColor="text-amber-600" iconBg="bg-amber-50" />

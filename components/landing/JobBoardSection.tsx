@@ -1,8 +1,11 @@
+"use client";
+
 import Link from "next/link";
 import { MapPin, Clock, Banknote, ArrowRight, Briefcase, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { useAuthRedirect } from "@/hooks/useAuthRedirect";
 
 type JobCard = {
     title: string;
@@ -55,6 +58,8 @@ const typeBadgeVariant: Record<JobCard["type"], "success" | "warning" | "info"> 
 };
 
 export default function JobBoardSection() {
+    const { href } = useAuthRedirect();
+    const jobsHref = href("/candidate/job", "/recruiter/job");
     return (
         <section className="py-24 bg-white">
             <div className="max-w-7xl mx-auto px-6">
@@ -93,7 +98,7 @@ export default function JobBoardSection() {
                         </ul>
 
                         <Button size="lg" asChild>
-                            <Link href="/login">
+                            <Link href={jobsHref}>
                                 Browse Open Jobs
                                 <ArrowRight size={16} />
                             </Link>
@@ -138,7 +143,7 @@ export default function JobBoardSection() {
                                                 {job.type}
                                             </Badge>
                                             <Button size="sm" variant="outline" asChild>
-                                                <Link href="/login">Apply</Link>
+                                                <Link href={jobsHref}>Apply</Link>
                                             </Button>
                                         </div>
                                     </div>
@@ -155,7 +160,7 @@ export default function JobBoardSection() {
                         ))}
 
                         <Link
-                            href="/login"
+                            href={jobsHref}
                             className="text-center text-sm font-semibold text-primary hover:underline py-2 transition-colors"
                         >
                             + View 200 more open positions →

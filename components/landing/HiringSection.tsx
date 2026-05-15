@@ -1,9 +1,12 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { Search, SlidersHorizontal, Sparkles, TrendingUp, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { useAuthRedirect } from "@/hooks/useAuthRedirect";
 
 type Candidate = {
     name: string;
@@ -34,6 +37,7 @@ const candidates: Candidate[] = [
 ];
 
 export default function HiringSection() {
+    const { href } = useAuthRedirect();
     return (
         <section className="py-24 bg-white">
             <div className="max-w-7xl mx-auto px-6">
@@ -144,7 +148,7 @@ export default function HiringSection() {
                             </div>
                         </div>
                         <Button variant="white" className="mt-8 w-full" asChild>
-                            <Link href="/login">Start Hiring Now</Link>
+                            <Link href={href("/candidate", "/recruiter/job")}>Start Hiring Now</Link>
                         </Button>
                     </div>
                 </div>

@@ -1,7 +1,11 @@
+"use client";
+
+import Link from "next/link";
 import { BarChart2, BookOpen, BrainCircuit } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { useAuthRedirect } from "@/hooks/useAuthRedirect";
 
 const features = [
     {
@@ -17,6 +21,7 @@ const features = [
 ];
 
 export default function SkillGapSection() {
+    const { href } = useAuthRedirect();
     return (
         <section className="py-24 bg-slate-50">
             <div className="max-w-7xl mx-auto px-6">
@@ -116,8 +121,10 @@ export default function SkillGapSection() {
                                 </div>
 
                                 <div className="mt-8 pt-6 border-t border-slate-100">
-                                    <Button className="w-full" size="lg">
-                                        Generate Learning Roadmap
+                                    <Button className="w-full" size="lg" asChild>
+                                        <Link href={href("/candidate/skill-gap", "/recruiter")}>
+                                            Generate Learning Roadmap
+                                        </Link>
                                     </Button>
                                 </div>
                             </CardContent>

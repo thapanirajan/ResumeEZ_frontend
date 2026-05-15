@@ -247,7 +247,7 @@ export default function SkillGapResultsClient() {
     return (
         <div className="min-h-screen bg-slate-50 px-4 py-6 md:px-6">
             <div className="mx-auto max-w-6xl space-y-6">
-                <header className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div className="space-y-1">
                         <div className="flex items-center gap-3">
                             <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/10 text-primary">
@@ -301,11 +301,11 @@ export default function SkillGapResultsClient() {
 
                 <section className="grid grid-cols-1 gap-4 lg:grid-cols-3">
                     <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm lg:col-span-2">
-                        <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
-                            <div>
+                        <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+                            <div className="min-w-0">
                                 <p className="text-sm font-semibold text-slate-700">Overall match</p>
                                 <div className="mt-2 flex items-end gap-3">
-                                    <p className="text-5xl font-black tracking-tight text-slate-900">
+                                    <p className="text-4xl sm:text-5xl font-black tracking-tight text-slate-900">
                                         {match_percentage.toFixed(1)}%
                                     </p>
                                     <Badge variant="secondary" className="mb-2">
@@ -317,7 +317,7 @@ export default function SkillGapResultsClient() {
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-3 gap-3 md:min-w-[320px]">
+                            <div className="grid grid-cols-3 gap-2 sm:gap-3 sm:min-w-[280px]">
                                 <Metric label="JD Skills" value={total_jd_skills} className="p-3" />
                                 <Metric label="Matched" value={matched_skills.length} className="p-3" />
                                 <Metric label="Missing" value={missing_skills.length} className="p-3" />
@@ -400,7 +400,7 @@ export default function SkillGapResultsClient() {
                                 </TabsTrigger>
                             </TabsList>
 
-                            <div className="mt-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                            <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                                 <div className="relative w-full md:max-w-md">
                                     <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                                     <input

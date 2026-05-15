@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ChevronDown } from "lucide-react";
 import { EmploymentType } from "@/types/job";
 
@@ -69,6 +69,17 @@ export default function JobFilter({ onApply }: Props) {
     const [maxSalary, setMaxSalary]         = useState(searchParams.get("max_salary") ?? "");
     const [minExperience, setMinExperience] = useState(searchParams.get("min_experience") ?? "");
     const [maxExperience, setMaxExperience] = useState(searchParams.get("max_experience") ?? "");
+
+    // Keep local state in sync when URL changes externally (e.g. tag removal from the active-tags bar)
+    useEffect(() => {
+        setTitle(searchParams.get("title") ?? "");
+        setLocation(searchParams.get("location") ?? "");
+        setEmploymentTypes(searchParams.getAll("employment_types") as EmploymentType[]);
+        setMinSalary(searchParams.get("min_salary") ?? "");
+        setMaxSalary(searchParams.get("max_salary") ?? "");
+        setMinExperience(searchParams.get("min_experience") ?? "");
+        setMaxExperience(searchParams.get("max_experience") ?? "");
+    }, [searchParams]);
 
     const toggleEmploymentType = (type: EmploymentType) => {
         setEmploymentTypes((prev) =>

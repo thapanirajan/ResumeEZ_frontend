@@ -2,15 +2,40 @@
 
 import CandidateSidebar from "@/components/candidate/CandidateSidebar";
 import RoleGuard from "@/components/common/RoleGuard";
-import { ReactNode } from "react";
+import MobileNavDrawer from "@/components/common/MobileNavDrawer";
+import { ReactNode, useState } from "react";
 import { SidebarProvider, useSidebar } from "@/context/SidebarContext";
-import { Pin, PinOff } from "lucide-react";
+import { Pin, PinOff, Menu } from "lucide-react";
+import Logo from "@/components/landing/Logo";
 
 function LayoutContent({ children }: { children: ReactNode }) {
     const { isExpanded, isPinned, togglePin, setHovered } = useSidebar();
+    const [mobileOpen, setMobileOpen] = useState(false);
 
     return (
         <div className="flex min-h-screen bg-gray-50">
+            {/* ── Mobile top bar ── */}
+            <header className="fixed inset-x-0 top-0 z-30 flex h-16 items-center justify-between border-b border-slate-200 bg-white px-4 lg:hidden">
+                <Logo href="/" />
+                <button
+                    type="button"
+                    onClick={() => setMobileOpen(true)}
+                    className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors"
+                    aria-label="Open navigation menu"
+                >
+                    <Menu className="h-5 w-5" />
+                </button>
+            </header>
+
+            {/* ── Mobile nav drawer ── */}
+            <MobileNavDrawer open={mobileOpen} onClose={() => setMobileOpen(false)}>
+                {/* force labels visible by setting data-expanded=true */}
+                <div data-expanded="true" className="group h-full bg-white">
+                    <CandidateSidebar />
+                </div>
+            </MobileNavDrawer>
+
+            {/* ── Desktop sidebar ── */}
             <aside
                 data-expanded={isExpanded}
                 onMouseEnter={() => setHovered(true)}
@@ -29,7 +54,8 @@ function LayoutContent({ children }: { children: ReactNode }) {
                 <CandidateSidebar />
             </aside>
 
-            <main className="h-screen flex-1 overflow-y-auto min-w-0 p-6">
+            {/* ── Main content ── */}
+            <main className="flex-1 overflow-y-auto min-w-0 p-6 pt-20 lg:h-screen lg:pt-6">
                 {children}
             </main>
         </div>

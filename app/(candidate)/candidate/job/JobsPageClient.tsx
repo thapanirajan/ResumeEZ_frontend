@@ -60,8 +60,11 @@ export default function JobsPageClient({ initialJobs, isFiltered, error }: Props
         SORT_PRESETS.some((p) => p.key === urlSortKey) ? urlSortKey : "created_at|desc"
     )
 
-    // Title search
+    // Title search — keep in sync when URL changes (e.g. tag removed from active-tags bar)
     const [titleInput, setTitleInput] = useState(searchParams.get("title") ?? "")
+    useEffect(() => {
+        setTitleInput(searchParams.get("title") ?? "")
+    }, [searchParams])
 
     const applyTitleSearch = () => {
         const params = new URLSearchParams(searchParams.toString())

@@ -25,9 +25,11 @@ function isNewJob(createdAt: string): boolean {
 
 function getDaysRemaining(deadline: string | null | undefined): number | null {
     if (!deadline) return null
-    const ms = new Date(deadline).getTime() - Date.now()
-    if (ms <= 0) return 0
-    return Math.ceil(ms / (1000 * 60 * 60 * 24))
+    const now = new Date()
+    const end = new Date(deadline)
+    now.setHours(0, 0, 0, 0)
+    end.setHours(0, 0, 0, 0)
+    return Math.round((end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
 }
 
 export type JobCardProps = {
@@ -64,9 +66,10 @@ export default function JobCard({
     const daysLeft    = getDaysRemaining(applicationDeadline)
     const deadlineColor =
         daysLeft === null  ? ""
-        : daysLeft === 0   ? "text-red-600 bg-red-50 border-red-200"
-        : daysLeft <= 3    ? "text-red-500 bg-red-50 border-red-200"
-        : daysLeft <= 7    ? "text-amber-600 bg-amber-50 border-amber-200"
+        : daysLeft < 0    ? "text-slate-400 bg-slate-50 border-slate-200"
+        : daysLeft === 0  ? "text-red-600 bg-red-50 border-red-200"
+        : daysLeft <= 3   ? "text-red-500 bg-red-50 border-red-200"
+        : daysLeft <= 7   ? "text-amber-600 bg-amber-50 border-amber-200"
         : "text-slate-500 bg-slate-50 border-slate-200"
 
     return (
@@ -104,7 +107,7 @@ export default function JobCard({
                     {daysLeft !== null && (
                         <span className={`inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full border ${deadlineColor}`}>
                             <CalendarClock className="w-3 h-3 shrink-0" />
-                            {daysLeft === 0 ? "Deadline today" : `${daysLeft}d left`}
+                            {daysLeft < 0 ? "Deadline passed" : daysLeft === 0 ? "Deadline today" : `${daysLeft}d left`}
                         </span>
                     )}
                 </div>

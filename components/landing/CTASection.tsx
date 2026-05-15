@@ -1,8 +1,12 @@
+"use client";
+
 import Link from "next/link";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAuthRedirect } from "@/hooks/useAuthRedirect";
 
 export default function CTASection() {
+    const { href } = useAuthRedirect();
     return (
         <section className="py-16 bg-slate-50">
             <div className="max-w-7xl mx-auto px-6">
@@ -48,13 +52,13 @@ export default function CTASection() {
 
                         <div className="flex flex-col sm:flex-row gap-3 justify-center">
                             <Button variant="white" size="lg" asChild>
-                                <Link href="/login">
+                                <Link href={href("/candidate", "/recruiter")}>
                                     Get Started for Free
                                     <ArrowRight size={18} />
                                 </Link>
                             </Button>
                             <Button variant="outline-white" size="lg" asChild>
-                                <Link href="/login">View All Templates</Link>
+                                <Link href={href("/candidate/resume", "/recruiter")}>View All Templates</Link>
                             </Button>
                         </div>
 

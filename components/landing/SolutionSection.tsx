@@ -1,8 +1,12 @@
+"use client";
+
 import { GraduationCap, Briefcase, CheckCircle2, ArrowRight, Zap } from "lucide-react";
 import { ElementType } from "react";
+import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useAuthRedirect } from "@/hooks/useAuthRedirect";
 
 type SolutionCard = {
     Icon: ElementType;
@@ -12,6 +16,8 @@ type SolutionCard = {
     features: string[];
     accent: string;
     iconBg: string;
+    candidateHref: string;
+    recruiterHref: string;
 };
 
 const cards: SolutionCard[] = [
@@ -27,6 +33,8 @@ const cards: SolutionCard[] = [
         ],
         accent: "from-primary/5 to-blue-50",
         iconBg: "bg-primary text-white",
+        candidateHref: "/candidate",
+        recruiterHref: "/login",
     },
     {
         Icon: Briefcase,
@@ -40,10 +48,13 @@ const cards: SolutionCard[] = [
         ],
         accent: "from-slate-50 to-white",
         iconBg: "bg-primary text-white",
+        candidateHref: "/login",
+        recruiterHref: "/recruiter",
     },
 ];
 
 export default function SolutionsSection() {
+    const { href } = useAuthRedirect();
     return (
         <section id="features" className="py-24 bg-slate-50">
             <div className="max-w-7xl mx-auto px-6">
@@ -94,9 +105,11 @@ export default function SolutionsSection() {
                                         ))}
                                     </ul>
 
-                                    <Button variant="ghost" className="px-0 text-primary font-bold hover:bg-transparent hover:gap-3 group">
-                                        Learn more
-                                        <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
+                                    <Button variant="ghost" className="px-0 text-primary font-bold hover:bg-transparent hover:gap-3 group" asChild>
+                                        <Link href={href(card.candidateHref, card.recruiterHref)}>
+                                            Learn more
+                                            <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
+                                        </Link>
                                     </Button>
                                 </CardContent>
                             </Card>

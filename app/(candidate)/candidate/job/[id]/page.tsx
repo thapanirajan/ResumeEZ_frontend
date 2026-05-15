@@ -56,31 +56,45 @@ export default async function JobDetailPage({
         notFound()
     }
 
+    const deadlineDate = job.application_deadline ? new Date(job.application_deadline) : null
+    const deadlinePassed = deadlineDate ? deadlineDate.setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) : false
+
     const meta = [
         {
             icon: MapPin,
             label: job.location ?? "Remote",
+            highlight: false,
+            expired: false,
         },
         {
             icon: Briefcase,
             label: EMPLOYMENT_LABELS[job.employment_type] ?? job.employment_type,
+            highlight: false,
+            expired: false,
         },
         {
             icon: Banknote,
             label: formatSalary(job.salary_min, job.salary_max),
+            highlight: false,
+            expired: false,
         },
         ...(job.experience_required !== null
-            ? [{ icon: GraduationCap, label: `${job.experience_required}+ years experience` }]
+            ? [{ icon: GraduationCap, label: `${job.experience_required}+ years experience`, highlight: false, expired: false }]
             : []),
         {
             icon: Clock,
             label: `Posted ${formatDistanceToNow(new Date(job.created_at), { addSuffix: true })}`,
+            highlight: false,
+            expired: false,
         },
-        ...(job.application_deadline
+        ...(deadlineDate
             ? [{
                 icon: CalendarX2,
-                label: `Deadline: ${new Date(job.application_deadline).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`,
-                highlight: true,
+                label: deadlinePassed
+                    ? `Expired: ${deadlineDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`
+                    : `Deadline: ${deadlineDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`,
+                highlight: !deadlinePassed,
+                expired: deadlinePassed,
             }]
             : []),
     ]
@@ -116,12 +130,18 @@ export default async function JobDetailPage({
                                 </div>
 
                                 <div className="flex flex-wrap gap-2.5 sm:gap-3">
-                                    {meta.map(({ icon: Icon, label, highlight }) => (
+                                    {meta.map(({ icon: Icon, label, highlight, expired }) => (
                                         <span
                                             key={label}
-                                            className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs sm:text-sm font-medium ${highlight ? "border-orange-200 bg-orange-50 text-orange-700" : "border-slate-200 bg-slate-50 text-slate-600"}`}
+                                            className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs sm:text-sm font-medium ${
+                                                expired
+                                                    ? "border-slate-200 bg-slate-50 text-slate-400"
+                                                    : highlight
+                                                    ? "border-orange-200 bg-orange-50 text-orange-700"
+                                                    : "border-slate-200 bg-slate-50 text-slate-600"
+                                            }`}
                                         >
-                                            <Icon className={`w-3.5 h-3.5 ${highlight ? "text-orange-500" : "text-slate-400"}`} />
+                                            <Icon className={`w-3.5 h-3.5 ${expired ? "text-slate-300" : highlight ? "text-orange-500" : "text-slate-400"}`} />
                                             {label}
                                         </span>
                                     ))}

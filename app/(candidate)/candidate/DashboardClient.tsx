@@ -258,31 +258,24 @@ export default function CandidateDashboard() {
         <div className="min-h-screen bg-[#f6f7f9] space-y-6 pb-8">
 
             {/* ── Header ── */}
-            <div className="flex items-center justify-between gap-4 flex-wrap">
-                <div>
-                    <h1 className="text-2xl font-black text-slate-900 tracking-tight">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="min-w-0">
+                    <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight truncate">
                         {greeting()}, {data.full_name ?? emailPrefix} 👋
                     </h1>
-                    <p className="text-sm text-slate-500 mt-0.5">
+                    <p className="text-sm text-slate-500 mt-0.5 flex flex-wrap items-center gap-x-1">
                         Here&apos;s your job search snapshot.
                         {data.current_role && (
-                            <span className="ml-1 text-slate-400">· {data.current_role}</span>
+                            <span className="text-slate-400">· {data.current_role}</span>
                         )}
                         {data.location && (
-                            <span className="ml-1 inline-flex items-center gap-0.5 text-slate-400">
+                            <span className="inline-flex items-center gap-0.5 text-slate-400">
                                 <MapPin className="w-3 h-3" /> {data.location}
                             </span>
                         )}
                     </p>
                 </div>
-                <div className="flex items-center gap-2.5">
-                    <div className="relative hidden sm:block">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                        <input
-                            placeholder="Search jobs or skills…"
-                            className="pl-9 pr-4 py-2 rounded-xl border border-slate-200 bg-white text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20 w-52"
-                        />
-                    </div>
+                <div className="flex items-center gap-2.5 shrink-0">
                     <NotificationCenter userRole="JOB_SEEKER" />
                     <UserDropdown />
                 </div>
@@ -292,7 +285,7 @@ export default function CandidateDashboard() {
 
             {/* ── KPI Grid ── */}
 
-            <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                 {kpiCards.map((c) => (
                     <KpiCard key={c.label} {...c} />
                 ))}

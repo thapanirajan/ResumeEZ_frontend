@@ -484,7 +484,10 @@ function AnalysisResults({ result, onReset }: { result: SkillGapResponse; onRese
 
             {/* ── Actions ── */}
             <div className="flex flex-col gap-2 pt-1">
-                <Link href="/candidate/skill-gap">
+                <Link href={result.roadmap_id
+                    ? `/candidate/learning-roadmap?roadmap_id=${result.roadmap_id}`
+                    : "/candidate/learning-roadmap"
+                }>
                     <button className="w-full flex items-center justify-center gap-2 rounded-xl bg-[#1e3a8a] px-4 py-2.5 text-sm font-bold text-white hover:bg-[#1e40af] transition-colors shadow-sm">
                         <BookOpen className="w-4 h-4" />
                         View Learning Roadmap

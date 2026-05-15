@@ -1,3 +1,5 @@
+"use client";
+
 import {
     TrendingUp, Briefcase, FileText, ScanSearch,
     BrainCircuit, Users, ClipboardList, BarChart2,
@@ -7,8 +9,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useAuthRedirect } from "@/hooks/useAuthRedirect";
 
 export default function HeroSection() {
+    const { href } = useAuthRedirect();
     return (
         <section className="relative overflow-hidden bg-white">
             {/* Background grid pattern */}
@@ -72,13 +76,13 @@ export default function HeroSection() {
                         {/* CTA Buttons */}
                         <div className="flex flex-col sm:flex-row gap-3 mb-12">
                             <Button size="lg" asChild>
-                                <Link href="/resume-builder">
+                                <Link href={href("/candidate/resume", "/recruiter")}>
                                     Build Your Resume
                                     <TrendingUp size={18} />
                                 </Link>
                             </Button>
                             <Button size="lg" variant="secondary" asChild>
-                                <Link href="/login">
+                                <Link href={href("/candidate/job", "/recruiter/job")}>
                                     Post a Job
                                     <Briefcase size={18} />
                                 </Link>

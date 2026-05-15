@@ -168,7 +168,7 @@ export default function PublicResumeBuilder() {
 
                                 <button
                                     onClick={() =>
-                                        isLastStep ? exportToPdf() : setStep((s) => s + 1)
+                                        isLastStep ? exportToPdf(resume, template) : setStep((s) => s + 1)
                                     }
                                     className="rounded-lg bg-[#1e3a8a] px-6 py-2 text-sm font-medium text-white cursor-pointer"
                                 >
